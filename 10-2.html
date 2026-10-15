@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>徐玥桐 - CSS Animation</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			min-height: 100vh;
+			margin: 0;
+			display: grid;
+			place-items: center;
+			padding: 32px 20px;
+			color: #f5f4ed;
+			background: transparent;
+			font-family: "Microsoft YaHei", sans-serif;
+		}
+
+		.presentation {
+			width: min(920px, 100%);
+			text-align: center;
+		}
+
+		.edition {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			margin-bottom: 16px;
+			color: #d9c9a9;
+			font-size: 13px;
+		}
+
+		.edition__mark {
+			width: 7px;
+			aspect-ratio: 1;
+			background: #e6a45e;
+			transform: rotate(45deg);
+		}
+
+		.edition__rule {
+			flex: 1;
+			height: 1px;
+			background: linear-gradient(90deg, rgb(230 164 94 / 48%), transparent);
+		}
+
+		.edition__count {
+			color: rgb(245 244 237 / 64%);
+			font-variant-numeric: tabular-nums;
+		}
+
+		.slides {
+			position: relative;
+			width: 100%;
+			aspect-ratio: 16 / 9;
+			overflow: hidden;
+			border: 1px solid rgb(255 255 255 / 24%);
+			border-radius: 6px;
+			background: transparent;
+			box-shadow: 0 24px 70px rgb(0 0 0 / 32%);
+		}
+
+		.slides::before,
+		.slides::after {
+			position: absolute;
+			inset: 0;
+			content: "";
+			pointer-events: none;
+		}
+
+		.slides::before {
+			z-index: 2;
+			inset: 12px;
+			border: 1px solid rgb(255 255 255 / 34%);
+		}
+
+		.slides::after {
+			z-index: 1;
+			background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 14%) 50%, transparent 62%);
+			transform: translateX(-110%);
+			animation: light-sweep 7s ease-in-out infinite;
+		}
+
+		.slide {
+			position: absolute;
+			inset: 0;
+			margin: 0;
+			transform: translateX(105%);
+			animation: show-slide 27s linear infinite;
+		}
+
+		.slide img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		.slide:nth-child(2) { animation-delay: -3s; }
+		.slide:nth-child(3) { animation-delay: -6s; }
+		.slide:nth-child(4) { animation-delay: -9s; }
+		.slide:nth-child(5) { animation-delay: -12s; }
+		.slide:nth-child(6) { animation-delay: -15s; }
+		.slide:nth-child(7) { animation-delay: -18s; }
+		.slide:nth-child(8) { animation-delay: -21s; }
+		.slide:nth-child(9) { animation-delay: -24s; }
+
+		.identity {
+			position: absolute;
+			z-index: 3;
+			bottom: 28px;
+			left: 50%;
+			padding: 12px 30px;
+			color: #fff;
+			background: transparent;
+			transform: translateX(-50%);
+		}
+
+		.name {
+			margin: 0;
+			font-size: 32px;
+			font-weight: 600;
+			color: #fff;
+			font-family: "SimHei", "Microsoft YaHei", sans-serif;
+		}
+
+		.timeline {
+			height: 2px;
+			margin-top: 22px;
+			overflow: hidden;
+			background: rgb(255 255 255 / 14%);
+		}
+
+		.timeline__progress {
+			display: block;
+			width: 100%;
+			height: 100%;
+			background: #e6a45e;
+			box-shadow: 0 0 12px rgb(230 164 94 / 72%);
+			transform: scaleX(0);
+			transform-origin: left;
+			animation: progress 27s linear infinite;
+		}
+
+		@keyframes show-slide {
+			0% {
+				transform: translateX(105%);
+				animation-timing-function: ease-out;
+			}
+			1%, 9% {
+				transform: translateX(0);
+				animation-timing-function: ease-in;
+			}
+			11%, 100% {
+				transform: translateX(-105%);
+			}
+		}
+
+		@keyframes light-sweep {
+			0%, 12% {
+				transform: translateX(-110%);
+				opacity: 0;
+			}
+			22% {
+				opacity: 1;
+			}
+			58%, 100% {
+				transform: translateX(110%);
+				opacity: 0;
+			}
+		}
+
+		@keyframes progress {
+			to {
+				transform: scaleX(1);
+			}
+		}
+
+		@media (max-width: 600px) {
+			body {
+				padding: 24px 16px;
+			}
+
+			.edition {
+				margin-bottom: 12px;
+			}
+
+			.identity {
+				bottom: 18px;
+				padding: 10px 24px;
+			}
+
+			.name {
+				font-size: 28px;
+			}
+
+			.timeline {
+				margin-top: 18px;
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.slide {
+				animation: none;
+			}
+
+			.slide:first-child {
+				transform: translateX(0);
+			}
+
+			.slides::after,
+			.timeline__progress {
+				animation: none;
+			}
+
+			.timeline__progress {
+				transform: scaleX(1);
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="presentation">
+		<header class="edition">
+			<span class="edition__mark" aria-hidden="true"></span>
+			<span>影像集</span>
+			<span class="edition__rule" aria-hidden="true"></span>
+			<span class="edition__count">09 帧</span>
+		</header>
+		<div class="slides" aria-label="徐玥桐的图片幻灯片">
+			<figure class="slide"><img src="img/07d4dd6b08d440c8a7c3fe836c7a190a.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/0a61ea8caeedc5f9806c1c2f143f0152.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/3e78c1f490954fc99ebc249bec52c10d.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/4f4938338af243a7ab6e04137470aba4.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/6825829e29e142fdbca0a4960f619225.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/b113a177ffd34be1b9c437344286a782.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/b89442f156ab47aaad7c42f5f312b4ee.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/bfd8b9a880b358a6fc21d343cd73abc8.jpg" alt=""></figure>
+			<figure class="slide"><img src="img/f721c2b698dd4744ae2d5bd7d6efc190.jpg" alt=""></figure>
+			<div class="identity"><h1 class="name">徐玥桐</h1></div>
+		</div>
+		<div class="timeline" aria-hidden="true"><span class="timeline__progress"></span></div>
+	</main>
+</body>
+</html>

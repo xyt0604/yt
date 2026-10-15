@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flex布局练习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #efefef;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .single-layout {
+            width: 100%;
+            height: 430px;
+            background: #efefef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px solid #5d5d5d;
+            border-bottom: 1px solid #5d5d5d;
+        }
+
+        .card {
+            width: 80%;
+            height: 78%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-box {
+            width: 100%;
+            height: 140px;
+            background: #d8d8d8;
+            border: 2px solid #4d4d4d;
+        }
+
+        .bottom-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bottom-row .box {
+            width: 48%;
+            height: 100px;
+            background: #d8d8d8;
+            border: 2px solid #4d4d4d;
+        }
+    </style>
+</head>
+<body>
+    <h2>徐玥桐 flex</h2>
+    <div class="single-layout">
+        <div class="card">
+            <div class="top-box"></div>
+            <div class="bottom-row">
+                <div class="box"></div>
+                <div class="box"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

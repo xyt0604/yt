@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        img{
+            display: block;
+        }
+        ul{
+            list-style: none;
+        }
+        .list{
+            display: flex;
+            flex-wrap: wrap;
+            margin: 10px;
+        }
+        .list li{
+            width: 30%;
+            overflow: hidden;
+            position: relative;
+            flex-grow: 1;
+            margin: 6px;
+
+        }
+        .list img{
+            width: 100%;
+            transition: all 0.5s ease-in-out;
+        }
+        .text{
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 33px;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            transition: all 0.5s ease-in-out;
+            font-size: 14px;
+        }
+        .text h3{
+            height: 33px;
+            line-height: 33px;
+            text-align: center;
+        }
+        .text p{
+            height:40px;
+            line-height: 20px;
+            padding: 5px ;
+            overflow: hidden;
+            /*首行空两格*/
+            text-indent: 2em;
+            font-size: 12px;
+        }
+        .list li:nth-child(3n+1):hover img{
+            transform: scale(1.7);
+        }
+        .list li:nth-child(3n+2):hover .text{
+            height: 100%;
+        }
+        .list li:nth-child(3n):hover .text{
+            height:83px;
+        }
+    </style>
+</head>
+<body>
+    <h2>徐玥桐的transition过渡</h2>
+    <ul class="list">
+        <li>
+            <img src="./img/b113a177ffd34be1b9c437344286a782.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/4f4938338af243a7ab6e04137470aba4.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/0a61ea8caeedc5f9806c1c2f143f0152.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/b89442f156ab47aaad7c42f5f312b4ee.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/3e78c1f490954fc99ebc249bec52c10d.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/07d4dd6b08d440c8a7c3fe836c7a190a.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/6825829e29e142fdbca0a4960f619225.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/f721c2b698dd4744ae2d5bd7d6efc190.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+        <li>
+            <img src="./img/bfd8b9a880b358a6fc21d343cd73abc8.jpg" alt="">
+            <div class="text">
+                <h3>徐玥桐的标题</h3>
+                <p>下面的文字，默认隐藏，可能在hover的时候显示文字，可能输=是固定文字，也可能是100%高度
+                     </p>
+            </div>
+        </li>
+    </ul>
+</body>
+</html>

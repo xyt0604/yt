@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | Web 前端长度单位</title>
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; font-size:16px; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.45;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xu-topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1120px; margin:auto; padding:24px 28px;
+  }
+  .xu-mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xu-mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xu-topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xu-topbar a:hover { color:var(--coral); }
+  .xu-hero {
+    display:grid; grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr); gap:56px;
+    align-items:end; max-width:1120px; margin:22px auto 0; padding:64px 28px 74px;
+  }
+  .xu-eyebrow { margin:0 0 18px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { max-width:700px; margin:0; font:500 clamp(36px,5.5vw,64px)/1.08 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xu-hero_intro { max-width:560px; margin:26px 0 0; color:var(--muted); font-size:17px; }
+  .xu-hero_note {
+    padding:22px 24px; border-left:3px solid var(--coral);
+    background:rgba(255,253,248,.72); box-shadow:var(--shadow);
+  }
+  .xu-hero_note strong { display:block; margin-bottom:7px; color:var(--blue); font-size:13px; letter-spacing:.12em; }
+  .xu-hero_note p { margin:0; color:var(--muted); font-size:14px; }
+  .xu-content { max-width:1120px; margin:auto; padding:0 28px 70px; }
+  .xu-section_heading { display:flex; justify-content:space-between; align-items:baseline; margin:0 0 20px; }
+  h2 { margin:0; font:500 30px Georgia,"Songti SC",serif; }
+  .xu-section_heading span { color:var(--muted); font-size:13px; }
+  .xu-unit_grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:50px; }
+  .xu-unit_card {
+    display:flex; flex-direction:column; min-height:200px; padding:24px;
+    border:1px solid var(--line); background:var(--card); border-radius:12px;
+    transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .xu-unit_card:hover { border-color:var(--blue); box-shadow:var(--shadow); transform:translateY(-5px); }
+  .xu-unit_name { font:700 28px Georgia,"Songti SC",serif; color:var(--blue); margin-bottom:4px; }
+  .xu-unit_symbol { font:18px Georgia,serif; color:var(--coral); margin-bottom:12px; }
+  .xu-unit_desc { font-size:14px; color:var(--muted); flex:1; }
+  .xu-unit_demo { margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); }
+  .xu-demo_label { font-size:11px; color:var(--muted); letter-spacing:.1em; margin-bottom:8px; }
+  .xu-demo_box {
+    height:12px; background:linear-gradient(90deg,var(--blue),var(--coral));
+    border-radius:6px; margin-bottom:6px;
+  }
+  .xu-demo_box.xu-px { width:96px; }
+  .xu-demo_box.xu-em { width:6em; }
+  .xu-demo_box.xu-rem { width:6rem; }
+  .xu-demo_box.xu-vw { width:10vw; }
+  .xu-demo_box.xu-vh { height:40px; width:100%; }
+  .xu-demo_box.xu-percent { width:50%; }
+  .xu-demo_box.xu-pt { width:72pt; }
+  .xu-demo_box.xu-pc { width:6pc; }
+  .xu-demo_box.xu-cm { width:2.54cm; }
+  .xu-demo_box.xu-mm { width:25.4mm; }
+  .xu-demo_box.xu-ch { width:10ch; }
+  .xu-demo_box.xu-ex { height:20px; width:10ex; }
+  .xu-demo_note { font-size:11px; color:var(--muted); }
+  .xu-footer {
+    display:flex; justify-content:space-between; max-width:1120px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:960px) { .xu-unit_grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:760px) {
+    .xu-hero { grid-template-columns:1fr; gap:30px; padding:42px 20px 55px; }
+    .xu-unit_grid { grid-template-columns:1fr; }
+    .xu-topbar,.xu-content,.xu-footer { padding-left:20px; padding-right:20px; }
+    .xu-footer { display:block; }
+    .xu-footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <header class="xu-topbar">
+    <div class="xu-mark"><span class="xu-mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xu-hero">
+      <div>
+        <p class="xu-eyebrow">ADVANCED WEB DESIGN · LENGTH UNITS</p>
+        <h1>Web 前端<br>长度单位</h1>
+        <p class="xu-hero_intro">CSS 中用于定义元素尺寸、间距、字体大小等的度量单位，分为绝对单位与相对单位两大类。</p>
+      </div>
+      <aside class="xu-hero_note">
+        <strong>课堂实践 / 11-1</strong>
+        <p>学生：徐玥桐<br>课程：高级网页设计<br>形式：HTML / CSS 原生实践</p>
+      </aside>
+    </section>
+    <section class="xu-content">
+      <div class="xu-section_heading"><h2>绝对单位</h2><span>固定物理尺寸，不随环境变化</span></div>
+      <div class="xu-unit_grid">
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">像素</div>
+          <div class="xu-unit_symbol">px</div>
+          <p class="xu-unit_desc">相对于显示器的分辨率，是 Web 开发中最常用的单位。1px 对应屏幕上的一个物理像素点（CSS 像素）。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">96px</div>
+            <div class="xu-demo_box xu-px"></div>
+            <div class="xu-demo_note">1in = 96px</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">点</div>
+          <div class="xu-unit_symbol">pt</div>
+          <p class="xu-unit_desc">印刷单位，1pt = 1/72 英寸 ≈ 1.333px。常用于打印样式表。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">72pt</div>
+            <div class="xu-demo_box xu-pt"></div>
+            <div class="xu-demo_note">1pt = 1/72in</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">派卡</div>
+          <div class="xu-unit_symbol">pc</div>
+          <p class="xu-unit_desc">印刷单位，1pc = 12pt = 16px。来源于印刷排版传统。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">6pc</div>
+            <div class="xu-demo_box xu-pc"></div>
+            <div class="xu-demo_note">1pc = 12pt</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">厘米</div>
+          <div class="xu-unit_symbol">cm</div>
+          <p class="xu-unit_desc">物理长度单位，1cm ≈ 37.8px。适用于打印媒体查询。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">2.54cm</div>
+            <div class="xu-demo_box xu-cm"></div>
+            <div class="xu-demo_note">1in = 2.54cm</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">毫米</div>
+          <div class="xu-unit_symbol">mm</div>
+          <p class="xu-unit_desc">物理长度单位，1mm ≈ 3.78px。1cm = 10mm。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">25.4mm</div>
+            <div class="xu-demo_box xu-mm"></div>
+            <div class="xu-demo_note">1in = 25.4mm</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">英寸</div>
+          <div class="xu-unit_symbol">in</div>
+          <p class="xu-unit_desc">物理长度单位，1in = 96px = 2.54cm。CSS 中定义的物理英寸。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">1in</div>
+            <div class="xu-demo_box xu-px" style="width:96px"></div>
+            <div class="xu-demo_note">1in = 96px</div>
+          </div>
+        </div>
+      </div>
+      <div class="xu-section_heading"><h2>相对单位</h2><span>相对于其他元素或视口动态计算</span></div>
+      <div class="xu-unit_grid">
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">em</div>
+          <div class="xu-unit_symbol">em</div>
+          <p class="xu-unit_desc">相对于父元素的 font-size。若父元素 font-size 为 16px，则 2em = 32px。常用于 padding、margin 的等比缩放。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">6em（父元素16px）</div>
+            <div class="xu-demo_box xu-em"></div>
+            <div class="xu-demo_note">1em = 父元素 font-size</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">rem</div>
+          <div class="xu-unit_symbol">rem</div>
+          <p class="xu-unit_desc">相对于根元素（html）的 font-size。默认 1rem = 16px。全站统一缩放的推荐单位。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">6rem（根元素16px）</div>
+            <div class="xu-demo_box xu-rem"></div>
+            <div class="xu-demo_note">1rem = html font-size</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">视口宽度</div>
+          <div class="xu-unit_symbol">vw</div>
+          <p class="xu-unit_desc">相对于视口宽度的 1%。100vw = 视口总宽度。常用于响应式布局和大字号排版。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">10vw</div>
+            <div class="xu-demo_box xu-vw"></div>
+            <div class="xu-demo_note">1vw = 视口宽度 × 1%</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">视口高度</div>
+          <div class="xu-unit_symbol">vh</div>
+          <p class="xu-unit_desc">相对于视口高度的 1%。100vh = 视口总高度。常用于全屏区块的高度设定。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">25vh（示例）</div>
+            <div class="xu-demo_box xu-vh"></div>
+            <div class="xu-demo_note">1vh = 视口高度 × 1%</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">视口最小值</div>
+          <div class="xu-unit_symbol">vmin</div>
+          <p class="xu-unit_desc">取 vw 和 vh 中较小的值的 1%。在横竖屏切换时保持比例协调。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">5vmin（示例）</div>
+            <div class="xu-demo_box" style="width:5vmin;height:5vmin;border-radius:50%"></div>
+            <div class="xu-demo_note">min(vw, vh)</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">视口最大值</div>
+          <div class="xu-unit_symbol">vmax</div>
+          <p class="xu-unit_desc">取 vw 和 vh 中较大的值的 1%。确保元素在任一方向上都有足够空间。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">3vmax（示例）</div>
+            <div class="xu-demo_box" style="width:3vmax;height:3vmax;border-radius:50%"></div>
+            <div class="xu-demo_note">max(vw, vh)</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">百分比</div>
+          <div class="xu-unit_symbol">%</div>
+          <p class="xu-unit_desc">相对于父元素对应属性的比例。宽度和高度常用，padding/margin 的百分比基于父元素宽度。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">50%</div>
+            <div class="xu-demo_box xu-percent"></div>
+            <div class="xu-demo_note">相对于父元素</div>
+          </div>
+        </div>
+        <div class="xu-unit_card">
+          <div class="xu-unit_name">字符宽度</div>
+          <div class="xu-unit_symbol">ch</div>
+          <p class="xu-unit_desc">相对于当前字体中 "0" 字符的宽度。常用于限制文本容器宽度以优化阅读体验。</p>
+          <div class="xu-unit_demo">
+            <div class="xu-demo_label">10ch</div>
+            <div class="xu-demo_box xu-ch"></div>
+            <div class="xu-demo_note">1ch = 字符"0"宽度</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="xu-footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>长度单位 · HTML / CSS 原生代码</span>
+  </footer>
+</body>
+</html>

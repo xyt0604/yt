@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        h2,h3,p{
+            padding:0;
+            margin:0;
+        }
+        #box{
+            width: 400px;
+            padding:8px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+            margin: 20px ;
+        }
+        #box  h3{
+            font-size: 16px;
+            text-align: center;
+            line-height: 33px;
+            letter-spacing: 3px;
+            color: rgb(242, 166, 212);
+        }
+        #box  p{
+            line-height: 150%;
+            color: rgb(137, 185, 241);
+            text-indent: 2em;
+        }
+        #box  a{
+            color: rgb(235, 55, 94);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        #box .student-id{
+            color: blue;
+            font-weight: bold;
+        }
+        #box .student-name{
+            color: pink;
+            font-weight: bold;
+        }
+        #box .difficulty{
+            color: red;
+            font-weight: bold;
+        }
+        #box .knowledge{
+            border: 2px solid purple;
+            padding: 2px 4px;
+        }
+        #box .extra{
+            border: 2px solid purple;
+            padding: 2px 4px;
+        }
+    </style>
+</head>
+<body>
+    <h2>CSS进阶 </h2>
+    <div id="box"> 
+        <h3>CSS那些事</h3>
+        <p>
+            学号：<span class="student-id">522</span>，姓名：<span class="student-name">徐玥桐</span>，班级：计算机24005，对于《高级网页设计》课程的难度认知为：<span class="difficulty">难</span>，
+            这个例子对应的知识点是：<span class="knowledge">群组选择器、后代选择器、层叠与继承</span>。
+            <a class="extra" href="#">更多>></a>
+        </p>
+    </div>
+    
+</body>
+</html>

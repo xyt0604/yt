@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>徐玥桐 | 高级网页设计课堂实践</title>
+  <style>
+    :root { --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8; --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --shadow:0 18px 45px rgba(31,50,55,.10); }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--paper); font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7; }
+    body::before { content:""; position:fixed; inset:0; z-index:-1; opacity:.45; background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px); background-size:34px 34px; }
+    a { color:inherit; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; max-width:1120px; margin:auto; padding:24px 28px; }
+    .mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+    .mark-badge { display:grid; width:38px; height:38px; place-items:center; color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px; font:20px Georgia,serif; }
+    .topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+    .topbar a:hover { color:var(--coral); }
+    .hero { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr); gap:56px; align-items:end; max-width:1120px; margin:22px auto 0; padding:64px 28px 74px; }
+    .eyebrow { margin:0 0 18px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+    h1 { max-width:700px; margin:0; font:500 clamp(42px,7vw,82px)/1.08 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+    .hero-intro { max-width:560px; margin:26px 0 0; color:var(--muted); font-size:17px; }
+    .hero-note { padding:22px 24px; border-left:3px solid var(--coral); background:rgba(255,253,248,.72); box-shadow:var(--shadow); }
+    .hero-note strong { display:block; margin-bottom:7px; color:var(--blue); font-size:13px; letter-spacing:.12em; }
+    .hero-note p { margin:0; color:var(--muted); font-size:14px; }
+    .content { max-width:1120px; margin:auto; padding:0 28px 70px; }
+    .section-heading { display:flex; justify-content:space-between; align-items:baseline; margin:0 0 20px; }
+    h2 { margin:0; font:500 30px Georgia,"Songti SC",serif; }
+    .section-heading span { color:var(--muted); font-size:13px; }
+    .work-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .work-card { display:flex; min-height:190px; flex-direction:column; justify-content:space-between; padding:24px; border:1px solid var(--line); background:var(--card); text-decoration:none; transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+    .work-card:hover { border-color:var(--blue); box-shadow:var(--shadow); transform:translateY(-5px); }
+    .work-number { color:var(--coral); font:19px Georgia,serif; }
+    .work-card h3 { margin:12px 0 5px; font-size:20px; }
+    .work-card p { margin:0; color:var(--muted); font-size:14px; }
+    .open-label { align-self:flex-end; color:var(--blue); font-size:13px; font-weight:700; }
+    .prompt { position:relative; overflow:hidden; margin-top:70px; padding:30px 34px; color:#fff; background:var(--blue); }
+    .prompt::after { content:"</>"; position:absolute; right:28px; bottom:-28px; color:rgba(255,255,255,.10); font:110px Georgia,serif; }
+    .prompt h2,.prompt blockquote { position:relative; z-index:1; }
+    .prompt h2 { font-size:24px; }
+    .prompt blockquote { margin:16px 0 0; color:rgba(255,255,255,.82); font-size:15px; }
+    footer { display:flex; justify-content:space-between; max-width:1120px; margin:auto; padding:22px 28px 34px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; }
+    @media (max-width:760px) { .hero { grid-template-columns:1fr; gap:30px; padding:42px 20px 55px; } .work-grid { grid-template-columns:1fr; } .topbar,.content,footer { padding-left:20px; padding-right:20px; } footer { display:block; } footer span { display:block; margin-top:5px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="mark"><span class="mark-badge">徐</span><span>课堂实践档案</span></div>
+    <a href="#works">查看全部实践 ↓</a>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">ADVANCED WEB DESIGN · CLASS PRACTICE</p>
+        <h1 id="page-title">徐玥桐的<br>高级网页设计</h1>
+        <p class="hero-intro">从 HTML 结构到 CSS 表现，把每一次课堂练习整理成一份可以浏览、可以回看的网页作品档案。</p>
+      </div>
+      <aside class="hero-note"><strong>课堂实践 / 01</strong><p>学生：徐玥桐<br>课程：高级网页设计<br>形式：HTML / CSS 原生实践</p></aside>
+    </section>
+    <section class="content" id="works" aria-labelledby="works-title">
+      <div class="section-heading"><h2 id="works-title">实践页面</h2><span>共 20 个课堂网页</span></div>
+      <div class="work-grid">
+        <a class="work-card" href="1.html"><div><span class="work-number">01</span><h3>HTML 元素</h3><p>开始标签、结束标签与基础页面结构</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="2-1.html"><div><span class="work-number">02</span><h3>HTML 综合练习</h3><p>语义内容、诗歌、列表与文本元素</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="2-2.html"><div><span class="work-number">03</span><h3>超链接与图片</h3><p>链接、图片、图片链接与数据表格</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="3-1.html"><div><span class="work-number">04</span><h3>HTML 表单</h3><p>输入框、单选框、复选框与下拉菜单</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="3-2css.html"><div><span class="work-number">05</span><h3>CSS 选择器</h3><p>标签选择器、ID 选择器与类选择器</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="4-1%20css2.html"><div><span class="work-number">06</span><h3>CSS 进阶</h3><p>群组选择器、后代选择器、层叠与继承</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="5-1%20%E5%B1%82%E5%8F%A0%E4%B8%8E%E7%BB%A7%E6%89%BF.html"><div><span class="work-number">07</span><h3>层叠与继承</h3><p>CSS 优先级、层叠规则与属性继承</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="5-2%20%E7%9B%92%E6%A8%A1%E5%9E%8B.html"><div><span class="work-number">08</span><h3>盒模型</h3><p>内容、内边距、边框与外边距</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="6-1%20flex.html"><div><span class="work-number">09</span><h3>Flex 布局</h3><p>弹性容器、轴向排列与空间分配</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="6-2.html"><div><span class="work-number">10</span><h3>标题栏布局</h3><p>Flex 与定位实现不同标题栏结构</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="7-1%E4%B8%8A%E5%9B%BE%E4%B8%8B%E6%96%87.html"><div><span class="work-number">11</span><h3>上图下文</h3><p>图片列表与绝对定位文字覆盖</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="7-2%E5%B7%A6%E5%9B%BE%E5%8F%B3%E6%96%87.html"><div><span class="work-number">12</span><h3>左图右文</h3><p>Flex 图文列表与信息对齐</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="8-1%20css3%E9%80%89%E6%8B%A9%E5%99%A8.html"><div><span class="work-number">13</span><h3>CSS3 选择器</h3><p>伪类选择器、兄弟选择器与悬停效果</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="9-1%20transition.html"><div><span class="work-number">14</span><h3>Transition 过渡</h3><p>图片缩放与文字面板的过渡动画</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="10-1-animation.html"><div><span class="work-number">15</span><h3>Animation 动画</h3><p>背景颜色与盒子形状的循环变化</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="10-2.html"><div><span class="work-number">16</span><h3>CSS Animation 幻灯片</h3><p>图片位置切换与自动播放进度</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="10-3.html"><div><span class="work-number">17</span><h3>媒体查询与 rem</h3><p>视口变化时切换背景并调整文字大小</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="10-4.html"><div><span class="work-number">18</span><h3>响应式盒子布局</h3><p>媒体查询控制不同视口下每行盒子数量</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="11-1.html"><div><span class="work-number">19</span><h3>Web 前端长度单位</h3><p>绝对单位与相对单位的定义与实际尺寸演示</p></div><span class="open-label">打开页面 →</span></a>
+        <a class="work-card" href="11-2.html"><div><span class="work-number">20</span><h3>CSS3 3D 动画</h3><p>透视、翻转、立方体旋转与 3D 漂浮效果</p></div><span class="open-label">打开页面 →</span></a>
+      </div>
+      <section class="prompt" aria-labelledby="prompt-title">
+        <h2 id="prompt-title">本页面的制作提示词</h2>
+        <blockquote>“创建一个新页面，包括本目录下的所有网页的超链接，使用原生代码，不使用cdn，新页面名称为index.html，主题为徐玥桐的《高级网页设计》课堂实践，美化页面，页面中包括本提示词。”</blockquote>
+      </section>
+    </section>
+  </main>
+  <footer><span>徐玥桐 · 《高级网页设计》课堂实践</span><span>HTML / CSS / 原生代码</span></footer>
+</body>
+</html>

@@ -1,37 +1,14 @@
-# xyt
+# Canvas 背景动画示例
 
-#### 介绍
-徐玥桐
+快速示例：打开 `index.html` 在浏览器中查看带有粒子连线的背景动画。
 
-#### 软件架构
-软件架构说明
+集成到现有页面：
 
+- 将 `canvas` 元素放在页面的最底层，并确保 `canvas` 的 CSS `position` 为 `fixed`，`z-index` 低于内容。
+- 引入 `styles.css` 与 `script.js`，或将代码合并到你的样式与脚本中。
 
-#### 安装教程
+可定制项：
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+- 在 `script.js` 中修改 `config`（`count`, `maxDist`, `speed`, `color`）来改变粒子数量、连线距离、速度和颜色。
 
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+如需我把动画集成到你的特定页面，请把页面文件发给我，我可以直接修改或提供补丁。

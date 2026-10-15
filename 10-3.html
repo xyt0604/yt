@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>响应式全屏盒子 - 徐玥桐</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			width: 100%;
+			min-height: 100%;
+			margin: 0;
+		}
+
+		.viewport-box {
+			position: relative;
+			display: grid;
+			width: 100%;
+			min-height: 100vh;
+			min-height: 100svh;
+			place-items: center;
+			overflow: hidden;
+			color: #fff;
+			background-color: #246a5b;
+			transition: background-color 300ms ease;
+		}
+
+		.viewport-box::before {
+			position: absolute;
+			inset: 1.5rem;
+			border: 0.0625rem solid rgb(255 255 255 / 28%);
+			content: "";
+			pointer-events: none;
+		}
+
+		h1 {
+			margin: 0;
+			font-family: "SimHei", "Microsoft YaHei", sans-serif;
+			font-size: 4.5rem;
+			font-weight: 700;
+			color: #fff;
+		}
+
+		.viewport-label {
+			position: absolute;
+			bottom: 3rem;
+			font-size: 0.8125rem;
+			letter-spacing: 0.125rem;
+		}
+
+		.viewport-label::after {
+			content: "桌面视口 · 默认样式";
+		}
+
+		@media (max-width: 56.25rem) {
+			.viewport-box {
+				background-color: #a64f38;
+			}
+
+			h1 {
+				font-size: 3.5rem;
+			}
+
+			.viewport-label::after {
+				content: "平板视口 · max-width: 56.25rem";
+			}
+		}
+
+		@media (max-width: 37.5rem) {
+			.viewport-box {
+				background-color: #365f9a;
+			}
+
+			.viewport-box::before {
+				inset: 0.875rem;
+			}
+
+			h1 {
+				font-size: 2.75rem;
+			}
+
+			.viewport-label {
+				bottom: 2.125rem;
+				font-size: 0.6875rem;
+			}
+
+			.viewport-label::after {
+				content: "手机视口 · max-width: 37.5rem";
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="viewport-box">
+		<h1>徐玥桐</h1>
+		<p class="viewport-label" aria-label="当前视口尺寸对应的媒体查询"></p>
+	</main>
+</body>
+</html>

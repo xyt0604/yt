@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>媒体查询与网格布局 - 徐玥桐</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			min-width: 320px;
+			min-height: 100vh;
+			margin: 0;
+			color: #23302d;
+			background: #f2f5f1;
+			font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+		}
+
+		main {
+			width: min(100% - 48px, 1040px);
+			margin: 0 auto;
+			padding: 64px 0;
+		}
+
+		header {
+			margin-bottom: 34px;
+		}
+
+		.eyebrow {
+			margin: 0 0 8px;
+			color: #ad5c3b;
+			font-size: 12px;
+			font-weight: 700;
+			letter-spacing: 0.14em;
+		}
+
+		h1 {
+			margin: 0;
+			font-size: 36px;
+			font-weight: 700;
+		}
+
+		.description {
+			margin: 8px 0 0;
+			color: #66736d;
+			font-size: 14px;
+		}
+
+		.box-grid {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 16px;
+		}
+
+		.box {
+			display: grid;
+			min-height: 170px;
+			place-content: center;
+			gap: 9px;
+			border: 1px solid #d8e1da;
+			background: #fff;
+			text-align: center;
+			box-shadow: 0 8px 22px rgb(42 67 53 / 6%);
+		}
+
+		.box:nth-child(3n + 1) { border-top: 4px solid #28795c; }
+		.box:nth-child(3n + 2) { border-top: 4px solid #d1764f; }
+		.box:nth-child(3n) { border-top: 4px solid #6686a3; }
+
+		.box-number {
+			color: #84918a;
+			font-size: 12px;
+			font-variant-numeric: tabular-nums;
+		}
+
+		.box strong {
+			font-size: 19px;
+		}
+
+		@media (max-width: 1200px) {
+			.box-grid {
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+			}
+		}
+
+		@media (max-width: 900px) {
+			main {
+				width: min(100% - 40px, 680px);
+				padding: 48px 0;
+			}
+
+			.box-grid {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+		}
+
+		@media (max-width: 520px) {
+			main {
+				width: calc(100% - 32px);
+				padding: 36px 0;
+			}
+
+			h1 {
+				font-size: 30px;
+			}
+
+			.box-grid {
+				grid-template-columns: 1fr;
+				gap: 11px;
+			}
+
+			.box {
+				min-height: 112px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<header>
+			<p class="eyebrow">RESPONSIVE GRID · MEDIA QUERY</p>
+			<h1>徐玥桐</h1>
+			<p class="description">调整视口宽度，观察每行盒子数量的变化。</p>
+		</header>
+		<section class="box-grid" aria-label="八个响应式盒子">
+			<div class="box"><span class="box-number">BOX 01</span><strong>第一盒</strong></div>
+			<div class="box"><span class="box-number">BOX 02</span><strong>第二盒</strong></div>
+			<div class="box"><span class="box-number">BOX 03</span><strong>第三盒</strong></div>
+			<div class="box"><span class="box-number">BOX 04</span><strong>第四盒</strong></div>
+			<div class="box"><span class="box-number">BOX 05</span><strong>第五盒</strong></div>
+			<div class="box"><span class="box-number">BOX 06</span><strong>第六盒</strong></div>
+			<div class="box"><span class="box-number">BOX 07</span><strong>第七盒</strong></div>
+			<div class="box"><span class="box-number">BOX 08</span><strong>第八盒</strong></div>
+		</section>
+	</main>
+</body>
+</html>

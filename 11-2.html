@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | Web 前端 CSS3 3D 动画</title>
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; font-size:16px; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.45;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .tong_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1120px; margin:auto; padding:24px 28px;
+  }
+  .tong_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .tong_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .tong_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .tong_topbar a:hover { color:var(--coral); }
+  .tong_hero {
+    display:grid; grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr); gap:56px;
+    align-items:end; max-width:1120px; margin:22px auto 0; padding:64px 28px 74px;
+  }
+  .tong_eyebrow { margin:0 0 18px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { max-width:700px; margin:0; font:500 clamp(36px,5.5vw,64px)/1.08 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .tong_hero_intro { max-width:560px; margin:26px 0 0; color:var(--muted); font-size:17px; }
+  .tong_hero_note {
+    padding:22px 24px; border-left:3px solid var(--coral);
+    background:rgba(255,253,248,.72); box-shadow:var(--shadow);
+  }
+  .tong_hero_note strong { display:block; margin-bottom:7px; color:var(--blue); font-size:13px; letter-spacing:.12em; }
+  .tong_hero_note p { margin:0; color:var(--muted); font-size:14px; }
+  .tong_content { max-width:1120px; margin:auto; padding:0 28px 70px; }
+  .tong_section_heading { display:flex; justify-content:space-between; align-items:baseline; margin:0 0 20px; }
+  h2 { margin:0; font:500 30px Georgia,"Songti SC",serif; }
+  .tong_section_heading span { color:var(--muted); font-size:13px; }
+  .tong_demo_grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; margin-bottom:50px; }
+  .tong_demo_card {
+    border:1px solid var(--line); background:var(--card); border-radius:12px;
+    padding:28px; transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .tong_demo_card:hover { border-color:var(--blue); box-shadow:var(--shadow); transform:translateY(-4px); }
+  .tong_demo_title { font:700 20px Georgia,"Songti SC",serif; color:var(--blue); margin-bottom:4px; }
+  .tong_demo_sub { font-size:13px; color:var(--muted); margin-bottom:20px; }
+  .tong_demo_stage {
+    display:grid; place-items:center; min-height:220px; margin:0 -8px;
+    perspective:800px; perspective-origin:50% 50%;
+  }
+  .tong_demo_label { font-size:11px; color:var(--muted); letter-spacing:.1em; margin-top:16px; text-align:center; }
+  .tong_code {
+    margin-top:14px; padding:14px 16px; background:#f0ede4; border-radius:8px;
+    font:12px/1.6 Consolas,monospace; color:var(--ink); overflow-x:auto; white-space:pre;
+  }
+  .tong_code .tong_code_comment { color:var(--muted); }
+  .tong_code .tong_code_prop { color:var(--blue); }
+  .tong_code .tong_code_val { color:var(--coral); }
+
+  .tong_flip_card {
+    width:180px; height:120px; position:relative;
+    transform-style:preserve-3d; transition:transform .8s cubic-bezier(.4,0,.2,1);
+  }
+  .tong_flip_card:hover { transform:rotateY(180deg); }
+  .tong_flip_face {
+    position:absolute; inset:0; display:grid; place-items:center;
+    border-radius:10px; font-weight:700; font-size:16px; backface-visibility:hidden;
+  }
+  .tong_flip_front { background:var(--blue); color:#fff; }
+  .tong_flip_back { background:var(--coral); color:#fff; transform:rotateY(180deg); }
+
+  .tong_cube_scene { width:120px; height:120px; position:relative; transform-style:preserve-3d; animation:tongCubeSpin 8s linear infinite; }
+  @keyframes tongCubeSpin {
+    from { transform:rotateX(-20deg) rotateY(0deg); }
+    to { transform:rotateX(-20deg) rotateY(360deg); }
+  }
+  .tong_cube_face {
+    position:absolute; width:120px; height:120px; display:grid; place-items:center;
+    border:2px solid rgba(255,255,255,.6); font:700 24px Georgia,serif; color:#fff;
+  }
+  .tong_cube_front { background:rgba(23,107,135,.85); transform:translateZ(60px); }
+  .tong_cube_back { background:rgba(228,107,75,.85); transform:rotateY(180deg) translateZ(60px); }
+  .tong_cube_right { background:rgba(23,107,135,.7); transform:rotateY(90deg) translateZ(60px); }
+  .tong_cube_left { background:rgba(228,107,75,.7); transform:rotateY(-90deg) translateZ(60px); }
+  .tong_cube_top { background:rgba(23,107,135,.6); transform:rotateX(90deg) translateZ(60px); }
+  .tong_cube_bottom { background:rgba(228,107,75,.6); transform:rotateX(-90deg) translateZ(60px); }
+
+  .tong_perspective_row { display:flex; gap:24px; align-items:center; justify-content:center; }
+  .tong_perspective_box {
+    width:100px; height:100px; display:grid; place-items:center;
+    background:var(--blue); color:#fff; font-weight:700; border-radius:8px;
+    transition:transform .6s ease;
+  }
+  .tong_perspective_box:nth-child(1) { transform:rotateY(0deg); }
+  .tong_perspective_box:nth-child(2) { transform:rotateY(30deg); }
+  .tong_perspective_box:nth-child(3) { transform:rotateY(60deg); }
+  .tong_perspective_box:nth-child(4) { transform:rotateY(90deg); }
+
+  .tong_carousel_scene {
+    width:200px; height:140px; position:relative; transform-style:preserve-3d;
+    animation:tongCarouselSpin 10s linear infinite;
+  }
+  @keyframes tongCarouselSpin {
+    from { transform:rotateY(0deg); }
+    to { transform:rotateY(360deg); }
+  }
+  .tong_carousel_item {
+    position:absolute; width:200px; height:140px; display:grid; place-items:center;
+    border-radius:10px; font-weight:700; font-size:18px; color:#fff;
+    border:2px solid rgba(255,255,255,.5);
+  }
+  .tong_carousel_item:nth-child(1) { background:rgba(23,107,135,.85); transform:rotateY(0deg) translateZ(160px); }
+  .tong_carousel_item:nth-child(2) { background:rgba(228,107,75,.85); transform:rotateY(72deg) translateZ(160px); }
+  .tong_carousel_item:nth-child(3) { background:rgba(23,107,135,.7); transform:rotateY(144deg) translateZ(160px); }
+  .tong_carousel_item:nth-child(4) { background:rgba(228,107,75,.7); transform:rotateY(216deg) translateZ(160px); }
+  .tong_carousel_item:nth-child(5) { background:rgba(23,107,135,.6); transform:rotateY(288deg) translateZ(160px); }
+
+  .tong_float_card {
+    width:160px; height:100px; display:grid; place-items:center;
+    background:linear-gradient(135deg,var(--blue),var(--coral)); color:#fff;
+    border-radius:10px; font-weight:700;
+    animation:tongFloat 3s ease-in-out infinite;
+    box-shadow:0 10px 30px rgba(23,107,135,.3);
+  }
+  @keyframes tongFloat {
+    0%,100% { transform:translateY(0) rotateX(0deg); }
+    50% { transform:translateY(-20px) rotateX(10deg); }
+  }
+
+  .tong_footer {
+    display:flex; justify-content:space-between; max-width:1120px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:960px) { .tong_demo_grid { grid-template-columns:1fr; } }
+  @media (max-width:760px) {
+    .tong_hero { grid-template-columns:1fr; gap:30px; padding:42px 20px 55px; }
+    .tong_topbar,.tong_content,.tong_footer { padding-left:20px; padding-right:20px; }
+    .tong_footer { display:block; }
+    .tong_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <header class="tong_topbar">
+    <div class="tong_mark"><span class="tong_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="tong_hero">
+      <div>
+        <p class="tong_eyebrow">ADVANCED WEB DESIGN · CSS3 3D TRANSFORMS</p>
+        <h1>CSS3<br>3D 动画</h1>
+        <p class="tong_hero_intro">利用 CSS3 的 transform、perspective、transform-style 等属性，在二维平面上构建三维空间效果，实现翻转、旋转、漂浮等立体动画。</p>
+      </div>
+      <aside class="tong_hero_note">
+        <strong>课堂实践 / 11-2</strong>
+        <p>学生：徐玥桐<br>课程：高级网页设计<br>形式：HTML / CSS 原生实践</p>
+      </aside>
+    </section>
+    <section class="tong_content">
+      <div class="tong_section_heading"><h2>3D 变换基础</h2><span>perspective · rotateX/Y/Z · translateZ</span></div>
+      <div class="tong_demo_grid">
+        <div class="tong_demo_card">
+          <div class="tong_demo_title">perspective 透视</div>
+          <div class="tong_demo_sub">设置观察者与 z=0 平面的距离，值越小透视效果越强烈</div>
+          <div class="tong_demo_stage">
+            <div class="tong_perspective-row">
+              <div class="tong_perspective_box">0°</div>
+              <div class="tong_perspective_box">30°</div>
+              <div class="tong_perspective_box">60°</div>
+              <div class="tong_perspective_box">90°</div>
+            </div>
+          </div>
+          <div class="tong_demo-label">rotateY 旋转角度递增 →</div>
+          <div class="tong_code"><span class="tong_code_comment">/* 透视容器 */</span>
+perspective: <span class="tong-code-val">800px</span>;
+transform: <span class="tong-code-prop">rotateY</span>(<span class="tong-code-val">45deg</span>);</div>
+        </div>
+        <div class="tong_demo_card">
+          <div class="tong_demo-title">transform-style</div>
+          <div class="tong_demo-sub">preserve-3d 使子元素在 3D 空间中保持位置</div>
+          <div class="tong_demo_stage">
+            <div class="tong_cube_scene">
+              <div class="tong_cube_face tong_cube_front">前</div>
+              <div class="tong_cube_face tong_cube_back">后</div>
+              <div class="tong_cube_face tong_cube_right">右</div>
+              <div class="tong_cube_face tong_cube_left">左</div>
+              <div class="tong_cube_face tong_cube_top">上</div>
+              <div class="tong_cube_face tong_cube_bottom">下</div>
+            </div>
+          </div>
+          <div class="tong_demo-label">3D 立方体 · 自动旋转</div>
+          <div class="tong_code"><span class="tong_code_comment">/* 立方体六个面 */</span>
+transform-style: <span class="tong-code-val">preserve-3d</span>;
+<span class="tong-code-prop">animation</span>: spin <span class="tong-code-val">8s</span> infinite;</div>
+        </div>
+      </div>
+      <div class="tong_section_heading"><h2>3D 动画效果</h2><span>翻转 · 旋转木马 · 漂浮</span></div>
+      <div class="tong_demo_grid">
+        <div class="tong_demo_card">
+          <div class="tong_demo-title">卡片翻转</div>
+          <div class="tong_demo-sub">hover 触发 rotateY(180deg)，配合 backface-visibility 隐藏背面</div>
+          <div class="tong_demo_stage">
+            <div class="tong_flip_card">
+              <div class="tong_flip_face tong_flip_front">正面</div>
+              <div class="tong_flip_face tong_flip_back">背面</div>
+            </div>
+          </div>
+          <div class="tong_demo-label">鼠标悬停查看翻转效果</div>
+          <div class="tong-code"><span class="tong-code_comment">/* 翻转卡片 */</span>
+transform-style: <span class="tong-code-val">preserve-3d</span>;
+<span class="tong-code-prop">transition</span>: transform <span class="tong-code-val">.8s</span>;
+<span class="tong-code-prop">backface-visibility</span>: <span class="tong-code-val">hidden</span>;</div>
+        </div>
+        <div class="tong_demo_card">
+          <div class="tong_demo-title">3D 旋转木马</div>
+          <div class="tong_demo-sub">多个面板沿圆形路径排列，整体绕 Y 轴旋转</div>
+          <div class="tong_demo_stage">
+            <div class="tong_carousel_scene">
+              <div class="tong_carousel_item">HTML</div>
+              <div class="tong_carousel_item">CSS</div>
+              <div class="tong_carousel_item">JS</div>
+              <div class="tong_carousel_item">Vue</div>
+              <div class="tong_carousel_item">React</div>
+            </div>
+          </div>
+          <div class="tong_demo-label">5 个面板 · 自动旋转</div>
+          <div class="tong-code"><span class="tong-code-comment">/* 旋转木马 */</span>
+transform: <span class="tong-code-prop">rotateY</span>(<span class="tong-code-val">72deg</span>)
+  <span class="tong-code-prop">translateZ</span>(<span class="tong-code-val">160px</span>);
+<span class="tong-code-prop">animation</span>: spin <span class="tong-code-val">10s</span> infinite;</div>
+        </div>
+        <div class="tong_demo_card">
+          <div class="tong_demo-title">3D 漂浮</div>
+          <div class="tong_demo-sub">translateY + rotateX 组合，模拟空中悬浮效果</div>
+          <div class="tong_demo_stage">
+            <div class="tong_float-card">FLOAT</div>
+          </div>
+          <div class="tong_demo-label">上下漂浮 + 轻微倾斜</div>
+          <div class="tong-code"><span class="tong-code-comment">/* 漂浮动画 */</span>
+<span class="tong-code-prop">animation</span>: float <span class="tong-code-val">3s</span> infinite;
+<span class="tong-code-comment">/* 关键帧 */</span>
+50% { transform: <span class="tong-code-prop">translateY</span>(<span class="tong-code-val">-20px</span>)
+  <span class="tong-code-prop">rotateX</span>(<span class="tong-code-val">10deg</span>); }</div>
+        </div>
+        <div class="tong_demo_card">
+          <div class="tong_demo-title">rotateX 翻转</div>
+          <div class="tong_demo-sub">绕 X 轴旋转，模拟翻书/开门效果</div>
+          <div class="tong_demo_stage">
+            <div class="tong_perspective-row">
+              <div class="tong_perspective_box" style="transform:rotateX(0deg)">0°</div>
+              <div class="tong_perspective_box" style="transform:rotateX(45deg)">45°</div>
+              <div class="tong_perspective_box" style="transform:rotateX(90deg)">90°</div>
+            </div>
+          </div>
+          <div class="tong_demo-label">rotateX 绕水平轴旋转</div>
+          <div class="tong-code"><span class="tong-code-comment">/* X 轴旋转 */</span>
+transform: <span class="tong-code-prop">rotateX</span>(<span class="tong-code-val">45deg</span>);
+<span class="tong-code-comment">/* 配合 perspective */</span>
+perspective: <span class="tong-code-val">800px</span>;</div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="tong_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>CSS3 3D 动画 · HTML / CSS 原生代码</span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f3f5f2">
+	<title>栖习 · 自习室预约</title>
+	<style>
+		:root {
+			color-scheme: light;
+			--ink: #202a27;
+			--muted: #78827d;
+			--line: #e2e7e2;
+			--paper: #f3f5f2;
+			--surface: #fff;
+			--green: #28795c;
+			--green-dark: #1e6249;
+			--green-pale: #e8f3ed;
+			--red: #c8544b;
+			--red-pale: #fbefed;
+			--gold: #b7863d;
+			--shadow: 0 12px 36px rgb(28 47 39 / 7%);
+		}
+		* { box-sizing: border-box; }
+		body { min-width: 320px; margin: 0; color: var(--ink); background: var(--paper); font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 14px; line-height: 1.55; }
+		button, input, select { font: inherit; }
+		button { color: inherit; }
+		button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgb(40 121 92 / 24%); outline-offset: 2px; }
+		.app-header { position: sticky; z-index: 5; top: 0; border-bottom: 1px solid var(--line); background: rgb(255 255 255 / 94%); backdrop-filter: blur(12px); }
+		.header-inner { display: flex; min-height: 72px; align-items: center; justify-content: space-between; gap: 24px; max-width: 1440px; margin: auto; padding: 0 36px; }
+		.brand { display: flex; align-items: center; gap: 11px; color: var(--ink); font-size: 17px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+		.brand-mark { display: grid; width: 35px; height: 35px; place-items: center; color: white; background: var(--green); border-radius: 10px 10px 10px 3px; font-size: 17px; }
+		.brand small { display: block; margin-top: -3px; color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: .04em; }
+		.main-nav { display: flex; align-self: stretch; gap: 26px; }
+		.nav-button { position: relative; padding: 0 2px; border: 0; color: var(--muted); background: transparent; cursor: pointer; }
+		.nav-button.active { color: var(--green-dark); font-weight: 700; }
+		.nav-button.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--green); content: ""; }
+		.header-account { display: flex; min-width: 150px; align-items: center; justify-content: flex-end; gap: 10px; }
+		.account-name { max-width: 130px; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+		.role-tag { padding: 3px 8px; border-radius: 99px; color: var(--green-dark); background: var(--green-pale); font-size: 11px; white-space: nowrap; }
+		.quiet-button, .primary-button, .outline-button, .danger-button { min-height: 38px; padding: 0 14px; border: 1px solid transparent; border-radius: 5px; cursor: pointer; transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+		.quiet-button { border-color: var(--line); background: white; }
+		.quiet-button:hover, .outline-button:hover { border-color: var(--green); }
+		.primary-button { color: #fff; background: var(--green); font-weight: 700; }
+		.primary-button:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); }
+		.primary-button:disabled { cursor: not-allowed; opacity: .45; }
+		.outline-button { border-color: var(--line); background: #fff; }
+		.danger-button { border-color: #f0d6d3; color: var(--red); background: #fff; }
+		.danger-button:hover { background: var(--red-pale); }
+		.page { max-width: 1440px; min-height: calc(100vh - 72px); margin: auto; padding: 34px 36px 60px; }
+		.page-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 23px; }
+		.eyebrow { margin: 0 0 5px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .12em; }
+		h1, h2, h3, p { margin-top: 0; }
+		h1 { margin-bottom: 4px; font-size: 27px; font-weight: 700; letter-spacing: 0; }
+		.page-subtitle { margin: 0; color: var(--muted); }
+		.date-stamp { color: var(--muted); font-variant-numeric: tabular-nums; }
+		.stat-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 19px; }
+		.stat { display: flex; min-height: 66px; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--line); background: var(--surface); }
+		.stat-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; color: var(--green-dark); background: var(--green-pale); font-size: 14px; font-weight: 700; }
+		.stat strong { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+		.stat span:last-child { color: var(--muted); font-size: 11px; }
+		.booking-layout { display: grid; grid-template-columns: 220px minmax(360px, 1fr) 285px; align-items: start; gap: 15px; }
+		.panel { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); }
+		.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 18px 14px; border-bottom: 1px solid var(--line); }
+		.panel-heading h2, .panel-heading h3 { margin: 0; font-size: 15px; }
+		.panel-heading span { color: var(--muted); font-size: 11px; }
+		.room-list { padding: 8px; }
+		.room-option { display: block; width: 100%; margin: 3px 0; padding: 12px 11px; border: 1px solid transparent; border-radius: 4px; text-align: left; background: transparent; cursor: pointer; }
+		.room-option:hover { background: #f7f9f7; }
+		.room-option.active { border-color: #cfe2d6; color: var(--green-dark); background: var(--green-pale); }
+		.room-option strong { display: block; font-size: 13px; }
+		.room-option span { color: var(--muted); font-size: 11px; }
+		.room-note { margin: 4px 17px 16px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+		.map-panel { min-width: 0; }
+		.map-title { display: flex; align-items: center; gap: 12px; }
+		.map-title h2 { margin: 0; font-size: 16px; }
+		.map-title p { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+		.legend { display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 11px; }
+		.legend span { display: inline-flex; align-items: center; gap: 5px; }
+		.legend i { width: 9px; height: 9px; border-radius: 2px; background: #b9dbc6; }
+		.legend .occupied { background: #e4a39d; }
+		.seat-area { padding: 22px 18px 15px; }
+		.window-line { width: min(78%, 450px); margin: 0 auto 17px; padding: 5px; border: 1px solid #d9e4dd; border-radius: 3px; color: #8a9990; background: #f4f8f5; font-size: 10px; letter-spacing: .2em; text-align: center; }
+		.seat-grid { display: grid; grid-template-columns: repeat(6, minmax(34px, 1fr)); gap: 9px 8px; max-width: 540px; margin: auto; }
+		.seat { position: relative; display: flex; min-height: 51px; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border: 1px solid #b8d8c3; border-radius: 4px; color: #28664a; background: #e8f4ec; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+		.seat::before { width: 19px; height: 3px; border-radius: 3px; background: currentColor; content: ""; opacity: .6; }
+		.seat span { font-size: 10px; font-weight: 700; }
+		.seat:hover:not(:disabled) { box-shadow: 0 3px 9px rgb(34 93 62 / 15%); transform: translateY(-2px); }
+		.seat.selected { outline: 2px solid var(--green); outline-offset: 2px; background: #d7ebde; }
+		.seat.occupied { border-color: #e3b2ad; color: #a84b44; background: #faeeec; cursor: not-allowed; }
+		.seat.occupied::before { opacity: .4; }
+		.seat:disabled { opacity: 1; }
+		.aisle { grid-column: 1 / -1; height: 7px; }
+		.map-foot { display: flex; justify-content: space-between; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+		.booking-panel { padding-bottom: 17px; }
+		.booking-panel .panel-heading { margin-bottom: 15px; }
+		.form-field { display: grid; gap: 6px; margin: 0 16px 14px; }
+		.form-field label { color: #46524c; font-size: 12px; font-weight: 700; }
+		.form-field input, .form-field select { width: 100%; height: 39px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: #fff; }
+		.periods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+		.period-button { min-height: 37px; padding: 4px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: white; cursor: pointer; font-size: 11px; }
+		.period-button.active { border-color: var(--green); color: var(--green-dark); background: var(--green-pale); font-weight: 700; }
+		.period-time { display: block; font-size: 9px; font-weight: 400; }
+		.selection-summary { min-height: 77px; margin: 2px 16px 12px; padding: 11px; border: 1px solid var(--line); background: #fafbfa; }
+		.selection-summary span { display: block; color: var(--muted); font-size: 11px; }
+		.selection-summary strong { display: block; margin-top: 4px; font-size: 14px; }
+		.hint { min-height: 31px; margin: 0 16px 8px; color: var(--muted); font-size: 11px; }
+		.booking-submit { display: block; width: calc(100% - 32px); margin: 0 16px; }
+		.inline-note { margin: 12px 16px 0; color: var(--muted); font-size: 10px; }
+		.data-view { padding-top: 3px; }
+		.table-panel { overflow: hidden; }
+		.table-scroll { overflow-x: auto; }
+		table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+		th, td { padding: 13px 16px; border-bottom: 1px solid var(--line); }
+		th { color: var(--muted); background: #f8faf8; font-size: 11px; font-weight: 700; }
+		td { font-size: 12px; }
+		tbody tr:last-child td { border-bottom: 0; }
+		.status { display: inline-flex; align-items: center; gap: 6px; color: var(--green-dark); font-size: 11px; }
+		.status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; }
+		.status.checked-in { color: #28758a; }
+		.status.released, .status.canceled { color: var(--muted); }
+		.status.cancelled { color: var(--muted); }
+		.status.expired { color: var(--red); }
+		.row-actions { display: flex; gap: 6px; }
+		.small-button { min-height: 30px; padding: 0 9px; border: 1px solid var(--line); border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; }
+		.small-button:hover { border-color: var(--green); }
+		.small-button.cancel { color: var(--red); }
+		.empty-state { padding: 46px 20px; color: var(--muted); text-align: center; }
+		.empty-state strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 14px; }
+		.notice { margin-top: 15px; padding: 12px 15px; border-left: 2px solid var(--gold); color: #756546; background: #faf6eb; font-size: 11px; }
+		dialog { width: min(430px, calc(100% - 32px)); padding: 0; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 24px 80px rgb(15 31 23 / 24%); }
+		dialog::backdrop { background: rgb(20 32 26 / 42%); backdrop-filter: blur(2px); }
+		.dialog-inner { padding: 24px; }
+		.dialog-top { display: flex; align-items: start; justify-content: space-between; margin-bottom: 18px; }
+		.dialog-top h2 { margin: 0; font-size: 19px; }
+		.dialog-top p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+		.icon-button { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: white; cursor: pointer; font-size: 18px; }
+		.auth-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 17px; padding: 4px; background: var(--paper); }
+		.auth-switch button { min-height: 34px; border: 0; color: var(--muted); background: transparent; cursor: pointer; }
+		.auth-switch button.active { color: var(--green-dark); background: white; box-shadow: 0 1px 4px rgb(0 0 0 / 8%); font-weight: 700; }
+		.auth-field { display: grid; gap: 6px; margin-bottom: 13px; }
+		.auth-field label { font-size: 12px; font-weight: 700; }
+		.auth-field input, .auth-field select { height: 41px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; background: white; }
+		.demo-accounts { margin: 0 0 14px; padding: 10px 12px; color: var(--muted); background: #f7f9f7; font-size: 10px; }
+		.demo-accounts strong { color: var(--ink); }
+		.auth-error { min-height: 19px; margin: -4px 0 7px; color: var(--red); font-size: 11px; }
+		.auth-submit { width: 100%; }
+		[hidden] { display: none !important; }
+		@media (max-width: 1100px) {
+			.booking-layout { grid-template-columns: 195px minmax(330px, 1fr); }
+			.booking-panel { grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+			.booking-panel .panel-heading { grid-column: 1 / -1; }
+			.booking-panel .form-field { margin-bottom: 12px; }
+			.booking-panel .selection-summary, .booking-panel .hint, .booking-panel .booking-submit, .booking-panel .inline-note { grid-column: 1 / -1; }
+		}
+		@media (max-width: 700px) {
+			.header-inner { min-height: 62px; flex-wrap: wrap; gap: 0 14px; padding: 8px 16px 0; }
+			.brand { font-size: 15px; }
+			.brand-mark { width: 32px; height: 32px; }
+			.header-account { min-width: 0; }
+			.account-name, .role-tag { display: none; }
+			.main-nav { order: 3; width: 100%; height: 39px; justify-content: center; gap: 30px; }
+			.nav-button { font-size: 12px; }
+			.page { padding: 25px 15px 40px; }
+			.page-heading { align-items: start; }
+			.page-heading h1 { font-size: 23px; }
+			.date-stamp { max-width: 112px; padding-top: 3px; font-size: 10px; text-align: right; }
+			.stat-strip { gap: 7px; }
+			.stat { min-height: 59px; gap: 7px; padding: 8px; }
+			.stat-mark { width: 27px; height: 27px; font-size: 11px; }
+			.stat strong { font-size: 14px; }
+			.stat span:last-child { font-size: 9px; }
+			.booking-layout { grid-template-columns: 1fr; gap: 11px; }
+			.room-panel { overflow: hidden; }
+			.room-panel .panel-heading { padding-bottom: 11px; }
+			.room-list { display: flex; gap: 6px; overflow-x: auto; padding: 8px; }
+			.room-option { min-width: 145px; margin: 0; }
+			.room-note { display: none; }
+			.booking-panel { grid-column: auto; display: block; }
+			.map-panel { grid-row: 2; }
+			.booking-panel { grid-row: 3; }
+			.panel-heading { padding: 14px; }
+			.seat-area { padding: 18px 13px 14px; }
+			.seat-grid { gap: 8px 6px; }
+			.seat { min-height: 47px; }
+			.map-panel .panel-heading { align-items: start; }
+			.legend { max-width: 100px; justify-content: end; gap: 6px 10px; }
+			.map-foot { padding: 10px 13px; font-size: 10px; }
+			th, td { padding: 11px 12px; }
+		}
+		@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+	</style>
+</head>
+<body>
+	<header class="app-header">
+		<div class="header-inner">
+			<a class="brand" href="#rooms" aria-label="栖习自习室预约首页"><span class="brand-mark" aria-hidden="true">栖</span><span>栖习<small>校园自习空间</small></span></a>
+			<nav class="main-nav" aria-label="主导航">
+				<button class="nav-button active" data-view="rooms">自习室</button>
+				<button class="nav-button" data-view="bookings">我的预约</button>
+				<button class="nav-button" data-view="admin" id="adminNav" hidden>管理端</button>
+			</nav>
+			<div class="header-account" id="accountArea"><button class="quiet-button" id="openAuth">登录 / 注册</button></div>
+		</div>
+	</header>
+
+	<main class="page">
+		<section id="roomsView">
+			<div class="page-heading">
+				<div><p class="eyebrow">CAMPUS STUDY SPACES</p><h1>预约一个专注的位置</h1><p class="page-subtitle">选好自习室与时段，空闲座位一目了然。</p></div>
+				<div class="date-stamp" id="todayLabel"></div>
+			</div>
+			<div class="stat-strip" aria-label="自习室概况">
+				<div class="stat"><span class="stat-mark" aria-hidden="true">室</span><div><strong id="roomCount">3</strong><span>开放自习室</span></div></div>
+				<div class="stat"><span class="stat-mark" aria-hidden="true">座</span><div><strong id="seatCount">0</strong><span>当前时段空闲座位</span></div></div>
+				<div class="stat"><span class="stat-mark" aria-hidden="true">时</span><div><strong>08:00–22:00</strong><span>开放预约时段</span></div></div>
+			</div>
+			<div class="booking-layout">
+				<aside class="panel room-panel">
+					<div class="panel-heading"><h2>选择自习室</h2><span>共 3 间</span></div>
+					<div class="room-list" id="roomList"></div>
+					<p class="room-note">座位图按实际布局展示，点击绿色座位进行选择。</p>
+				</aside>
+				<section class="panel map-panel" aria-labelledby="mapHeading">
+					<div class="panel-heading">
+						<div class="map-title"><div><h2 id="mapHeading">一楼 · 静音区</h2><p id="roomMeta">—</p></div></div>
+						<div class="legend" aria-label="座位状态"><span><i></i>空闲</span><span><i class="occupied"></i>已预约</span></div>
+					</div>
+					<div class="seat-area"><div class="window-line">采 光 窗</div><div class="seat-grid" id="seatGrid" aria-label="座位平面图"></div></div>
+					<div class="map-foot"><span id="seatAvailability">选择座位查看预约信息</span><span>入口 ↓</span></div>
+				</section>
+				<aside class="panel booking-panel">
+					<div class="panel-heading"><h2>预约信息</h2><span>单次预约</span></div>
+					<div class="form-field"><label for="bookingDate">预约日期</label><input type="date" id="bookingDate"></div>
+					<div class="form-field"><label>预约时段</label><div class="periods" id="periods">
+						<button class="period-button active" data-period="morning">上午<span class="period-time">08–12</span></button>
+						<button class="period-button" data-period="afternoon">下午<span class="period-time">13–17</span></button>
+						<button class="period-button" data-period="evening">晚间<span class="period-time">18–22</span></button>
+					</div></div>
+					<div class="selection-summary"><span>当前选择</span><strong id="selectionText">尚未选择座位</strong></div>
+					<p class="hint" id="bookingHint" aria-live="polite">请选择绿色座位。</p>
+					<button class="primary-button booking-submit" id="reserveButton" disabled>确认预约</button>
+					<p class="inline-note">预约后请在时段开始 15 分钟内签到，逾期将释放座位。</p>
+				</aside>
+			</div>
+		</section>
+
+		<section id="bookingsView" class="data-view" hidden>
+			<div class="page-heading"><div><p class="eyebrow">YOUR STUDY PLAN</p><h1>我的预约</h1><p class="page-subtitle">查看预约状态，开始学习时记得签到。</p></div></div>
+			<div class="panel table-panel"><div class="panel-heading"><h2>预约记录</h2><span id="bookingCountLabel">0 条记录</span></div><div id="myBookings"></div></div>
+		</section>
+
+		<section id="adminView" class="data-view" hidden>
+			<div class="page-heading"><div><p class="eyebrow">SPACE OPERATIONS</p><h1>预约管理</h1><p class="page-subtitle">查看全校预约并处理座位状态。</p></div></div>
+			<div class="stat-strip">
+				<div class="stat"><span class="stat-mark" aria-hidden="true">在</span><div><strong id="activeReservations">0</strong><span>有效预约</span></div></div>
+				<div class="stat"><span class="stat-mark" aria-hidden="true">签</span><div><strong id="checkedReservations">0</strong><span>已签到</span></div></div>
+				<div class="stat"><span class="stat-mark" aria-hidden="true">释</span><div><strong id="releasedReservations">0</strong><span>已释放</span></div></div>
+			</div>
+			<div class="panel table-panel"><div class="panel-heading"><h2>全部预约</h2><span>管理员视图</span></div><div id="allBookings"></div></div>
+			<div class="notice">此静态演示将数据保存在当前浏览器。正式部署时，角色校验、预约冲突判断和超时释放应由服务端负责。</div>
+		</section>
+	</main>
+
+	<dialog id="authDialog" aria-labelledby="authTitle">
+		<form class="dialog-inner" id="authForm">
+			<div class="dialog-top"><div><h2 id="authTitle">欢迎回来</h2><p id="authDescription">登录后预约你的学习座位。</p></div><button class="icon-button" type="button" id="closeAuth" aria-label="关闭">×</button></div>
+			<div class="auth-switch"><button type="button" class="active" data-auth-mode="login">登录</button><button type="button" data-auth-mode="register">注册</button></div>
+			<div class="auth-field" id="nameField" hidden><label for="displayName">姓名</label><input id="displayName" autocomplete="name" maxlength="24" placeholder="请输入姓名"></div>
+			<div class="auth-field"><label for="username">学号 / 管理员账号</label><input id="username" autocomplete="username" required minlength="3" maxlength="24" placeholder="请输入账号"></div>
+			<div class="auth-field"><label for="password">密码</label><input id="password" type="password" autocomplete="current-password" required minlength="6" placeholder="至少 6 位"></div>
+			<div class="auth-field" id="roleField" hidden><label for="accountRole">账户类型</label><select id="accountRole"><option value="student">普通学生</option><option value="admin">管理员</option></select></div>
+			<div class="auth-field" id="adminCodeField" hidden><label for="adminCode">管理员注册码</label><input id="adminCode" type="password" autocomplete="off" placeholder="请输入管理员注册码"></div>
+			<p class="demo-accounts"><strong>演示账号</strong>　学生：student / 123456　管理员：admin / admin123</p>
+			<p class="auth-error" id="authError" aria-live="polite"></p>
+			<button class="primary-button auth-submit" id="authSubmit">登录</button>
+		</form>
+	</dialog>
+
+	<script>
+		(() => {
+			const KEYS = { users: 'qixi-users-v1', rooms: 'qixi-rooms-v1', bookings: 'qixi-bookings-v1', session: 'qixi-session-v1' };
+			const slotInfo = {
+				morning: { label: '上午', start: '08:00', end: '12:00' },
+				afternoon: { label: '下午', start: '13:00', end: '17:00' },
+				evening: { label: '晚间', start: '18:00', end: '22:00' }
+			};
+			const defaultRooms = [
+				{ id: 'library-1', name: '一楼 · 静音区', building: '图书馆', floor: '1F', seats: 30, feature: '安静自习' },
+				{ id: 'library-2', name: '二楼 · 临窗区', building: '图书馆', floor: '2F', seats: 24, feature: '自然采光' },
+				{ id: 'east-3', name: '三楼 · 小组区', building: '东教学楼', floor: '3F', seats: 18, feature: '讨论友好' }
+			];
+			const read = (key, fallback) => {
+				try { const value = localStorage.getItem(key); return value ? JSON.parse(value) : fallback; }
+				catch { return fallback; }
+			};
+			const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+			const today = () => {
+				const date = new Date();
+				return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+			};
+			const escapeHTML = (text) => String(text).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+			const makeSeats = (count) => Array.from({ length: count }, (_, index) => `${String.fromCharCode(65 + Math.floor(index / 6))}${String(index % 6 + 1).padStart(2, '0')}`);
+			const slotStart = (date, period) => new Date(`${date}T${slotInfo[period].start}:00`);
+			const deadlineFor = (date, period) => new Date(slotStart(date, period).getTime() + 15 * 60 * 1000).toISOString();
+			const statusText = { booked: '待签到', 'checked-in': '已签到', released: '已释放', canceled: '已取消' };
+			const statusClass = { booked: '', 'checked-in': 'checked-in', released: 'released', canceled: 'canceled' };
+
+			let users = read(KEYS.users, null);
+			if (!users) {
+				users = [
+					{ id: 'demo-student', username: 'student', password: '123456', name: '演示学生', role: 'student' },
+					{ id: 'demo-admin', username: 'admin', password: 'admin123', name: '空间管理员', role: 'admin' }
+				];
+				write(KEYS.users, users);
+			}
+			let rooms = read(KEYS.rooms, defaultRooms);
+			if (!localStorage.getItem(KEYS.rooms)) write(KEYS.rooms, rooms);
+			let bookings = read(KEYS.bookings, null);
+			if (!bookings) {
+				const date = today();
+				bookings = [
+					{ id: 'sample-1', userId: 'demo-student', userName: '演示学生', roomId: 'library-1', seat: 'A03', date, period: 'afternoon', status: 'booked', deadline: deadlineFor(date, 'afternoon'), createdAt: new Date().toISOString() },
+					{ id: 'sample-2', userId: 'demo-student', userName: '演示学生', roomId: 'library-2', seat: 'B02', date, period: 'afternoon', status: 'booked', deadline: deadlineFor(date, 'afternoon'), createdAt: new Date().toISOString() },
+					{ id: 'sample-3', userId: 'demo-student', userName: '演示学生', roomId: 'east-3', seat: 'A05', date, period: 'evening', status: 'booked', deadline: deadlineFor(date, 'evening'), createdAt: new Date().toISOString() }
+				];
+				write(KEYS.bookings, bookings);
+			}
+			let currentUser = read(KEYS.session, null);
+			if (currentUser && !users.some((user) => user.id === currentUser.id)) currentUser = null;
+			let selectedRoom = rooms[0]?.id;
+			let selectedSeat = null;
+			let selectedPeriod = 'morning';
+			let view = 'rooms';
+			let authMode = 'login';
+
+			const $ = (selector) => document.querySelector(selector);
+			const roomList = $('#roomList');
+			const seatGrid = $('#seatGrid');
+			const dateInput = $('#bookingDate');
+			dateInput.min = today();
+			dateInput.value = today();
+			$('#todayLabel').textContent = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }).format(new Date());
+
+			function releaseExpired() {
+				const now = Date.now();
+				let changed = false;
+				bookings = bookings.map((booking) => {
+					if (booking.status === 'booked' && Date.parse(booking.deadline) <= now) {
+						changed = true;
+						return { ...booking, status: 'released', releasedAt: new Date().toISOString() };
+					}
+					return booking;
+				});
+				if (changed) write(KEYS.bookings, bookings);
+			}
+
+			function isOccupied(roomId, seat, date, period) {
+				return bookings.some((booking) => booking.roomId === roomId && booking.seat === seat && booking.date === date && booking.period === period && ['booked', 'checked-in'].includes(booking.status));
+			}
+
+			function renderRooms() {
+				roomList.innerHTML = rooms.map((room) => `<button class="room-option ${room.id === selectedRoom ? 'active' : ''}" data-room="${escapeHTML(room.id)}"><strong>${escapeHTML(room.name)}</strong><span>${escapeHTML(room.building)} · ${room.floor} · ${room.seats} 个座位</span></button>`).join('');
+				const room = rooms.find((item) => item.id === selectedRoom) || rooms[0];
+				if (!room) return;
+				selectedRoom = room.id;
+				$('#mapHeading').textContent = room.name;
+				$('#roomMeta').textContent = `${room.building} · ${room.floor}　/　${room.feature}`;
+				const seats = makeSeats(room.seats);
+				const available = seats.filter((seat) => !isOccupied(room.id, seat, dateInput.value, selectedPeriod)).length;
+				$('#seatCount').textContent = available;
+				seatGrid.innerHTML = seats.map((seat, index) => {
+					const occupied = isOccupied(room.id, seat, dateInput.value, selectedPeriod);
+					const selected = seat === selectedSeat;
+					const aisle = (index + 1) % 6 === 0 && index !== seats.length - 1 ? '<span class="aisle" aria-hidden="true"></span>' : '';
+					return `<button class="seat ${occupied ? 'occupied' : ''} ${selected ? 'selected' : ''}" data-seat="${seat}" ${occupied ? 'disabled aria-label="座位 ${seat} 已预约"' : `aria-label="选择座位 ${seat}" aria-pressed="${selected}"`}><span>${seat}</span></button>${aisle}`;
+				}).join('');
+				$('#seatAvailability').textContent = `空闲 ${available} / ${seats.length}　·　${dateInput.value} ${slotInfo[selectedPeriod].label}`;
+				$('#selectionText').textContent = selectedSeat ? `${room.name}　${selectedSeat}` : '尚未选择座位';
+				const start = slotStart(dateInput.value, selectedPeriod);
+				const past = start.getTime() <= Date.now();
+				const selectedNowOccupied = selectedSeat && isOccupied(room.id, selectedSeat, dateInput.value, selectedPeriod);
+				if (selectedNowOccupied) selectedSeat = null;
+				const eligible = currentUser?.role === 'student';
+				const hint = !currentUser ? '登录学生账号后即可提交预约。' : currentUser.role !== 'student' ? '管理员账号不可预约座位。' : past ? '该时段已开始，请选择其他日期或时段。' : selectedSeat ? '座位已为你保留在当前选择中。' : '请选择绿色座位。';
+				$('#bookingHint').textContent = hint;
+				$('#reserveButton').disabled = !eligible || past || !selectedSeat;
+			}
+
+			function renderAccount() {
+				const area = $('#accountArea');
+				if (!currentUser) {
+					area.innerHTML = '<button class="quiet-button" id="openAuth">登录 / 注册</button>';
+					$('#openAuth').addEventListener('click', openAuth);
+					$('#adminNav').hidden = true;
+				} else {
+					const role = currentUser.role === 'admin' ? '管理员' : '学生';
+					area.innerHTML = `<span class="account-name">${escapeHTML(currentUser.name)}</span><span class="role-tag">${role}</span><button class="quiet-button" id="logoutButton">退出</button>`;
+					$('#logoutButton').addEventListener('click', logout);
+					$('#adminNav').hidden = currentUser.role !== 'admin';
+					if (view === 'admin' && currentUser.role !== 'admin') setView('rooms');
+				}
+			}
+
+			function actionButton(booking) {
+				if (booking.status !== 'booked') return '<span style="color:var(--muted)">—</span>';
+				const canCheckIn = Date.now() >= slotStart(booking.date, booking.period).getTime() && Date.now() <= Date.parse(booking.deadline);
+				const checkin = canCheckIn ? `<button class="small-button" data-action="checkin" data-id="${escapeHTML(booking.id)}">签到</button>` : '';
+				const cancel = `<button class="small-button cancel" data-action="cancel" data-id="${escapeHTML(booking.id)}">取消</button>`;
+				return `<div class="row-actions">${checkin}${cancel}</div>`;
+			}
+
+			function bookingRows(items, includeUser) {
+				if (!items.length) return '<div class="empty-state"><strong>还没有预约记录</strong>选一间自习室，找到适合自己的座位。</div>';
+				return `<div class="table-scroll"><table><thead><tr>${includeUser ? '<th>预约人</th>' : ''}<th>日期 / 时段</th><th>自习室</th><th>座位</th><th>签到截止</th><th>状态</th><th>操作</th></tr></thead><tbody>${items.map((booking) => {
+					const room = rooms.find((item) => item.id === booking.roomId);
+					const status = statusText[booking.status] || booking.status;
+					return `<tr>${includeUser ? `<td>${escapeHTML(booking.userName)}</td>` : ''}<td>${escapeHTML(booking.date)}<br>${slotInfo[booking.period].label} ${slotInfo[booking.period].start}–${slotInfo[booking.period].end}</td><td>${escapeHTML(room?.name || '已移除自习室')}</td><td>${escapeHTML(booking.seat)}</td><td>${slotInfo[booking.period].start} 后 15 分钟</td><td><span class="status ${statusClass[booking.status] || ''}">${status}</span></td><td>${actionButton(booking)}</td></tr>`;
+				}).join('')}</tbody></table></div>`;
+			}
+
+			function renderBookings() {
+				if (!currentUser) {
+					$('#myBookings').innerHTML = '<div class="empty-state"><strong>登录后查看预约</strong>请先登录学生或管理员账号。</div>';
+					$('#bookingCountLabel').textContent = '0 条记录';
+					return;
+				}
+				const own = bookings.filter((booking) => booking.userId === currentUser.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+				$('#bookingCountLabel').textContent = `${own.length} 条记录`;
+				$('#myBookings').innerHTML = bookingRows(own, false);
+			}
+
+			function renderAdmin() {
+				if (currentUser?.role !== 'admin') return;
+				$('#activeReservations').textContent = bookings.filter((booking) => booking.status === 'booked').length;
+				$('#checkedReservations').textContent = bookings.filter((booking) => booking.status === 'checked-in').length;
+				$('#releasedReservations').textContent = bookings.filter((booking) => booking.status === 'released').length;
+				const all = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+				$('#allBookings').innerHTML = bookingRows(all, true);
+			}
+
+			function render() {
+				releaseExpired();
+				renderAccount();
+				renderRooms();
+				renderBookings();
+				renderAdmin();
+			}
+
+			function setView(nextView) {
+				if (nextView === 'admin' && currentUser?.role !== 'admin') nextView = 'rooms';
+				view = nextView;
+				$('#roomsView').hidden = view !== 'rooms';
+				$('#bookingsView').hidden = view !== 'bookings';
+				$('#adminView').hidden = view !== 'admin';
+				document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === view));
+				render();
+			}
+
+			function openAuth() {
+				$('#authError').textContent = '';
+				$('#authDialog').showModal();
+			}
+
+			function setAuthMode(mode) {
+				authMode = mode;
+				const registering = mode === 'register';
+				document.querySelectorAll('[data-auth-mode]').forEach((button) => button.classList.toggle('active', button.dataset.authMode === mode));
+				$('#authTitle').textContent = registering ? '创建账户' : '欢迎回来';
+				$('#authDescription').textContent = registering ? '使用校园账号加入栖习。' : '登录后预约你的学习座位。';
+				$('#nameField').hidden = !registering;
+				$('#roleField').hidden = !registering;
+				$('#adminCodeField').hidden = !registering || $('#accountRole').value !== 'admin';
+				$('#authSubmit').textContent = registering ? '创建账户' : '登录';
+				$('#password').autocomplete = registering ? 'new-password' : 'current-password';
+				$('#authError').textContent = '';
+			}
+
+			function logout() {
+				currentUser = null;
+				localStorage.removeItem(KEYS.session);
+				setView('rooms');
+			}
+
+			roomList.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-room]');
+				if (!button) return;
+				selectedRoom = button.dataset.room;
+				selectedSeat = null;
+				renderRooms();
+			});
+			seatGrid.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-seat]');
+				if (!button || button.disabled) return;
+				selectedSeat = selectedSeat === button.dataset.seat ? null : button.dataset.seat;
+				renderRooms();
+			});
+			$('#periods').addEventListener('click', (event) => {
+				const button = event.target.closest('[data-period]');
+				if (!button) return;
+				selectedPeriod = button.dataset.period;
+				selectedSeat = null;
+				document.querySelectorAll('.period-button').forEach((item) => item.classList.toggle('active', item === button));
+				renderRooms();
+			});
+			dateInput.addEventListener('change', () => {
+				if (dateInput.value < today()) dateInput.value = today();
+				selectedSeat = null;
+				renderRooms();
+			});
+			$('#reserveButton').addEventListener('click', () => {
+				if (!currentUser) { openAuth(); return; }
+				if (currentUser.role !== 'student' || !selectedSeat) return;
+				if (slotStart(dateInput.value, selectedPeriod).getTime() <= Date.now()) { renderRooms(); return; }
+				if (isOccupied(selectedRoom, selectedSeat, dateInput.value, selectedPeriod)) { selectedSeat = null; render(); return; }
+				bookings.push({ id: crypto.randomUUID(), userId: currentUser.id, userName: currentUser.name, roomId: selectedRoom, seat: selectedSeat, date: dateInput.value, period: selectedPeriod, status: 'booked', deadline: deadlineFor(dateInput.value, selectedPeriod), createdAt: new Date().toISOString() });
+				write(KEYS.bookings, bookings);
+				selectedSeat = null;
+				setView('bookings');
+			});
+			document.querySelectorAll('.nav-button').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
+			document.querySelectorAll('[data-auth-mode]').forEach((button) => button.addEventListener('click', () => setAuthMode(button.dataset.authMode)));
+			$('#accountRole').addEventListener('change', () => { $('#adminCodeField').hidden = $('#accountRole').value !== 'admin'; });
+			$('#openAuth').addEventListener('click', openAuth);
+			$('#closeAuth').addEventListener('click', () => $('#authDialog').close());
+			$('#authDialog').addEventListener('click', (event) => { if (event.target === $('#authDialog')) $('#authDialog').close(); });
+			$('#authForm').addEventListener('submit', (event) => {
+				event.preventDefault();
+				const username = $('#username').value.trim();
+				const password = $('#password').value;
+				let user;
+				if (authMode === 'register') {
+					const name = $('#displayName').value.trim();
+					const role = $('#accountRole').value;
+					if (users.some((item) => item.username.toLowerCase() === username.toLowerCase())) { $('#authError').textContent = '该账号已注册，请直接登录。'; return; }
+					if (!name) { $('#authError').textContent = '请填写姓名。'; return; }
+					if (role === 'admin' && $('#adminCode').value !== 'QIXI-ADMIN') { $('#authError').textContent = '管理员注册码不正确。'; return; }
+					user = { id: crypto.randomUUID(), username, password, name, role };
+					users.push(user);
+					write(KEYS.users, users);
+				} else {
+					user = users.find((item) => item.username === username && item.password === password);
+					if (!user) { $('#authError').textContent = '账号或密码不正确。'; return; }
+				}
+				currentUser = { id: user.id, username: user.username, name: user.name, role: user.role };
+				write(KEYS.session, currentUser);
+				$('#authDialog').close();
+				$('#authForm').reset();
+				setAuthMode('login');
+				render();
+			});
+			document.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-action]');
+				if (!button) return;
+				const booking = bookings.find((item) => item.id === button.dataset.id);
+				if (!booking) return;
+				if (button.dataset.action === 'cancel' && booking.status === 'booked') booking.status = 'canceled';
+				if (button.dataset.action === 'checkin' && booking.status === 'booked' && Date.now() >= slotStart(booking.date, booking.period).getTime() && Date.now() <= Date.parse(booking.deadline)) booking.status = 'checked-in';
+				write(KEYS.bookings, bookings);
+				render();
+			});
+
+			render();
+			window.setInterval(() => {
+				const countBefore = bookings.filter((booking) => booking.status === 'booked' && Date.parse(booking.deadline) <= Date.now()).length;
+				if (countBefore) render();
+			}, 30000);
+		})();
+	</script>
+</body>
+</html>
