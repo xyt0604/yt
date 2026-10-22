@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 字体图标 Font Awesome</title>
+<link rel="stylesheet" href="cdn/fontawesome/css/all.min.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; font-size:16px; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.45;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xu-topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1120px; margin:auto; padding:24px 28px;
+  }
+  .xu-mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xu-mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xu-topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xu-topbar a:hover { color:var(--coral); }
+  .xu-hero {
+    display:grid; grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr); gap:56px;
+    align-items:end; max-width:1120px; margin:22px auto 0; padding:64px 28px 74px;
+  }
+  .xu-eyebrow { margin:0 0 18px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { max-width:700px; margin:0; font:500 clamp(36px,5.5vw,64px)/1.08 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xu-hero_intro { max-width:560px; margin:26px 0 0; color:var(--muted); font-size:17px; }
+  .xu-hero_note {
+    padding:22px 24px; border-left:3px solid var(--coral);
+    background:rgba(255,253,248,.72); box-shadow:var(--shadow);
+  }
+  .xu-hero_note strong { display:block; margin-bottom:7px; color:var(--blue); font-size:13px; letter-spacing:.12em; }
+  .xu-hero_note p { margin:0; color:var(--muted); font-size:14px; }
+  .xu-content { max-width:1120px; margin:auto; padding:0 28px 70px; }
+  .xu-section_heading { display:flex; justify-content:space-between; align-items:baseline; margin:0 0 20px; }
+  h2 { margin:0; font:500 30px Georgia,"Songti SC",serif; }
+  .xu-section_heading span { color:var(--muted); font-size:13px; }
+  .xu-icon_grid { display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:52px; }
+  .xu-icon_card {
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:20px 10px 16px; border:1px solid var(--line); background:var(--card);
+    border-radius:12px; transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .xu-icon_card:hover { border-color:var(--blue); box-shadow:var(--shadow); transform:translateY(-4px); }
+  .xu-icon_card .fa-solid,.xu-icon_card .fa-regular,.xu-icon_card .fa-brands { font-size:26px; color:var(--blue); }
+  .xu-icon_card:hover .fa-solid,.xu-icon_card:hover .fa-regular,.xu-icon_card:hover .fa-brands { color:var(--coral); }
+  .xu-icon_card strong { font-size:13px; font-weight:400; }
+  .xu-icon_card code {
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font:11px/1.4 Consolas,monospace; color:var(--muted); background:rgba(23,107,135,.06);
+    padding:3px 7px; border-radius:6px;
+  }
+  .xu-demo { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .xu-demo_block {
+    padding:26px 24px; border:1px solid var(--line); background:var(--card); border-radius:12px;
+  }
+  .xu-demo_block h3 { margin:0 0 16px; color:var(--blue); font-size:15px; letter-spacing:.06em; }
+  .xu-demo_row { display:flex; align-items:center; gap:26px; flex-wrap:wrap; min-height:56px; }
+  .xu-demo_row + .xu-demo_row { margin-top:16px; padding-top:16px; border-top:1px dashed var(--line); }
+  .xu-demo_note { margin:14px 0 0; color:var(--muted); font-size:12.5px; }
+  .xu-demo_note code { font:11.5px Consolas,monospace; background:rgba(23,107,135,.06); padding:2px 6px; border-radius:5px; }
+  .xu-size_line { font-size:13px; color:var(--muted); }
+  .xu-size-line i { color:var(--coral); }
+  .xu-fa-circle { color:var(--blue); }
+  .xu-fa-inverse { color:#fff; }
+  .xu-btn {
+    display:inline-flex; align-items:center; gap:8px; padding:9px 18px; color:#fff;
+    background:var(--blue); border:none; border-radius:8px; font-size:14px; cursor:pointer;
+    font-family:inherit;
+  }
+  .xu-btn .fa-solid { color:#fff; font-size:14px; }
+  .xu-btn_coral { background:var(--coral); }
+  .xu-btn_outline { color:var(--blue); background:none; border:1px solid var(--blue); }
+  .xu-btn_outline .fa-solid { color:var(--blue); }
+  .xu-vs {
+    display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:52px;
+  }
+  .xu-vs_col { padding:24px 26px; border:1px solid var(--line); background:var(--card); border-radius:12px; }
+  .xu-vs_col h3 { margin:0 0 12px; font-size:15px; letter-spacing:.06em; }
+  .xu-vs_col:first-child h3 { color:var(--coral); }
+  .xu-vs_col:last-child h3 { color:var(--blue); }
+  .xu-vs_col ul { margin:0; padding-left:20px; color:var(--muted); font-size:14px; }
+  .xu-vs_col li + li { margin-top:6px; }
+  .xu-footer {
+    display:flex; justify-content:space-between; max-width:1120px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+  }
+  @media (max-width:900px) { .xu-icon_grid { grid-template-columns:repeat(4,1fr); } .xu-demo { grid-template-columns:1fr; } .xu-vs { grid-template-columns:1fr; } }
+  @media (max-width:760px) {
+    .xu-hero { grid-template-columns:1fr; gap:30px; padding:42px 20px 55px; }
+    .xu-icon_grid { grid-template-columns:repeat(3,1fr); }
+    .xu-topbar,.xu-content,.xu-footer { padding-left:20px; padding-right:20px; }
+    .xu-footer { display:block; } .xu-footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <header class="xu-topbar">
+    <div class="xu-mark"><span class="xu-mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页 →</a>
+  </header>
+  <main>
+    <section class="xu-hero" aria-labelledby="page-title">
+      <div>
+        <p class="xu-eyebrow">ICON FONT · FONT AWESOME 6</p>
+        <h1 id="page-title">字体图标<br>Font Awesome</h1>
+        <p class="xu-hero_intro">把图标当作字体来用：通过 @font-face 加载 woff2 图标字体，在 &lt;i&gt; 标签上写 class 就能显示图标，可以像文字一样改颜色、调大小。字体文件已下载到本地 cdn 目录，离线也能使用。</p>
+      </div>
+      <aside class="xu-hero_note"><strong>课堂实践 / 21</strong><p>学生：徐玥桐<br>课程：高级网页设计<br>对比：字体图标 vs SVG 图标（见 13-2.html）</p></aside>
+    </section>
+    <section class="xu-content" aria-labelledby="common-title">
+      <div class="xu-section_heading" id="common-title"><h2>常用图标</h2><span>fa-solid · 共 18 个</span></div>
+      <div class="xu-icon_grid">
+        <div class="xu-icon_card"><i class="fa-solid fa-house"></i><strong>首页</strong><code>&lt;i class="fa-solid fa-house"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-heart"></i><strong>喜欢</strong><code>&lt;i class="fa-solid fa-heart"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-star"></i><strong>收藏</strong><code>&lt;i class="fa-solid fa-star"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-user"></i><strong>用户</strong><code>&lt;i class="fa-solid fa-user"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-gear"></i><strong>设置</strong><code>&lt;i class="fa-solid fa-gear"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-magnifying-glass"></i><strong>搜索</strong><code>&lt;i class="fa-solid fa-magnifying-glass"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-bell"></i><strong>通知</strong><code>&lt;i class="fa-solid fa-bell"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-camera"></i><strong>相机</strong><code>&lt;i class="fa-solid fa-camera"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-envelope"></i><strong>邮件</strong><code>&lt;i class="fa-solid fa-envelope"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-calendar"></i><strong>日历</strong><code>&lt;i class="fa-solid fa-calendar"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-music"></i><strong>音乐</strong><code>&lt;i class="fa-solid fa-music"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-bookmark"></i><strong>书签</strong><code>&lt;i class="fa-solid fa-bookmark"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-trash-can"></i><strong>删除</strong><code>&lt;i class="fa-solid fa-trash-can"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-pen-to-square"></i><strong>编辑</strong><code>&lt;i class="fa-solid fa-pen-to-square"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-check"></i><strong>完成</strong><code>&lt;i class="fa-solid fa-check"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-xmark"></i><strong>关闭</strong><code>&lt;i class="fa-solid fa-xmark"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-solid fa-plus"></i><strong>添加</strong><code>&lt;i class="fa-solid fa-plus"&gt;&lt;/i&gt;</code></div>
+        <div class="xu-icon_card"><i class="fa-brands fa-github"></i><strong>品牌</strong><code>&lt;i class="fa-brands fa-github"&gt;&lt;/i&gt;</code></div>
+      </div>
+      <div class="xu-section_heading"><h2>字体图标的特性</h2><span>像用文字一样用图标</span></div>
+      <div class="xu-demo">
+        <div class="xu-demo_block">
+          <h3>字重家族（font-weight）</h3>
+          <div class="xu-demo_row">
+            <span><i class="fa-solid fa-heart"></i> fa-solid</span>
+            <span><i class="fa-regular fa-heart"></i> fa-regular</span>
+            <span><i class="fa-brands fa-github"></i> fa-brands</span>
+          </div>
+          <p class="xu-demo_note">同一个名字有三套字形：<code>fa-solid</code> 实心、<code>fa-regular</code> 线框、<code>fa-brands</code> 品牌图标。</p>
+        </div>
+        <div class="xu-demo_block">
+          <h3>尺寸与颜色</h3>
+          <div class="xu-demo_row xu-size-line">
+            <i class="fa-solid fa-star fa-xs"></i>
+            <i class="fa-solid fa-star fa-sm"></i>
+            <i class="fa-solid fa-star fa-lg"></i>
+            <i class="fa-solid fa-star fa-2x"></i>
+            <i class="fa-solid fa-star fa-3x"></i>
+          </div>
+          <div class="xu-demo_row xu-size-line">
+            <i class="fa-solid fa-heart" style="color:#e46b4b"></i>
+            <i class="fa-solid fa-heart" style="color:#176b87"></i>
+            <i class="fa-solid fa-heart" style="color:#d4a017"></i>
+            <i class="fa-solid fa-heart fa-fw" style="color:#8a5cf6"></i>
+          </div>
+          <p class="xu-demo-note">尺寸用 <code>fa-xs ~ fa-3x</code> 等 class 控制；颜色、阴影等直接写 CSS，因为图标本质上就是文字。</p>
+        </div>
+        <div class="xu-demo_block">
+          <h3>旋转与动画</h3>
+          <div class="xu-demo_row">
+            <i class="fa-solid fa-gear fa-spin"></i>
+            <i class="fa-solid fa-gear fa-pulse"></i>
+            <i class="fa-solid fa-arrow-rotate-right fa-spin" style="color:var(--blue)"></i>
+          </div>
+          <p class="xu-demo_note"><code>fa-spin</code> 匀速旋转、<code>fa-pulse</code> 步进旋转，加载指示器只需要一个 class。</p>
+        </div>
+        <div class="xu-demo_block">
+          <h3>堆叠（fa-stack）</h3>
+          <div class="xu-demo_row">
+            <span class="fa-stack fa-2x">
+              <i class="fa-solid fa-circle fa-stack-2x xu-fa-circle"></i>
+              <i class="fa-solid fa-star fa-stack-1x fa-inverse"></i>
+            </span>
+            <span class="fa-stack fa-2x">
+              <i class="fa-solid fa-square fa-stack-2x" style="color:#e46b4b"></i>
+              <i class="fa-solid fa-check fa-stack-1x fa-inverse"></i>
+            </span>
+            <span class="fa-stack fa-2x">
+              <i class="fa-solid fa-circle fa-stack-2x" style="color:#8a5cf6"></i>
+              <i class="fa-solid fa-plus fa-stack-1x fa-inverse"></i>
+            </span>
+          </div>
+          <p class="xu-demo_note"><code>fa-stack</code> 把多个图标叠在一起，配合 <code>fa-inverse</code> 做底衬组合。</p>
+        </div>
+        <div class="xu-demo_block">
+          <h3>按钮中的图标</h3>
+          <div class="xu-demo_row">
+            <button class="xu-btn"><i class="fa-solid fa-house"></i>首页</button>
+            <button class="xu-btn xu-btn_coral"><i class="fa-solid fa-heart"></i>喜欢</button>
+            <button class="xu-btn xu-btn_outline"><i class="fa-solid fa-share-nodes"></i>分享</button>
+          </div>
+          <p class="xu-demo_note">图标与文字天然对齐，是最常见的用法。</p>
+        </div>
+        <div class="xu-demo_block">
+          <h3>本页面资源</h3>
+          <div class="xu-demo_row" style="flex-direction:column;align-items:flex-start;gap:8px;font-size:13px;color:var(--muted)">
+            <span><code>cdn/fontawesome/css/all.min.css</code> 样式</span>
+            <span><code>cdn/fontawesome/webfonts/*.woff2</code> 图标字体（solid / regular / brands）</span>
+          </div>
+          <p class="xu-demo-note">由 jsDelivr 的 Font Awesome 6.5.2 CDN 下载到本地，双击页面即可离线使用。</p>
+        </div>
+      </div>
+      <div class="xu-section_heading" style="margin-top:52px"><h2>两种图标方式对比</h2><span>字体图标 vs SVG 图标</span></div>
+      <div class="xu-vs">
+        <div class="xu-vs_col">
+          <h3>字体图标（本页 Font Awesome）</h3>
+          <ul>
+            <li>引入 CSS + 字体文件，写 class 即可使用</li>
+            <li>用 font-size、color 直接控制大小颜色</li>
+            <li>天然支持旋转、堆叠等字体动画</li>
+            <li>一个字体文件包含所有图标，按需加载字体族</li>
+          </ul>
+        </div>
+        <div class="xu-vs_col">
+          <h3>SVG 图标（见 13-2.html Lucide）</h3>
+          <ul>
+            <li>矢量图形，任意缩放都不会失真</li>
+            <li>可单独控制每条路径、每个细节</li>
+            <li>可裁剪、可做逐帧动画、可被读屏识别</li>
+            <li>通过 &lt;use&gt; 引用 sprite，减少请求数</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="xu-footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>字体图标 Font Awesome · HTML / CSS 原生代码</span>
+  </footer>
+</body>
+</html>

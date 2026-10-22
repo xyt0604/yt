@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>徐玥桐 | 移动端下导航 · SVG 版</title>
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { scroll-behavior:smooth; font-size:16px; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+    height:100vh; width:100%; overflow:hidden;
+  }
+  a { color:inherit; text-decoration:none; -webkit-tap-highlight-color:transparent; }
+  .xu-stage { width:100%; height:100vh; margin:0; padding:0; overflow:hidden; display:flex; flex-direction:column; }
+  .xu-phone {
+    position:relative; overflow:hidden; background:#f2f4f3;
+    border:none; border-radius:0; box-shadow:none;
+    height:100%; width:100%; display:flex; flex-direction:column;
+  }
+  .xu-phone_notch {
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:110px; height:22px; background:#202a35; border-radius:11px; z-index:5;
+  }
+  .xu-statusbar {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 26px 6px; color:#202a35; font-size:13px; font-weight:600;
+  }
+  .xu-statusbar_right { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .xu-battery {
+    display:inline-block; width:22px; height:11px; border:1.5px solid #202a35;
+    border-radius:3px; position:relative;
+  }
+  .xu-battery::after {
+    content:""; position:absolute; right:-4px; top:2.5px; width:2.5px; height:4px;
+    background:#202a35; border-radius:0 2px 2px 0;
+  }
+  .xu-battery::before {
+    content:""; position:absolute; inset:1.5px; width:70%; background:#202a35; border-radius:1px;
+  }
+  .xu-appheader {
+    padding:18px 20px 14px; background:#fffdf8; border-bottom:1px solid var(--line);
+  }
+  .xu-appheader h1 { margin:0; font-size:19px; font-weight:700; }
+  .xu-appheader p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+  .xu-list {
+    padding:14px 16px 90px; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  .xu-list_card {
+    display:flex; gap:12px; align-items:center; padding:14px; margin-bottom:10px;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+  }
+  .xu-list_thumb {
+    display:grid; width:44px; height:44px; flex:none; place-items:center; color:#fff;
+    border-radius:12px;
+  }
+  .xu-list_thumb .xu-svg_icon { width:22px; height:22px; }
+  .xu-list_card h3 { margin:0; font-size:14.5px; }
+  .xu-list_card p { margin:2px 0 0; color:var(--muted); font-size:12px; }
+  .xu-navbar {
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:none; z-index:20;
+    display:flex; background:#fffdf8; border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom);
+    box-shadow:0 -6px 24px rgba(31,50,55,.08);
+  }
+  .xu-nav_item {
+    position:relative; flex:1 1 0; min-width:0; display:flex; flex-direction:column;
+    align-items:center; gap:3px; padding:9px 0 7px; color:#9aa5ad;
+    font-size:11px; text-decoration:none; transition:color .2s ease;
+  }
+  .xu-nav_item.is-active { color:var(--coral); }
+  .xu-nav_icon { position:relative; display:inline-block; line-height:1; }
+  .xu-svg_icon {
+    width:23px; height:23px; display:block; color:inherit;
+    fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .xu-badge_num {
+    position:absolute; top:-7px; right:-14px; min-width:18px; height:18px; padding:0 5px;
+    box-sizing:border-box; border-radius:9px; background:var(--coral); color:#fff;
+    font-size:10px; font-weight:600; font-style:normal; line-height:16px; text-align:center;
+    border:2px solid #fffdf8; white-space:nowrap;
+  }
+  .xu-badge_num.is-max { font-size:9px; }
+  .xu-badge_dot {
+    position:absolute; top:-2px; right:-3px; width:10px; height:10px; border-radius:50%;
+    background:var(--coral); border:2px solid #fffdf8; box-sizing:border-box;
+  }
+</style>
+</head>
+
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="house" viewBox="0 0 24 24">
+      <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+    </symbol>
+    <symbol id="search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </symbol>
+    <symbol id="compass" viewBox="0 0 24 24">
+      <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" />
+      <circle cx="12" cy="12" r="10" />
+    </symbol>
+    <symbol id="bookmark" viewBox="0 0 24 24">
+      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+    </symbol>
+    <symbol id="user" viewBox="0 0 24 24">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </symbol>
+  </svg>
+  <div class="xu-stage">
+    <div class="xu-phone">
+      <div class="xu-phone_notch"></div>
+      <div class="xu-statusbar">
+        <span>9:41</span>
+        <span class="xu-statusbar_right"><span>5G</span><i class="xu-battery"></i></span>
+      </div>
+      <div class="xu-appheader">
+        <h1>我的课程</h1>
+        <p>移动端固定下导航 · Lucide SVG 图标</p>
+      </div>
+      <div class="xu-list">
+        <div class="xu-list_card">
+          <span class="xu-list_thumb" style="background:#176b87"><svg class="xu-svg_icon"><use href="#house"/></svg></span>
+          <div><h3>首页</h3><p>flex:1 均分宽度，点击切换选中态</p></div>
+        </div>
+        <div class="xu-list_card">
+          <span class="xu-list_thumb" style="background:#e46b4b"><svg class="xu-svg_icon"><use href="#compass"/></svg></span>
+          <div><h3>发现</h3><p>图标右上角红点：有新内容提醒</p></div>
+        </div>
+        <div class="xu-list_card">
+          <span class="xu-list_thumb" style="background:#d4a017"><svg class="xu-svg_icon"><use href="#bookmark"/></svg></span>
+          <div><h3>收藏</h3><p>数字徽章 12：待处理的收藏更新</p></div>
+        </div>
+        <div class="xu-list_card">
+          <span class="xu-list_thumb" style="background:#8a5cf6"><svg class="xu-svg_icon"><use href="#user"/></svg></span>
+          <div><h3>我的</h3><p>数字徽章 99+：消息数量超过上限</p></div>
+        </div>
+        <div class="xu-list_card">
+          <span class="xu-list_thumb" style="background:#3d9a7a"><svg class="xu-svg_icon"><use href="#search"/></svg></span>
+          <div><h3>搜索</h3><p>同一套 sprite 可继续引用其他图标</p></div>
+        </div>
+      </div>
+      <nav class="xu-navbar" aria-label="底部导航">
+        <a class="xu-nav_item is-active" href="javascript:void(0)" data-tab="home">
+          <span class="xu-nav_icon"><svg class="xu-svg_icon"><use href="#house"/></svg></span>首页
+        </a>
+        <a class="xu-nav_item" href="javascript:void(0)" data-tab="find">
+          <span class="xu-nav_icon"><svg class="xu-svg_icon"><use href="#compass"/></svg><i class="xu-badge_dot"></i></span>发现
+        </a>
+        <a class="xu-nav_item" href="javascript:void(0)" data-tab="fav">
+          <span class="xu-nav_icon"><svg class="xu-svg_icon"><use href="#bookmark"/></svg><i class="xu-badge_num">12</i></span>收藏
+        </a>
+        <a class="xu-nav_item" href="javascript:void(0)" data-tab="me">
+          <span class="xu-nav_icon"><svg class="xu-svg_icon"><use href="#user"/></svg><i class="xu-badge_num is-max">99+</i></span>我的
+        </a>
+      </nav>
+    </div>
+  </div>
+  <script>
+    var tabs = document.querySelectorAll(".xu-nav_item");
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        tabs.forEach(function (t) { t.classList.remove("is-active"); });
+        tab.classList.add("is-active");
+      });
+    });
+  </script>
+</body>
+</html>
