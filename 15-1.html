@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | JavaScript 程序结构 · 循环与条件</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1120px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1120px; margin:22px auto 0; padding:40px 28px 34px; }
+  .xyt_eyebrow { margin:0 0 18px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,56px)/1.1 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:640px; margin:22px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_content { max-width:1120px; margin:auto; padding:0 28px 70px; }
+  .xyt_section_heading {
+    display:flex; align-items:center; gap:12px; margin:0 0 18px;
+  }
+  .xyt_section_heading .iconfont { color:var(--coral); font-size:22px; }
+  h2 { margin:0; font:500 26px Georgia,"Songti SC",serif; color:var(--blue); }
+  .xyt_demo_grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+  .xyt_demo_card {
+    border:1px solid var(--line); background:var(--card); border-radius:12px;
+    padding:22px 24px; transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .xyt_demo_card:hover { border-color:var(--blue); box-shadow:var(--shadow); transform:translateY(-3px); }
+  .xyt_demo_title { font:700 18px Georgia,serif; color:var(--ink); margin-bottom:4px; }
+  .xyt_demo_sub { font-size:13px; color:var(--muted); margin-bottom:14px; }
+  .xyt_demo_code {
+    background:#f0ede4; border-radius:8px; padding:14px 16px; margin-bottom:14px;
+    font:12.5px/1.7 Consolas,monospace; white-space:pre; overflow-x:auto;
+  }
+  .xyt_demo_output {
+    background:rgba(23,107,135,.05); border-left:3px solid var(--blue);
+    padding:12px 16px; border-radius:0 8px 8px 0;
+  }
+  .xyt_demo_output strong { font-size:12px; color:var(--blue); letter-spacing:.06em; display:block; margin-bottom:4px; }
+  .xyt_demo_output div { font-size:13.5px; color:var(--ink); font-family:Consolas,monospace; }
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1120px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) { .xyt_demo_grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-10-26 | 使用大模型：GLM-5.3-Flash | 功能：JavaScript 程序结构演示（循环 for/while、条件 if/else/switch） -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · CONTROL FLOW</p>
+      <h1>JavaScript<br>程序结构</h1>
+      <p class="xyt_hero_intro">循环让代码重复执行、条件让代码分支判断 — 两者组合就能实现几乎所有业务逻辑。下方每个示例都包含代码与实时运行输出。</p>
+    </section>
+    <section class="xyt_content">
+      <div class="xyt_section_heading"><i class="iconfont icon-shuzi" style="display:none"></i><h2>循环结构</h2></div>
+      <div class="xyt_demo_grid">
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">for 循环</div>
+          <div class="xyt_demo_sub">知道循环次数时首选，三部分：初始化 / 条件 / 更新</div>
+          <div class="xyt_demo_code">// 输出 1~5
+for (var xyt_i = 1; xyt_i <= 5; xyt_i++) {
+  console.log(xyt_i);
+}</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_for"></div></div>
+        </div>
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">while 循环</div>
+          <div class="xyt_demo_sub">循环次数未知时使用，只要条件为真就一直执行</div>
+          <div class="xyt_demo_code">// 累加直到和 ≥ 10
+var xyt_sum = 0, xyt_n = 1;
+while (xyt_sum < 10) {
+  xyt_sum += xyt_n;
+  xyt_n++;
+}</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_while"></div></div>
+        </div>
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">for…in 遍历对象</div>
+          <div class="xyt_demo_sub">遍历对象的所有可枚举属性名</div>
+          <div class="xyt_demo_code">var xyt_person = { name:"徐", age:20, school:"Y2" };
+for (var xyt_k in xyt_person) {
+  console.log(xyt_k + "=" + xyt_person[xyt_k]);
+}</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_in"></div></div>
+        </div>
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">break / continue</div>
+          <div class="xyt_demo_sub">break 跳出整个循环；continue 跳过本次迭代</div>
+          <div class="xyt_demo_code">// 遇到 7 就跳过，遇到 10 就停止
+for (var xyt_j = 1; xyt_j <= 20; xyt_j++) {
+  if (xyt_j === 7) continue;
+  if (xyt_j === 10) break;
+  console.log(xyt_j);
+}</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_break"></div></div>
+        </div>
+      </div>
+
+      <div class="xyt_section_heading" style="margin-top:40px"><h2>条件结构</h2></div>
+      <div class="xyt_demo_grid">
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">if / else 分支</div>
+          <div class="xyt_demo_sub">最基础的条件判断，单条件双分支</div>
+          <div class="xyt_demo_code">var xyt_score = 85;
+if (xyt_score >= 60) {
+  console.log("及格");
+} else {
+  console.log("不及格");
+}</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_if"></div></div>
+        </div>
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">if / else if / else 多分支</div>
+          <div class="xyt_demo_sub">按顺序判断多个条件，命中第一个就执行</div>
+          <div class="xyt_demo_code">var xyt_score2 = 85;
+if (xyt_score2 >= 90) {
+  console.log("等级 A");
+} else if (xyt_score2 >= 80) {
+  console.log("等级 B");
+} else if (xyt_score2 >= 60) {
+  console.log("等级 C");
+} else {
+  console.log("等级 D");
+}</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_elseif"></div></div>
+        </div>
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">switch 多路分支</div>
+          <div class="xyt_demo_sub">当需要根据同一个变量的不同取值执行不同逻辑时更清晰；break 防止穿透</div>
+          <div class="xyt_demo_code">var xyt_day = new Date().getDay();
+switch (xyt_day) {
+  case 0: console.log("周日"); break;
+  case 1: console.log("周一"); break;
+  case 2: console.log("周二"); break;
+  case 3: console.log("周三"); break;
+  case 4: console.log("周四"); break;
+  case 5: console.log("周五"); break;
+  default: console.log("周六");
+}</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_switch"></div></div>
+        </div>
+
+        <div class="xyt_demo_card">
+          <div class="xyt_demo_title">三元运算符</div>
+          <div class="xyt_demo_sub">if/else 的简写形式，常用于赋值或输出</div>
+          <div class="xyt_demo_code">var xyt_age = 20;
+var xyt_status = xyt_age >= 18 ? "成年" : "未成年";
+console.log(xyt_status);</div>
+          <div class="xyt_demo_output"><strong>运行结果</strong><div id="xyt_out_ternary"></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>JavaScript 程序结构 · 课堂实践 / 15-1</span>
+  </footer>
+  <script>
+    // 徐玥桐 | 建立时间：2026-10-26 | 使用大模型：GLM-5.3-Flash | 功能：所有示例代码的运行输出
+    // 用 xyt_push 统一把 console.log 风格的输出写到页面上
+    function xyt_push(xyt_id, xyt_val) {
+      document.getElementById(xyt_id).textContent += xyt_val + " ";
+    }
+
+    // —— 循环示例 ——
+    // for 循环：1~5
+    (function () {
+      var xyt_line = "";
+      for (var xyt_i = 1; xyt_i <= 5; xyt_i++) { xyt_line += xyt_i + " "; }
+      xyt_push("xyt_out_for", xyt_line.trim());
+    })();
+
+    // while 循环：累加直到 ≥ 10
+    (function () {
+      var xyt_sum = 0, xyt_n = 1;
+      while (xyt_sum < 10) { xyt_sum += xyt_n; xyt_n++; }
+      xyt_push("xyt_out_while", "sum=" + xyt_sum + "（n 加到 " + (xyt_n - 1) + " 时）");
+    })();
+
+    // for…in 遍历对象
+    (function () {
+      var xyt_person = { name: "徐", age: 20, school: "Y2" };
+      var xyt_line = "";
+      for (var xyt_k in xyt_person) { xyt_line += xyt_k + "=" + xyt_person[xyt_k] + "  "; }
+      xyt_push("xyt_out_in", xyt_line.trim());
+    })();
+
+    // break / continue
+    (function () {
+      var xyt_line = "";
+      for (var xyt_j = 1; xyt_j <= 20; xyt_j++) {
+        if (xyt_j === 7) continue;
+        if (xyt_j === 10) break;
+        xyt_line += xyt_j + " ";
+      }
+      xyt_push("xyt_out_break", xyt_line.trim() + "（跳过 7 停止于 10 之前）");
+    })();
+
+    // —— 条件示例 ——
+    // if / else
+    (function () {
+      var xyt_score = 85;
+      xyt_push("xyt_out_if", "分数 " + xyt_score + " → " + (xyt_score >= 60 ? "及格" : "不及格"));
+    })();
+
+    // if / else if / else
+    (function () {
+      var xyt_score2 = 85, xyt_grade;
+      if (xyt_score2 >= 90) { xyt_grade = "等级 A"; }
+      else if (xyt_score2 >= 80) { xyt_grade = "等级 B"; }
+      else if (xyt_score2 >= 60) { xyt_grade = "等级 C"; }
+      else { xyt_grade = "等级 D"; }
+      xyt_push("xyt_out_elseif", "分数 " + xyt_score2 + " → " + xyt_grade);
+    })();
+
+    // switch：根据今天是周几（会随日期变化）
+    (function () {
+      var xyt_day = new Date().getDay(), xyt_text;
+      switch (xyt_day) {
+        case 0: xyt_text = "周日"; break;
+        case 1: xyt_text = "周一"; break;
+        case 2: xyt_text = "周二"; break;
+        case 3: xyt_text = "周三"; break;
+        case 4: xyt_text = "周四"; break;
+        case 5: xyt_text = "周五"; break;
+        default: xyt_text = "周六";
+      }
+      xyt_push("xyt_out_switch", "今天是" + xyt_text + "（switch case " + xyt_day + " 命中）");
+    })();
+
+    // 三元运算符
+    (function () {
+      var xyt_age = 20;
+      var xyt_status = xyt_age >= 18 ? "成年" : "未成年";
+      xyt_push("xyt_out_ternary", "年龄 " + xyt_age + " → " + xyt_status);
+    })();
+  </script>
+</body>
+</html>
