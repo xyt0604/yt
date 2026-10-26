@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 数七游戏 · 逢七过</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1120px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1120px; margin:22px auto 0; padding:40px 28px 34px; }
+  .xyt_eyebrow { margin:0 0 18px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,56px)/1.1 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:640px; margin:22px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_content { max-width:1120px; margin:auto; padding:0 28px 70px; }
+  .xyt_rule_bar {
+    display:flex; flex-wrap:wrap; align-items:center; gap:12px;
+    padding:16px 20px; margin-bottom:24px;
+    border:1px solid var(--line); background:var(--card); border-radius:12px;
+  }
+  .xyt_rule_chip {
+    display:inline-flex; align-items:center; gap:7px;
+    padding:6px 14px; border-radius:20px; font-size:13px;
+    background:rgba(23,107,135,.08); color:var(--blue);
+  }
+  .xyt_rule_chip .iconfont { font-size:15px; }
+  .xyt_rule_chip.xyt_chip_pass { background:rgba(228,107,75,.12); color:var(--coral); }
+  .xyt_rule_chip.xyt_chip_keep { background:rgba(23,107,135,.08); color:var(--blue); }
+  .xyt_stats { margin-left:auto; color:var(--muted); font-size:13px; }
+  .xyt_stats b { color:var(--coral); }
+  .xyt_box_grid {
+    display:grid; grid-template-columns:repeat(10,1fr); gap:8px;
+    padding:22px; border:1px solid var(--line); background:var(--card); border-radius:14px;
+  }
+  .xyt_box {
+    aspect-ratio:1/1; display:grid; place-items:center;
+    border:1px solid var(--line); border-radius:9px;
+    background:#fffdf8; font:600 15px Georgia,serif; color:var(--ink);
+    transition:transform .15s ease,background .15s ease,border-color .15s ease;
+    cursor:default; user-select:none;
+  }
+  .xyt_box:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 6px 14px rgba(23,107,135,.15); }
+  .xyt_box.xyt_box_pass {
+    background:rgba(228,107,75,.06); border:1.5px dashed rgba(228,107,75,.55); color:transparent;
+  }
+  .xyt_box.xyt_box_pass:hover { border-color:var(--coral); }
+  .xyt_box.xyt_box_pass::after {
+    content:"过"; font-size:13px; color:rgba(228,107,75,.5); font-family:"Microsoft YaHei",sans-serif;
+  }
+  .xyt_note {
+    margin-top:24px; padding:18px 22px; border-left:3px solid var(--coral);
+    background:rgba(255,253,248,.72); color:var(--muted); font-size:14px;
+  }
+  .xyt_note code { font:12.5px Consolas,monospace; color:var(--blue); background:rgba(23,107,135,.06); padding:2px 6px; border-radius:5px; }
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1120px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) {
+    .xyt_box_grid { grid-template-columns:repeat(5,1fr); }
+    .xyt_stats { margin-left:0; width:100%; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-10-26 | 使用大模型：GLM-5.3-Flash | 功能：数七游戏（逢七过）100 盒子演示 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · GAME OF SEVENS</p>
+      <h1>数七游戏<br>逢七过</h1>
+      <p class="xyt_hero_intro">1～100 共 100 个盒子：满足"数七"规则的数字（7 的倍数、个位或十位含 7）要跳过不报，盒子留空；其余数字正常显示。</p>
+    </section>
+    <section class="xyt_content">
+      <div class="xyt_rule_bar">
+        <span class="xyt_rule_chip xyt_chip_keep">显示数字：不满足规则</span>
+        <span class="xyt_rule_chip xyt_chip_pass"><i class="iconfont icon-xiaolian"></i>空盒子：7 的倍数 / 含 7 的数</span>
+        <span class="xyt_stats" id="xyt_stats"></span>
+      </div>
+      <div class="xyt_box_grid" id="xyt_box_grid"></div>
+      <div class="xyt_note">
+        判断逻辑：<code>n % 7 === 0</code>（7 的倍数）或 <code>n % 10 === 7</code>（个位是 7）或 <code>Math.floor(n / 10) === 7</code>（70～79 十位是 7）。三个条件任一满足即"逢七过"，盒子留空并以虚线框提示；其余盒子显示数字本身。
+      </div>
+    </section>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>数七游戏 · 课堂实践 / 15-2</span>
+  </footer>
+  <script>
+    // 徐玥桐 | 建立时间：2026-10-26 | 使用大模型：GLM-5.3-Flash | 功能：生成100个盒子并按数七规则过滤显示
+    var xyt_grid = document.getElementById("xyt_box_grid");
+    var xyt_passCount = 0;
+    for (var xyt_num = 1; xyt_num <= 100; xyt_num++) {
+      var xyt_isPass = xyt_num % 7 === 0 || xyt_num % 10 === 7 || Math.floor(xyt_num / 10) === 7;
+      var xyt_box = document.createElement("div");
+      xyt_box.className = xyt_isPass ? "xyt_box xyt_box_pass" : "xyt_box";
+      xyt_box.textContent = xyt_isPass ? "" : xyt_num;
+      xyt_box.title = xyt_isPass ? xyt_num + "：逢七过，跳过不报" : xyt_num + "：正常报数";
+      if (xyt_isPass) { xyt_passCount++; }
+      xyt_grid.appendChild(xyt_box);
+    }
+    document.getElementById("xyt_stats").innerHTML =
+      "共 100 个盒子 · 跳过 <b>" + xyt_passCount + "</b> 个 · 显示 <b>" + (100 - xyt_passCount) + "</b> 个";
+  </script>
+</body>
+</html>
