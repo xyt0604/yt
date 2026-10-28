@@ -201,3 +201,23 @@ D:\wangyesheji\AGENTS.md设置项目规则，所有变量名称、cssl类、id�
 完成15-1.html,展示javascript程序结构：循环，条件。然后提交到github,注意规则，注释也要有
 
 ---
+
+## 2026-10-28（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+D:\wangyesheji\13-3.html下导航改成首页 预约 订单 我的
+
+---
+
+## 2026-10-28（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+13-4也会改一下
+
+---
