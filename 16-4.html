@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 点击排行</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#333; --tgrey:#666; --muted:#999; --line:#e5e5e5;
+    --orange:#e4611a; --tabbg:#efefef;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:#fff; color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.6;
+  }
+  .xyt_page { padding:46px 16px 70px; }
+
+  /* ---------- 排行小部件 ---------- */
+  .xyt_widget {
+    width:340px; margin:auto; background:#fff;
+    border:1px solid var(--line); box-shadow:0 4px 14px rgba(0,0,0,.05);
+  }
+
+  /* 标题栏：灰色圆角方块图标 + 文字 */
+  .xyt_head { display:flex; align-items:center; gap:9px; padding:15px 14px 13px; }
+  .xyt_head_icon {
+    display:grid; width:26px; height:26px; place-items:center;
+    background:#98a1a9; border-radius:4px; color:#fff;
+  }
+  .xyt_head_icon .iconfont { font-size:15px; }
+  .xyt_head h1 { margin:0; font-size:19px; font-weight:700; letter-spacing:.02em; }
+
+  /* ---------- 选项卡 ---------- */
+  .xyt_tabs {
+    display:flex; border-top:1px solid var(--line); border-bottom:1px solid #ddd;
+  }
+  .xyt_tab {
+    position:relative; flex:1; height:42px; padding:0; border:0;
+    background:var(--tabbg); color:#555; font:15px/42px "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:background .18s ease,color .18s ease;
+  }
+  .xyt_tab + .xyt_tab { border-left:1px solid #e0e0e0; }
+  .xyt_tab:hover { color:var(--orange); }
+  .xyt_tab.xyt_active {
+    background:#fff; color:var(--orange); font-weight:700;
+    box-shadow:inset 0 -3px 0 var(--orange);
+  }
+  /* 激活项下沿的小三角缺口 */
+  .xyt_tab.xyt_active::after {
+    content:""; position:absolute; left:50%; bottom:0; margin-left:-6px;
+    border:6px solid transparent; border-bottom-color:#fff;
+  }
+
+  /* ---------- 排行列表 ---------- */
+  .xyt_rank { margin:0; padding:2px 0 6px; list-style:none; }
+  .xyt_item {
+    display:flex; align-items:center; gap:9px;
+    padding:9px 13px; border-bottom:1px dotted var(--line);
+    animation:xyt_fade .3s ease both;
+  }
+  .xyt_item:last-child { border-bottom:0; }
+  @keyframes xyt_fade {
+    from { opacity:0; transform:translateX(10px); }
+    to { opacity:1; transform:none; }
+  }
+
+  .xyt_no {
+    flex:none; width:20px; text-align:center;
+    color:var(--muted); font:13px/20px Georgia,serif;
+  }
+  .xyt_no.xyt_top3 {
+    border:1px solid var(--orange); border-radius:2px;
+    color:var(--orange); font:700 12px/18px Georgia,serif; height:18px;
+  }
+
+  .xyt_txt {
+    flex:1; min-width:0; color:var(--tgrey); font-size:14px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    transition:color .16s ease;
+  }
+  .xyt_item:hover .xyt_txt { color:var(--orange); cursor:pointer; }
+
+  .xyt_num {
+    flex:none; min-width:56px; text-align:right;
+    color:var(--muted); font:12.5px Georgia,serif; letter-spacing:.02em;
+  }
+
+  @media (max-width:420px) {
+    .xyt_widget { width:100%; }
+    .xyt_txt { font-size:13.5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：点击排行（选项卡切换实时点击/24小时排行） -->
+  <div class="xyt_page">
+    <section class="xyt_widget" aria-label="点击排行">
+      <div class="xyt_head">
+        <span class="xyt_head_icon"><i class="iconfont icon-icon"></i></span>
+        <h1>点击排行</h1>
+      </div>
+      <div class="xyt_tabs" role="tablist">
+        <button class="xyt_tab xyt_active" type="button" data-tab="realtime" role="tab">实时点击</button>
+        <button class="xyt_tab" type="button" data-tab="day" role="tab">24小时排行</button>
+      </div>
+      <ol class="xyt_rank" id="xyt_rank"></ol>
+    </section>
+  </div>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：两个对象数组分别对应两张榜单，点击选项卡切换渲染
+  var xyt_data = {
+    realtime: [
+      { title: "灯塔水母：地球上唯一“不死生物”，返老还童机制被破解", count: 856322 },
+      { title: "国产大飞机完成高原试飞，网友晒出舷窗云海大片", count: 811246 },
+      { title: "亚马逊雨林发现三米长“巨骨舌鱼”，被称为活化石", count: 595283 },
+      { title: "男子上山采野菜偶遇云海日出，随手一拍刷屏朋友圈", count: 266061 },
+      { title: "大白鲨深海失踪之谜：追踪三个月终于有了新发现", count: 243936 },
+      { title: "南非小犀牛获救后寸步不离保育员，萌照暖翻全网", count: 224346 },
+      { title: "新版学生公交卡上线，刷码进站全程只要0.2秒", count: 172694 },
+      { title: "“微波炉加热坚果致癌”？谣言粉碎机逐条拆解", count: 128789 }
+    ],
+    day: [
+      { title: "世界最长寿圈养大熊猫迎来35岁生日，收到特制冰蛋糕", count: 764512 },
+      { title: "国产科幻动画海外开播，外国网友连夜追更催字幕", count: 621038 },
+      { title: "深海一万米拍到透明狮子鱼，浑身见骨引发热议", count: 583726 },
+      { title: "城市上空现“三个太阳”幻日奇观，持续整整40分钟", count: 452917 },
+      { title: "老屋顶发现百年前“时间胶囊”，旧报纸字迹清晰", count: 398104 },
+      { title: "网红“鸡蛋灯”卖断货，手工匠人日夜赶工仍供不应求", count: 276455 },
+      { title: "一条锦鲤在公园住了18年，认得喂它的老爷爷", count: 201367 },
+      { title: "“静电越大冬天越冷”是真是假？气象台这样回应", count: 158742 }
+    ]
+  };
+
+  var xyt_rank = document.getElementById("xyt_rank");
+
+  function xyt_renderRank(xyt_key) {
+    xyt_rank.innerHTML = "";
+    xyt_data[xyt_key].forEach(function (xyt_p, xyt_i) {
+      var xyt_li = document.createElement("li");
+      xyt_li.className = "xyt_item";
+      xyt_li.style.animationDelay = (xyt_i * 35) + "ms";
+
+      var xyt_no = document.createElement("span");
+      xyt_no.className = "xyt_no" + (xyt_i < 3 ? " xyt_top3" : "");
+      xyt_no.textContent = xyt_i + 1;
+
+      var xyt_txt = document.createElement("span");
+      xyt_txt.className = "xyt_txt";
+      xyt_txt.title = xyt_p.title;
+      xyt_txt.textContent = xyt_p.title;
+
+      var xyt_num = document.createElement("span");
+      xyt_num.className = "xyt_num";
+      xyt_num.textContent = xyt_p.count.toLocaleString("zh-CN");
+
+      xyt_li.appendChild(xyt_no);
+      xyt_li.appendChild(xyt_txt);
+      xyt_li.appendChild(xyt_num);
+      xyt_rank.appendChild(xyt_li);
+    });
+  }
+
+  document.querySelectorAll(".xyt_tab").forEach(function (xyt_btn) {
+    xyt_btn.addEventListener("click", function () {
+      if (xyt_btn.classList.contains("xyt_active")) { return; }
+      document.querySelectorAll(".xyt_tab").forEach(function (xyt_b) {
+        xyt_b.classList.remove("xyt_active");
+      });
+      xyt_btn.classList.add("xyt_active");
+      xyt_renderRank(xyt_btn.getAttribute("data-tab"));
+    });
+  });
+
+  xyt_renderRank("realtime");
+</script>
+</body>
+</html>

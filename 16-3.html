@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 网帖翻译列表</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#333; --muted:#999; --light:#c9ced3; --line:#eee;
+    --blue:#4a7db5; --red:#e34d3f;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:#fff; color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.6;
+  }
+  a { color:inherit; text-decoration:none; }
+  .xyt_page { max-width:860px; margin:auto; padding:0 20px 60px; }
+
+  /* ---------- 顶部标题栏 ---------- */
+  .xyt_bar {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:20px 0 16px;
+  }
+  .xyt_bar h1 { margin:0; font-size:22px; font-weight:700; letter-spacing:.02em; }
+  .xyt_guide {
+    display:inline-flex; align-items:center; gap:6px;
+    color:var(--muted); font-size:14px; cursor:pointer;
+    transition:color .16s ease;
+  }
+  .xyt_guide:hover { color:var(--blue); }
+  .xyt_guide .iconfont { font-size:15px; }
+  .xyt_tips {
+    display:none; margin:0 0 14px; padding:12px 16px;
+    border:1px solid var(--line); border-radius:8px; background:#fafbfc;
+    color:var(--muted); font-size:13.5px;
+  }
+  .xyt_tips.xyt_show { display:block; }
+  .xyt_tips b { color:var(--ink); }
+
+  /* ---------- 帖子列表 ---------- */
+  .xyt_post {
+    display:flex; gap:14px; padding:18px 4px 16px;
+    border-top:1px solid var(--line); cursor:pointer;
+    transition:background .16s ease;
+  }
+  .xyt_post:first-child { border-top:0; }
+  .xyt_post:hover { background:#fafbfc; }
+
+  .xyt_post_flag { flex:none; width:36px; display:flex; flex-direction:column; align-items:center; gap:5px; padding-top:2px; }
+  .xyt_flag {
+    position:relative; width:34px; height:34px; border-radius:50%; overflow:hidden;
+    border:1px solid #e3e6e9; display:grid; place-items:center;
+    font-size:11px; font-weight:700; color:#fff;
+  }
+  .xyt_yi {
+    width:17px; height:17px; border-radius:50%; background:var(--red); color:#fff;
+    display:grid; place-items:center; font-size:10.5px; line-height:1;
+  }
+
+  /* 各国旗帜（纯 CSS 绘制） */
+  .xyt_f_un { background:#8ab4e0; color:#fff; letter-spacing:.05em; }
+  .xyt_f_tr { background:#e30a17; }
+  .xyt_f_tr::before { content:""; position:absolute; left:5px; top:50%; width:15px; height:15px; margin-top:-7.5px; border-radius:50%; background:#fff; }
+  .xyt_f_tr::after { content:""; position:absolute; left:9px; top:50%; width:11px; height:11px; margin-top:-5.5px; border-radius:50%; background:#e30a17; }
+  .xyt_f_tr .xyt_star { position:absolute; right:4px; top:50%; transform:translateY(-50%); color:#fff; font-size:9px; }
+  .xyt_f_us { background:repeating-linear-gradient(180deg,#b22234 0 2.6px,#fff 2.6px 5.2px); }
+  .xyt_f_us::before { content:""; position:absolute; left:0; top:0; width:55%; height:48%; background:#3c3b6e; border-bottom-right-radius:6px; }
+  .xyt_f_vn { background:#da251d; }
+  .xyt_f_vn .xyt_star { color:#ffde00; font-size:17px; }
+  .xyt_f_fr { background:linear-gradient(90deg,#0055a4 0 34%,#fff 34% 66%,#ef4135 66%); }
+  .xyt_f_jp { background:#fff; }
+  .xyt_f_jp::before { content:""; position:absolute; width:13px; height:13px; border-radius:50%; background:#bc002d; }
+  .xyt_f_kr { background:#fff; }
+  .xyt_f_kr::before { content:""; width:15px; height:15px; border-radius:50%; background:linear-gradient(180deg,#cd2e3a 50%,#0047a0 50%); transform:rotate(-25deg); }
+  .xyt_f_de { background:linear-gradient(180deg,#1a1a1a 0 33%,#dd0000 33% 66%,#ffce00 66%); }
+
+  .xyt_post_main { flex:1; min-width:0; }
+  .xyt_post_title {
+    margin:0; font-size:17px; font-weight:400; color:var(--ink); line-height:1.55;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    transition:color .16s ease;
+  }
+  .xyt_post:hover .xyt_post_title { color:var(--blue); }
+
+  .xyt_meta {
+    display:flex; flex-wrap:wrap; align-items:center; gap:30px;
+    margin-top:9px; color:var(--muted); font-size:14px;
+  }
+  .xyt_meta_item { display:inline-flex; align-items:center; gap:6px; }
+  .xyt_meta_item .iconfont { font-size:14px; color:var(--light); }
+  .xyt_author { color:var(--blue); }
+  .xyt_author:hover { text-decoration:underline; }
+
+  /* 纯 CSS 时钟小图标 */
+  .xyt_clock {
+    position:relative; width:14px; height:14px; flex:none;
+    border:1.5px solid var(--light); border-radius:50%; display:inline-block;
+  }
+  .xyt_clock::before {
+    content:""; position:absolute; left:50%; top:50%; width:1.5px; height:4px;
+    background:var(--light); transform:translate(-50%,-100%); transform-origin:bottom;
+  }
+  .xyt_clock::after {
+    content:""; position:absolute; left:50%; top:50%; width:4.5px; height:1.5px;
+    background:var(--light); transform:translate(-1px,-50%);
+  }
+
+  /* 纯 CSS 对话气泡小图标 */
+  .xyt_bubble {
+    position:relative; width:15px; height:12px; flex:none;
+    border:1.5px solid var(--light); border-radius:3.5px; display:inline-block;
+  }
+  .xyt_bubble::after {
+    content:""; position:absolute; left:3px; bottom:-6px; width:0; height:0;
+    border-left:3.5px solid transparent; border-right:3.5px solid transparent;
+    border-top:5px solid var(--light);
+  }
+
+  .xyt_empty { padding:40px 0; text-align:center; color:var(--muted); font-size:14px; }
+
+  @media (max-width:600px) {
+    .xyt_meta { gap:16px; font-size:13px; }
+    .xyt_post_title { font-size:15.5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：网帖翻译列表页（数组对象渲染 + iconfont/CSS图标） -->
+  <div class="xyt_page">
+    <header class="xyt_bar">
+      <h1>网帖翻译</h1>
+      <a class="xyt_guide" id="xyt_guide" href="javascript:void(0)"><i class="iconfont icon-bianji"></i>新手翻译说明</a>
+    </header>
+    <div class="xyt_tips" id="xyt_tips">
+      <b>翻译说明：</b>列表内容整理自海外社交平台的日常讨论帖，由译者摘译要点后发布；红点「译」表示该帖已经过人工校对，点击标题可查看原帖与译文对照。
+    </div>
+    <main id="xyt_list"></main>
+  </div>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：用对象数组渲染网帖翻译列表
+  var xyt_posts = [
+    {
+      flag: "xyt_f_un",
+      title: "外国博主第一次坐中国高铁：从北京到上海只要四个半小时，车厢安静得能听见翻书声，网友感叹这就是未来的出行方式",
+      date: "2026-10-29", author: "环球观察员", views: 6703, comments: 51
+    },
+    {
+      flag: "xyt_f_tr",
+      title: "土耳其网友晒出自己做的手工拉面，中国网友在线教学「醒面」技巧，评论区变成大型厨艺交流现场",
+      date: "2026-10-29", author: "安卡拉的小猫", views: 3871, comments: 32
+    },
+    {
+      flag: "xyt_f_us",
+      title: "美国程序员流行「攒够钱就出发」的间隔年旅行，中国网友表示赞同：工作是为了更好地生活，而不是相反",
+      date: "2026-10-29", author: "硅谷打工人", views: 2246, comments: 13
+    },
+    {
+      flag: "xyt_f_vn",
+      title: "越南网友讨论各国奶茶定价，发现中国校园里的柠檬水只要三块钱一杯，直呼「物美价廉还想打包带回河内」",
+      date: "2026-10-29", author: "河内奶茶店老板", views: 1639, comments: 16
+    },
+    {
+      flag: "xyt_f_fr",
+      title: "法国网友讨论合租省钱经验，中国留学生分享「宿舍神器」清单，评论区整齐列队求代购链接",
+      date: "2026-10-29", author: "巴黎房东", views: 1387, comments: 9
+    },
+    {
+      flag: "xyt_f_jp",
+      title: "日本网友提问：为什么中国城市的深夜街头还很热闹？夜市烧烤摊视频播放量破百万，馋哭一众加班族",
+      date: "2026-10-29", author: "大阪通勤族", views: 1204, comments: 27
+    },
+    {
+      flag: "xyt_f_kr",
+      title: "韩国网友晒出自习室打卡记录，中国网友回赠「图书馆占座攻略」，两国学生在线交换学习方法",
+      date: "2026-10-29", author: "首尔考研人", views: 986, comments: 12
+    },
+    {
+      flag: "xyt_f_de",
+      title: "德国网友测评各国共享单车，称赞「扫码即走」的体验足够顺手，希望家乡的街道也能引进同款",
+      date: "2026-10-29", author: "柏林骑行党", views: 753, comments: 8
+    }
+  ];
+
+  var xyt_list = document.getElementById("xyt_list");
+
+  function xyt_renderList() {
+    if (xyt_posts.length === 0) {
+      xyt_list.innerHTML = '<p class="xyt_empty">暂时没有可展示的帖子。</p>';
+      return;
+    }
+    xyt_list.innerHTML = "";
+    xyt_posts.forEach(function (xyt_p) {
+      var xyt_item = document.createElement("article");
+      xyt_item.className = "xyt_post";
+
+      var xyt_flagBox = document.createElement("div");
+      xyt_flagBox.className = "xyt_post_flag";
+      var xyt_flagInner = "";
+      if (xyt_p.flag === "xyt_f_un") { xyt_flagInner = "UN"; }
+      if (xyt_p.flag === "xyt_f_vn" || xyt_p.flag === "xyt_f_tr") {
+        xyt_flagInner = '<span class="xyt_star">★</span>';
+      }
+      xyt_flagBox.innerHTML =
+        '<span class="xyt_flag ' + xyt_p.flag + '">' + xyt_flagInner + "</span>" +
+        '<span class="xyt_yi">译</span>';
+
+      var xyt_main = document.createElement("div");
+      xyt_main.className = "xyt_post_main";
+
+      var xyt_title = document.createElement("h2");
+      xyt_title.className = "xyt_post_title";
+      xyt_title.textContent = xyt_p.title;
+
+      var xyt_meta = document.createElement("div");
+      xyt_meta.className = "xyt_meta";
+      xyt_meta.innerHTML =
+        '<span class="xyt_meta_item"><i class="xyt_clock"></i>' + xyt_p.date + "</span>" +
+        '<a class="xyt_author" href="javascript:void(0)">' + xyt_p.author + "</a>" +
+        '<span class="xyt_meta_item"><i class="iconfont icon-sousuo"></i>' + xyt_p.views.toLocaleString("zh-CN") + "</span>" +
+        '<span class="xyt_meta_item"><i class="xyt_bubble"></i>' + xyt_p.comments + "</span>";
+
+      xyt_item.addEventListener("click", function () {
+        xyt_title.style.color = "#7a5c9e";
+      });
+
+      xyt_main.appendChild(xyt_title);
+      xyt_main.appendChild(xyt_meta);
+      xyt_item.appendChild(xyt_flagBox);
+      xyt_item.appendChild(xyt_main);
+      xyt_list.appendChild(xyt_item);
+    });
+  }
+
+  document.getElementById("xyt_guide").addEventListener("click", function () {
+    document.getElementById("xyt_tips").classList.toggle("xyt_show");
+  });
+
+  xyt_renderList();
+</script>
+</body>
+</html>
