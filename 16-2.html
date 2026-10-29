@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | JavaScript 对象演示</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --violet:#7a5c9e;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,54px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:680px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+
+  /* ---------- 工作台 ---------- */
+  .xyt_bench { display:grid; grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr); gap:18px; align-items:start; }
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;
+    padding:16px 20px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+  }
+  .xyt_panel_head .xyt_expr { font:600 15px Consolas,monospace; color:var(--blue); }
+  .xyt_panel_head .xyt_expr em { color:var(--muted); font-style:normal; }
+  .xyt_pill {
+    padding:3px 11px; border-radius:20px; background:#fff; border:1px solid var(--line);
+    color:var(--muted); font:11.5px Consolas,monospace;
+  }
+
+  .xyt_props { padding:10px 12px 6px; }
+  .xyt_prop {
+    display:flex; align-items:center; gap:8px;
+    padding:7px 10px; border-radius:9px;
+    font:13.5px Consolas,monospace; cursor:pointer;
+    transition:background .16s ease,transform .16s ease;
+  }
+  .xyt_prop:hover { background:rgba(23,107,135,.07); transform:translateX(3px); }
+  .xyt_prop_hit { background:rgba(228,107,75,.10) !important; }
+  .xyt_key { color:var(--ink); font-weight:600; }
+  .xyt_colon { color:var(--muted); }
+  .xyt_val { flex:1; min-width:0; word-break:break-all; }
+  .xyt_val[data-k="string"] { color:var(--green); }
+  .xyt_val[data-k="number"] { color:var(--blue); }
+  .xyt_val[data-k="boolean"] { color:var(--coral); }
+  .xyt_val[data-k="object"], .xyt_val[data-k="array"] { color:var(--violet); }
+  .xyt_val[data-k="null"], .xyt_val[data-k="undefined"] { color:var(--muted); font-style:italic; }
+  .xyt_tag { color:#96a2ac; font-size:11px; }
+  .xyt_del {
+    flex:none; width:20px; height:20px; padding:0; border:0; border-radius:50%;
+    background:transparent; color:#b9c2c8; font-size:14px; line-height:1; cursor:pointer;
+    transition:all .16s ease;
+  }
+  .xyt_del:hover { background:rgba(228,107,75,.16); color:var(--coral); }
+
+  .xyt_form { display:flex; flex-wrap:wrap; gap:8px; padding:12px 16px 16px; border-top:1px dashed var(--line); }
+  .xyt_form input {
+    flex:1 1 108px; min-width:0; padding:8px 11px;
+    border:1px solid var(--line); border-radius:9px; background:#fff;
+    font:13px Consolas,monospace; color:var(--ink); outline:none;
+    transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_form input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_form input.xyt_input_bad { border-color:var(--coral); box-shadow:0 0 0 3px rgba(228,107,75,.16); }
+  .xyt_btn {
+    padding:8px 16px; border:1px solid var(--blue); border-radius:9px;
+    background:var(--blue); color:#fff; font:13px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_btn:hover { background:#12556b; border-color:#12556b; }
+  .xyt_hint { margin:0; padding:0 16px 16px; color:var(--muted); font-size:12.5px; }
+
+  /* ---------- 控制台 ---------- */
+  .xyt_console { height:320px; overflow-y:auto; padding:14px 16px; background:#1f2a33; }
+  .xyt_console_empty { color:#8fa0ac; font:12.5px Consolas,monospace; }
+  .xyt_line { margin-bottom:12px; font:12.5px/1.7 Consolas,monospace; animation:xyt_line .28s ease both; }
+  .xyt_line .xyt_cmd { color:#a8c8d8; word-break:break-all; }
+  .xyt_line .xyt_cmd::before { content:"› "; color:#e46b4b; }
+  .xyt_line .xyt_out { display:block; margin-top:2px; color:#f3efe6; word-break:break-all; }
+  .xyt_line .xyt_out::before { content:"← "; color:#7fb3a0; }
+  .xyt_line .xyt_out_type { margin-left:8px; color:#88a0ad; font-size:11px; }
+  @keyframes xyt_line { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  .xyt_actions { display:flex; flex-wrap:wrap; gap:8px; padding:12px 16px 16px; border-top:1px solid var(--line); }
+  .xyt_chip_btn {
+    padding:6px 13px; border:1px solid var(--line); border-radius:20px;
+    background:#fff; color:var(--blue); font:12.5px/1.6 Consolas,monospace;
+    cursor:pointer; transition:all .16s ease;
+  }
+  .xyt_chip_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.07); }
+
+  /* ---------- 通用小节 ---------- */
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:52px 0 18px; }
+  h2 { margin:0; font:500 27px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_section_intro { max-width:760px; margin:-8px 0 18px; color:var(--muted); font-size:14px; }
+
+  /* ---------- 引用 / 拷贝 ---------- */
+  .xyt_ref_grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .xyt_ref_card {
+    padding:18px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:border-color .2s ease,box-shadow .2s ease;
+  }
+  .xyt_ref_card.xyt_linked { border-color:var(--coral); box-shadow:0 0 0 3px rgba(228,107,75,.12); }
+  .xyt_ref_name { font:600 14px Consolas,monospace; color:var(--blue); }
+  .xyt_ref_body { margin:10px 0 0; font:13px Consolas,monospace; color:var(--muted); }
+  .xyt_ref_body b { display:inline-block; margin-left:4px; color:var(--ink); font:600 22px Georgia,serif; }
+  .xyt_ref_actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+  .xyt_verdict {
+    margin-top:14px; padding:12px 16px; border-left:3px solid var(--blue);
+    background:rgba(23,107,135,.05); border-radius:0 10px 10px 0;
+    color:var(--muted); font-size:13.5px;
+  }
+  .xyt_verdict code { color:var(--blue); font-family:Consolas,monospace; }
+
+  /* ---------- this ---------- */
+  .xyt_this_grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .xyt_code_card {
+    padding:18px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+  }
+  .xyt_code_card pre {
+    margin:0 0 14px; padding:15px; border-radius:10px; background:#1f2a33; color:#e9eef2;
+    font:12.5px/1.8 Consolas,monospace; overflow-x:auto;
+  }
+  .xyt_code_card pre .k { color:#ffcf8a; }
+  .xyt_code_card pre .s { color:#9dd8a8; }
+  .xyt_code_card pre .c { color:#8fa0ac; }
+  .xyt_code_card h3 { margin:0 0 10px; font-size:15px; }
+  .xyt_code_card p { margin:0 0 14px; color:var(--muted); font-size:13.5px; }
+  .xyt_output {
+    min-height:44px; padding:10px 14px; border-radius:10px;
+    background:rgba(63,125,92,.08); color:var(--green);
+    font:13.5px Consolas,monospace; word-break:break-all;
+  }
+
+  /* ---------- 内置对象 ---------- */
+  .xyt_builtin_grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:12px; }
+  .xyt_builtin {
+    text-align:left; padding:16px; border:1px solid var(--line); border-radius:13px;
+    background:var(--card); cursor:pointer; font-family:inherit;
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_builtin:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_builtin strong { display:block; color:var(--blue); font:600 15px Consolas,monospace; }
+  .xyt_builtin span { display:block; margin-top:4px; color:var(--muted); font-size:12.5px; }
+
+  /* ---------- 要点 ---------- */
+  .xyt_note_grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+  .xyt_note {
+    padding:16px 18px; border:1px solid var(--line); border-radius:13px;
+    background:var(--card); color:var(--muted); font-size:13.5px;
+  }
+  .xyt_note b { display:block; margin-bottom:6px; color:var(--ink); font-size:14px; }
+  .xyt_note code { color:var(--blue); font-family:Consolas,monospace; font-size:12.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:900px) {
+    .xyt_bench, .xyt_ref_grid, .xyt_this_grid { grid-template-columns:1fr; }
+    .xyt_console { height:250px; }
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：JavaScript 对象（属性、访问、遍历、引用与拷贝、this、内置对象）可视化演示 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · OBJECTS</p>
+      <h1>对象的<br>抽屉与标签</h1>
+      <p class="xyt_hero_intro">对象是一排贴着标签的抽屉：标签叫属性名（键），抽屉里装的值可以是数字、字符串、布尔值，也可以是另一个对象或数组。左边改抽屉，右边看结果，对象就是这么被「读」和「写」的。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <!-- 对象工作台 -->
+      <section class="xyt_bench" aria-label="对象工作台">
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <span class="xyt_expr">xyt_student <em>// 对象字面量</em></span>
+            <span class="xyt_pill" id="xyt_count">6 个属性</span>
+          </div>
+          <div class="xyt_props" id="xyt_props"></div>
+          <div class="xyt_form">
+            <input id="xyt_key" type="text" placeholder="属性名，如 scores" autocomplete="off">
+            <input id="xyt_val" type="text" placeholder="属性值，如 90 或 true" autocomplete="off">
+            <button class="xyt_btn" id="xyt_write" type="button">写入 / 修改</button>
+          </div>
+          <p class="xyt_hint">点击任意属性行，右侧控制台会用「点」和「方括号」两种写法读取它；行尾 × 可以删除该属性。</p>
+        </div>
+
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <span class="xyt_expr">控制台 <em>// 操作结果</em></span>
+            <button class="xyt_pill" id="xyt_clear" type="button" style="cursor:pointer">清空</button>
+          </div>
+          <div class="xyt_console" id="xyt_console">
+            <p class="xyt_console_empty">等待操作……试试点击左边的属性行，或者点下面的方法按钮。</p>
+          </div>
+          <div class="xyt_actions">
+            <button class="xyt_chip_btn" data-act="keys" type="button">Object.keys()</button>
+            <button class="xyt_chip_btn" data-act="values" type="button">Object.values()</button>
+            <button class="xyt_chip_btn" data-act="entries" type="button">Object.entries()</button>
+            <button class="xyt_chip_btn" data-act="forin" type="button">for…in</button>
+            <button class="xyt_chip_btn" data-act="in" type="button">"name" in obj</button>
+            <button class="xyt_chip_btn" data-act="json" type="button">JSON.stringify()</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 引用与拷贝 -->
+      <section aria-labelledby="xyt_ref_title">
+        <div class="xyt_section_head"><h2 id="xyt_ref_title">赋值是「同一把钥匙」</h2><span>引用类型 · 浅拷贝</span></div>
+        <p class="xyt_section_intro">把对象赋值给另一个变量，递过去的是同一个抽屉的钥匙，不是复制一份抽屉。下面两张卡都指向同一个对象时，改任意一边，两边显示的值会一起变；用 <code>{ ...xyt_a }</code> 浅拷贝后才能各自独立。</p>
+        <div class="xyt_ref_grid">
+          <div class="xyt_ref_card" id="xyt_card_a"><div class="xyt_ref_name">xyt_a</div><div class="xyt_ref_body">score =<b id="xyt_score_a">60</b></div></div>
+          <div class="xyt_ref_card" id="xyt_card_b"><div class="xyt_ref_name">xyt_b</div><div class="xyt_ref_body">score =<b id="xyt_score_b">60</b></div></div>
+        </div>
+        <div class="xyt_ref_actions">
+          <button class="xyt_chip_btn" id="xyt_assign" type="button">xyt_b = xyt_a（引用赋值）</button>
+          <button class="xyt_chip_btn" id="xyt_copy" type="button">xyt_b = { ...xyt_a }（浅拷贝）</button>
+          <button class="xyt_chip_btn" id="xyt_plus" type="button">xyt_b.score += 10</button>
+          <button class="xyt_chip_btn" id="xyt_ref_reset" type="button">重置</button>
+        </div>
+        <div class="xyt_verdict" id="xyt_verdict">当前两个变量各自指向独立对象，<code>xyt_a === xyt_b</code> 为 <b>false</b>。</div>
+      </section>
+
+      <!-- this -->
+      <section aria-labelledby="xyt_this_title">
+        <div class="xyt_section_head"><h2 id="xyt_this_title">方法里的 this</h2><span>谁调用，this 就指向谁</span></div>
+        <p class="xyt_section_intro">对象里放一个函数，它就变成了方法。用 <code>对象.方法()</code> 调用时，this 指向这个对象；一旦把方法单独取出来赋给变量再调用，this 就丢了。</p>
+        <div class="xyt_this_grid">
+          <div class="xyt_code_card">
+            <h3>正确姿势：xyt_person.sayHi()</h3>
+            <pre><span class="k">var</span> xyt_person = {
+  name: <span class="s">"徐玥桐"</span>,
+  sayHi: <span class="k">function</span> () {
+    <span class="k">return</span> <span class="s">"你好，我是"</span> + <span class="k">this</span>.name;
+  }
+};</pre>
+            <button class="xyt_btn" id="xyt_call_ok" type="button">调用 xyt_person.sayHi()</button>
+            <div class="xyt_output" id="xyt_out_ok">—</div>
+          </div>
+          <div class="xyt_code_card">
+            <h3>错误姿势：var xyt_f = xyt_person.sayHi</h3>
+            <pre><span class="k">var</span> xyt_f = xyt_person.sayHi;
+xyt_f();  <span class="c">// this 已经不指对象了</span></pre>
+            <button class="xyt_btn" id="xyt_call_bad" type="button">调用 xyt_f()</button>
+            <div class="xyt_output" id="xyt_out_bad">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 内置对象 -->
+      <section aria-labelledby="xyt_builtin_title">
+        <div class="xyt_section_head"><h2 id="xyt_builtin_title">顺手用到的内置对象</h2><span>点一下看结果</span></div>
+        <div class="xyt_builtin_grid">
+          <button class="xyt_builtin" type="button" data-builtin="math"><strong>Math</strong><span>Math.round(4.6) · 数学计算工具箱</span></button>
+          <button class="xyt_builtin" type="button" data-builtin="date"><strong>Date</strong><span>new Date() · 日期与时间</span></button>
+          <button class="xyt_builtin" type="button" data-builtin="json"><strong>JSON</strong><span>JSON.parse / stringify · 数据格式转换</span></button>
+          <button class="xyt_builtin" type="button" data-builtin="string"><strong>String</strong><span>"abc".toUpperCase() · 字符串包装对象</span></button>
+        </div>
+      </section>
+
+      <!-- 要点 -->
+      <section aria-labelledby="xyt_note_title">
+        <div class="xyt_section_head"><h2 id="xyt_note_title">容易踩的四个坑</h2><span>记住就够了</span></div>
+        <div class="xyt_note_grid">
+          <div class="xyt_note"><b>键名一定是字符串</b>即使写成 <code>{1: "a"}</code>，键也会被转成字符串 <code>"1"</code>；读取时 <code>obj[1]</code> 与 <code>obj["1"]</code> 等价。</div>
+          <div class="xyt_note"><b>点号 vs 方括号</b>键名是变量、或含有中划线、空格时只能用方括号：<code>obj[xyt_k]</code>、<code>obj["user-name"]</code>。</div>
+          <div class="xyt_note"><b>typeof null 是 "object"</b>这是历史遗留问题。判断真对象要用 <code>v !== null &amp;&amp; typeof v === "object"</code>。</div>
+          <div class="xyt_note"><b>in 与 hasOwnProperty</b><code>"name" in obj</code> 会把原型链上的属性也算进来；只想知道自己的属性，用 <code>obj.hasOwnProperty("name")</code>。</div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>JavaScript 对象 / 16-2</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：对象属性增删改查、遍历、引用与 this 的交互演示
+  var xyt_student = {
+    name: "徐玥桐",
+    age: 20,
+    major: "数字媒体技术",
+    isMember: true,
+    hobbies: ["摄影", "编程"],
+    address: { city: "南京", school: "南传" }
+  };
+  var xyt_consoleBox = document.getElementById("xyt_console");
+  var xyt_props = document.getElementById("xyt_props");
+  var xyt_keyInput = document.getElementById("xyt_key");
+  var xyt_valInput = document.getElementById("xyt_val");
+
+  /* ---------- 值的显示与类型判断 ---------- */
+  function xyt_kindOf(xyt_v) {
+    if (xyt_v === null) { return "null"; }
+    if (Array.isArray(xyt_v)) { return "array"; }
+    return typeof xyt_v;
+  }
+
+  function xyt_showVal(xyt_v, xyt_depth) {
+    var xyt_d = xyt_depth || 0;
+    if (typeof xyt_v === "string") { return '"' + xyt_v + '"'; }
+    if (xyt_v === null) { return "null"; }
+    if (xyt_v === undefined) { return "undefined"; }
+    if (Array.isArray(xyt_v)) {
+      var xyt_items = xyt_v.map(function (xyt_x) { return xyt_showVal(xyt_x, xyt_d + 1); });
+      return "[" + xyt_items.join(", ") + "]";
+    }
+    if (typeof xyt_v === "object") {
+      var xyt_keys = Object.keys(xyt_v);
+      if (xyt_d > 1) { return "{\u2026}"; }
+      var xyt_pairs = xyt_keys.map(function (xyt_k) {
+        return xyt_k + ": " + xyt_showVal(xyt_v[xyt_k], xyt_d + 1);
+      });
+      return "{ " + xyt_pairs.join(", ") + " }";
+    }
+    return String(xyt_v);
+  }
+
+  /* ---------- 控制台 ---------- */
+  function xyt_echo(xyt_cmd, xyt_result, xyt_kind) {
+    var xyt_emptyLine = xyt_consoleBox.querySelector(".xyt_console_empty");
+    if (xyt_emptyLine) { xyt_consoleBox.innerHTML = ""; }
+    var xyt_line = document.createElement("div");
+    xyt_line.className = "xyt_line";
+
+    var xyt_cmdEl = document.createElement("span");
+    xyt_cmdEl.className = "xyt_cmd";
+    xyt_cmdEl.textContent = xyt_cmd;
+
+    var xyt_outEl = document.createElement("span");
+    xyt_outEl.className = "xyt_out";
+    xyt_outEl.textContent = xyt_result;
+
+    if (xyt_kind) {
+      var xyt_tagEl = document.createElement("span");
+      xyt_tagEl.className = "xyt_out_type";
+      xyt_tagEl.textContent = xyt_kind;
+      xyt_outEl.appendChild(xyt_tagEl);
+    }
+
+    xyt_line.appendChild(xyt_cmdEl);
+    xyt_line.appendChild(xyt_outEl);
+    xyt_consoleBox.insertBefore(xyt_line, xyt_consoleBox.firstChild);
+    while (xyt_consoleBox.children.length > 14) {
+      xyt_consoleBox.removeChild(xyt_consoleBox.lastChild);
+    }
+  }
+
+  /* ---------- 渲染属性列表 ---------- */
+  function xyt_renderProps(xyt_hitKey) {
+    xyt_props.innerHTML = "";
+    var xyt_keys = Object.keys(xyt_student);
+    document.getElementById("xyt_count").textContent = xyt_keys.length + " 个属性";
+
+    if (xyt_keys.length === 0) {
+      var xyt_blank = document.createElement("p");
+      xyt_blank.style.cssText = "margin:0;padding:12px 10px;color:#687581;font-size:13px";
+      xyt_blank.textContent = "对象现在是空的：所有属性都被 delete 删掉了。";
+      xyt_props.appendChild(xyt_blank);
+    }
+
+    xyt_keys.forEach(function (xyt_k) {
+      var xyt_v = xyt_student[xyt_k];
+      var xyt_row = document.createElement("div");
+      xyt_row.className = "xyt_prop" + (xyt_k === xyt_hitKey ? " xyt_prop_hit" : "");
+
+      var xyt_keyEl = document.createElement("span");
+      xyt_keyEl.className = "xyt_key";
+      xyt_keyEl.textContent = xyt_k;
+
+      var xyt_colon = document.createElement("span");
+      xyt_colon.className = "xyt_colon";
+      xyt_colon.textContent = ":";
+
+      var xyt_valEl = document.createElement("span");
+      xyt_valEl.className = "xyt_val";
+      xyt_valEl.setAttribute("data-k", xyt_kindOf(xyt_v));
+      xyt_valEl.textContent = xyt_showVal(xyt_v);
+
+      var xyt_tag = document.createElement("span");
+      xyt_tag.className = "xyt_tag";
+      xyt_tag.textContent = xyt_kindOf(xyt_v);
+
+      var xyt_delBtn = document.createElement("button");
+      xyt_delBtn.className = "xyt_del";
+      xyt_delBtn.type = "button";
+      xyt_delBtn.title = "delete xyt_student." + xyt_k;
+      xyt_delBtn.textContent = "×";
+      xyt_delBtn.addEventListener("click", function (xyt_e) {
+        xyt_e.stopPropagation();
+        delete xyt_student[xyt_k];
+        xyt_echo("delete xyt_student." + xyt_k, "true", "属性已删除");
+        xyt_renderProps();
+      });
+
+      xyt_row.addEventListener("click", function () {
+        xyt_echo("xyt_student." + xyt_k, xyt_showVal(xyt_v), xyt_kindOf(xyt_v));
+        xyt_echo('xyt_student["' + xyt_k + '"]', xyt_showVal(xyt_v), "方括号写法结果相同");
+        xyt_renderProps(xyt_k);
+      });
+
+      xyt_row.appendChild(xyt_keyEl);
+      xyt_row.appendChild(xyt_colon);
+      xyt_row.appendChild(xyt_valEl);
+      xyt_row.appendChild(xyt_tag);
+      xyt_row.appendChild(xyt_delBtn);
+      xyt_props.appendChild(xyt_row);
+    });
+  }
+
+  /* ---------- 写入 / 修改属性 ---------- */
+  function xyt_parseValue(xyt_raw) {
+    var xyt_t = xyt_raw.trim();
+    if (xyt_t === "true") { return true; }
+    if (xyt_t === "false") { return false; }
+    if (xyt_t === "null") { return null; }
+    if (xyt_t === "undefined") { return undefined; }
+    if (xyt_t !== "" && !isNaN(Number(xyt_t))) { return Number(xyt_t); }
+    if ((xyt_t.charAt(0) === "[" && xyt_t.slice(-1) === "]") ||
+        (xyt_t.charAt(0) === "{" && xyt_t.slice(-1) === "}")) {
+      try { return JSON.parse(xyt_t); } catch (xyt_e) { return xyt_t; }
+    }
+    return xyt_t;
+  }
+
+  function xyt_writeProp() {
+    var xyt_k = xyt_keyInput.value.trim();
+    var xyt_raw = xyt_valInput.value.trim();
+    if (xyt_k === "") {
+      xyt_keyInput.classList.add("xyt_input_bad");
+      xyt_echo("xyt_student[键] = 值", "键名不能为空", "请先填属性名");
+      return;
+    }
+    xyt_keyInput.classList.remove("xyt_input_bad");
+    var xyt_isNew = !Object.prototype.hasOwnProperty.call(xyt_student, xyt_k);
+    var xyt_v = xyt_parseValue(xyt_raw);
+    xyt_student[xyt_k] = xyt_v;
+    xyt_echo("xyt_student." + xyt_k + " = " + xyt_showVal(xyt_v),
+      xyt_showVal(xyt_v),
+      xyt_isNew ? "新增属性" : "修改已有属性");
+    xyt_valInput.value = "";
+    xyt_renderProps(xyt_k);
+  }
+
+  document.getElementById("xyt_write").addEventListener("click", xyt_writeProp);
+  xyt_valInput.addEventListener("keydown", function (xyt_e) {
+    if (xyt_e.key === "Enter") { xyt_writeProp(); }
+  });
+  xyt_keyInput.addEventListener("keydown", function (xyt_e) {
+    if (xyt_e.key === "Enter") { xyt_valInput.focus(); }
+  });
+
+  document.getElementById("xyt_clear").addEventListener("click", function () {
+    xyt_consoleBox.innerHTML = '<p class="xyt_console_empty">已经清空，继续操作吧。</p>';
+  });
+
+  /* ---------- 遍历与检查 ---------- */
+  document.querySelectorAll(".xyt_chip_btn[data-act]").forEach(function (xyt_btn) {
+    xyt_btn.addEventListener("click", function () {
+      var xyt_act = xyt_btn.getAttribute("data-act");
+      if (xyt_act === "keys") {
+        xyt_echo("Object.keys(xyt_student)", xyt_showVal(Object.keys(xyt_student)), "array");
+      } else if (xyt_act === "values") {
+        xyt_echo("Object.values(xyt_student)", xyt_showVal(Object.values(xyt_student)), "array");
+      } else if (xyt_act === "entries") {
+        var xyt_pairs = Object.entries(xyt_student).map(function (xyt_p) {
+          return "[" + xyt_showVal(xyt_p[0]) + ", " + xyt_showVal(xyt_p[1]) + "]";
+        });
+        xyt_echo("Object.entries(xyt_student)", "[" + xyt_pairs.join(", ") + "]", "二维数组");
+      } else if (xyt_act === "forin") {
+        var xyt_visit = [];
+        for (var xyt_k in xyt_student) {
+          xyt_visit.push(xyt_k + "→" + xyt_showVal(xyt_student[xyt_k]));
+        }
+        xyt_echo("for (var k in xyt_student)", xyt_visit.join("  ") || "（空对象，一次都不循环）", "遍历键名");
+      } else if (xyt_act === "in") {
+        xyt_echo('"name" in xyt_student', String("name" in xyt_student), "boolean");
+      } else if (xyt_act === "json") {
+        xyt_echo("JSON.stringify(xyt_student)", JSON.stringify(xyt_student), "string");
+      }
+    });
+  });
+
+  /* ---------- 引用与浅拷贝 ---------- */
+  var xyt_a = { score: 60 };
+  var xyt_b = { score: 60 };
+
+  function xyt_renderRef() {
+    document.getElementById("xyt_score_a").textContent = xyt_a.score;
+    document.getElementById("xyt_score_b").textContent = xyt_b.score;
+    var xyt_linked = xyt_a === xyt_b;
+    document.getElementById("xyt_card_a").classList.toggle("xyt_linked", xyt_linked);
+    document.getElementById("xyt_card_b").classList.toggle("xyt_linked", xyt_linked);
+    document.getElementById("xyt_verdict").innerHTML = xyt_linked
+      ? '两个变量指向<b>同一个对象</b>，<code>xyt_a === xyt_b</code> 为 <b>true</b>：改一边，另一边跟着变。'
+      : '两个变量各自拥有独立对象，<code>xyt_a === xyt_b</code> 为 <b>false</b>：改一边，另一边不受影响。';
+  }
+
+  document.getElementById("xyt_assign").addEventListener("click", function () {
+    xyt_b = xyt_a;
+    xyt_renderRef();
+    xyt_echo("xyt_b = xyt_a", "xyt_a === xyt_b → true", "只是复制了地址");
+  });
+
+  document.getElementById("xyt_copy").addEventListener("click", function () {
+    xyt_b = Object.assign({}, xyt_a);
+    xyt_renderRef();
+    xyt_echo("xyt_b = { ...xyt_a }", "xyt_a === xyt_b → false", "浅拷贝出新对象");
+  });
+
+  document.getElementById("xyt_plus").addEventListener("click", function () {
+    xyt_b.score += 10;
+    xyt_renderRef();
+    xyt_echo("xyt_b.score += 10", "xyt_a.score = " + xyt_a.score + "，xyt_b.score = " + xyt_b.score,
+      xyt_a === xyt_b ? "引用：两边一起变" : "拷贝：只有 b 变");
+  });
+
+  document.getElementById("xyt_ref_reset").addEventListener("click", function () {
+    xyt_a = { score: 60 };
+    xyt_b = { score: 60 };
+    xyt_renderRef();
+    xyt_echo("// 重置", "xyt_a 与 xyt_b 都恢复成 { score: 60 }", "两个独立对象");
+  });
+
+  /* ---------- this ---------- */
+  var xyt_person = {
+    name: "徐玥桐",
+    sayHi: function () {
+      return "你好，我是" + this.name;
+    }
+  };
+
+  document.getElementById("xyt_call_ok").addEventListener("click", function () {
+    var xyt_text = xyt_person.sayHi();
+    document.getElementById("xyt_out_ok").textContent = xyt_text;
+    xyt_echo("xyt_person.sayHi()", xyt_text, "this → xyt_person");
+  });
+
+  document.getElementById("xyt_call_bad").addEventListener("click", function () {
+    var xyt_f = xyt_person.sayHi;
+    var xyt_text = xyt_f();
+    document.getElementById("xyt_out_bad").textContent = xyt_text;
+    xyt_echo("var f = xyt_person.sayHi; f()", xyt_text, "this → 丢失");
+  });
+
+  /* ---------- 内置对象 ---------- */
+  document.querySelectorAll(".xyt_builtin").forEach(function (xyt_btn) {
+    xyt_btn.addEventListener("click", function () {
+      var xyt_which = xyt_btn.getAttribute("data-builtin");
+      if (xyt_which === "math") {
+        xyt_echo("Math.round(4.6)", String(Math.round(4.6)), "number");
+        xyt_echo("Math.max(3, 9, 5)", String(Math.max(3, 9, 5)), "number");
+      } else if (xyt_which === "date") {
+        xyt_echo("new Date().toLocaleString()", new Date().toLocaleString("zh-CN"), "string");
+      } else if (xyt_which === "json") {
+        var xyt_text = JSON.stringify(xyt_student);
+        xyt_echo("JSON.stringify(xyt_student)", xyt_text, "string · 长度 " + xyt_text.length);
+        xyt_echo("JSON.parse(上面的字符串)", xyt_showVal(JSON.parse(xyt_text)), "object");
+      } else if (xyt_which === "string") {
+        xyt_echo('"web design".toUpperCase()', "WEB DESIGN", "string");
+        xyt_echo('"web design".split(" ")', '["web", "design"]', "array");
+      }
+    });
+  });
+
+  xyt_renderProps();
+  xyt_renderRef();
+</script>
+</body>
+</html>

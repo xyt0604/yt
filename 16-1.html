@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | JavaScript 数组方法演示</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,54px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:660px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+
+  /* ---------- 数组舞台 ---------- */
+  .xyt_stage {
+    padding:24px; border:1px solid var(--line); border-radius:16px;
+    background:var(--card); box-shadow:var(--shadow);
+  }
+  .xyt_stage_head {
+    display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
+    gap:16px; padding-bottom:16px; margin-bottom:18px; border-bottom:1px dashed var(--line);
+  }
+  .xyt_stage_label { display:block; color:var(--muted); font-size:12px; letter-spacing:.12em; }
+  .xyt_stage_label code { color:var(--blue); font-family:Consolas,monospace; }
+  .xyt_len { color:var(--ink); font-size:14px; }
+  .xyt_len b { color:var(--coral); font:600 26px Georgia,serif; margin-right:4px; }
+  .xyt_tools { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+  .xyt_field { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+  .xyt_field input {
+    width:76px; padding:7px 10px; border:1px solid var(--line); border-radius:8px;
+    font:14px Consolas,monospace; color:var(--ink); background:#fff;
+    outline:none; transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_field input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_field input.xyt_input_bad { border-color:var(--coral); box-shadow:0 0 0 3px rgba(228,107,75,.16); }
+  .xyt_ghost_btn {
+    padding:7px 15px; border:1px solid var(--line); border-radius:8px;
+    background:#fff; color:var(--blue); font:13px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_ghost_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.07); }
+
+  .xyt_track {
+    display:flex; flex-wrap:wrap; align-items:flex-end; gap:10px;
+    min-height:112px; padding:14px 4px 6px;
+  }
+  .xyt_cell { display:flex; flex-direction:column; align-items:center; gap:8px; animation:xyt_pop .32s ease both; }
+  .xyt_box {
+    display:grid; min-width:64px; height:64px; padding:0 12px; place-items:center;
+    border:1px solid var(--line); border-radius:12px; background:#fffdf8;
+    font:600 22px Georgia,serif; color:var(--ink);
+    transition:transform .18s ease,border-color .18s ease,background .18s ease;
+  }
+  .xyt_cell:hover .xyt_box { transform:translateY(-4px); border-color:var(--blue); }
+  .xyt_idx { color:var(--muted); font:11px Consolas,monospace; }
+  .xyt_cell_focus .xyt_box {
+    border-color:var(--coral); background:rgba(228,107,75,.10); color:var(--coral);
+    box-shadow:0 0 0 4px rgba(228,107,75,.14);
+  }
+  .xyt_cell_focus .xyt_idx { color:var(--coral); font-weight:700; }
+  .xyt_cell_ghost .xyt_box {
+    min-width:78px; border:1.5px dashed var(--line); background:transparent;
+    font:12px "Microsoft YaHei",sans-serif; color:var(--muted); letter-spacing:.04em;
+  }
+  .xyt_cell_ghost:hover .xyt_box { border-color:var(--line); transform:none; }
+  .xyt_empty {
+    display:grid; min-width:100%; height:64px; place-items:center;
+    border:1.5px dashed var(--line); border-radius:12px;
+    color:var(--muted); font-size:14px;
+  }
+  @keyframes xyt_pop {
+    from { opacity:0; transform:translateY(10px) scale(.86); }
+    to { opacity:1; transform:none; }
+  }
+
+  .xyt_readout {
+    margin-top:20px; padding:18px 20px;
+    border-left:3px solid var(--blue); background:rgba(23,107,135,.05); border-radius:0 12px 12px 0;
+  }
+  .xyt_code {
+    font:13px/1.7 Consolas,"Courier New",monospace; color:var(--blue);
+    word-break:break-all;
+  }
+  .xyt_result_row { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-top:12px; }
+  .xyt_result_label { color:var(--muted); font-size:12px; letter-spacing:.14em; }
+  .xyt_result_val { color:var(--coral); font:600 20px Georgia,serif; word-break:break-all; }
+  .xyt_type {
+    padding:2px 9px; border-radius:20px; background:rgba(23,107,135,.10);
+    color:var(--blue); font:11.5px Consolas,monospace;
+  }
+  .xyt_note { margin:12px 0 0; color:var(--muted); font-size:13.5px; }
+
+  /* ---------- 方法卡片 ---------- */
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:52px 0 18px; }
+  h2 { margin:0; font:500 27px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_group + .xyt_group { margin-top:26px; }
+  .xyt_group h3 {
+    margin:0 0 12px; font-size:14px; font-weight:700; letter-spacing:.06em; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .xyt_group h3 .iconfont { color:var(--coral); font-size:16px; }
+  .xyt_group h3 em { color:var(--muted); font-style:normal; font-weight:400; font-size:12.5px; letter-spacing:0; }
+  .xyt_card_grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(238px,1fr)); gap:12px; }
+  .xyt_card {
+    display:flex; flex-direction:column; gap:8px; padding:16px 16px 14px;
+    border:1px solid var(--line); border-radius:13px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card_hit { border-color:var(--coral) !important; box-shadow:0 0 0 3px rgba(228,107,75,.14) !important; }
+  .xyt_card_name { font:600 16px Consolas,monospace; color:var(--blue); }
+  .xyt_card_desc { flex:1; margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
+  .xyt_card_code {
+    font:12px Consolas,monospace; color:#5c6b75; background:rgba(23,107,135,.06);
+    padding:6px 9px; border-radius:7px; word-break:break-all;
+  }
+  .xyt_run_btn {
+    align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
+    padding:6px 16px; border:1px solid var(--blue); border-radius:20px;
+    background:transparent; color:var(--blue); font:13px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_run_btn:hover { background:var(--blue); color:#fff; }
+  .xyt_run_btn .iconfont { font-size:13px; }
+
+  /* ---------- 操作记录 ---------- */
+  .xyt_log { margin:0; padding:0; list-style:none; border:1px solid var(--line); border-radius:13px; overflow:hidden; background:var(--card); }
+  .xyt_log li {
+    display:flex; flex-wrap:wrap; align-items:baseline; gap:10px;
+    padding:11px 18px; border-bottom:1px solid var(--line); font-size:13px; color:var(--muted);
+    animation:xyt_slide .3s ease both;
+  }
+  .xyt_log li:last-child { border-bottom:0; }
+  .xyt_log li span:first-child { color:var(--coral); font:12px Consolas,monospace; }
+  .xyt_log li b { color:var(--ink); font-family:Consolas,monospace; font-weight:600; }
+  .xyt_log li code { font:12px Consolas,monospace; color:var(--blue); }
+  .xyt_log_empty { color:var(--muted); font-size:13px; }
+  @keyframes xyt_slide { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:none; } }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (min-width:1000px) {
+    .xyt_stage { position:sticky; top:12px; z-index:8; }
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_stage { padding:18px 16px; }
+    .xyt_box { min-width:54px; height:54px; font-size:19px; }
+    .xyt_card_grid { grid-template-columns:1fr 1fr; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+  @media (max-width:480px) { .xyt_card_grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：JavaScript 数组主要方法可视化演示 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · ARRAY METHODS</p>
+      <h1>数组的<br>二十一种手法</h1>
+      <p class="xyt_hero_intro">数组就像一排带编号的抽屉：下标是抽屉编号，元素是抽屉里的东西。点一下下面任意方法的「运行」，就能看到抽屉被推进、抽出、剪掉或者复制的过程。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section class="xyt_stage" aria-label="数组实时状态">
+        <div class="xyt_stage_head">
+          <div>
+            <span class="xyt_stage_label">当前数组 <code>xyt_arr</code></span>
+            <div class="xyt_len"><b id="xyt_len">6</b>个元素</div>
+          </div>
+          <div class="xyt_tools">
+            <label class="xyt_field"><span>输入值</span><input id="xyt_input" type="text" inputmode="numeric" value="6" autocomplete="off"></label>
+            <button class="xyt_ghost_btn" id="xyt_reset" type="button">重置</button>
+            <button class="xyt_ghost_btn" id="xyt_shuffle" type="button">打乱</button>
+          </div>
+        </div>
+        <div class="xyt_track" id="xyt_track"></div>
+        <div class="xyt_readout">
+          <div class="xyt_code" id="xyt_code">// 点击下方任意一个「运行」，这里会显示执行的那行代码</div>
+          <div class="xyt_result_row">
+            <span class="xyt_result_label">返回值</span>
+            <strong class="xyt_result_val" id="xyt_ret">—</strong>
+            <span class="xyt_type" id="xyt_type">尚未执行</span>
+          </div>
+          <p class="xyt_note" id="xyt_note">初始数组是 [5, 3, 8, 1, 9, 2]。输入框里的数字会被 push / unshift / splice / indexOf 等方法拿去使用。</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="xyt_methods_title">
+        <div class="xyt_section_head"><h2 id="xyt_methods_title">方法一览</h2><span>四个分组 · 逐个动手试</span></div>
+        <div id="xyt_groups"></div>
+      </section>
+
+      <section aria-labelledby="xyt_log_title">
+        <div class="xyt_section_head"><h2 id="xyt_log_title">操作记录</h2><span>最近 8 条</span></div>
+        <ol class="xyt_log" id="xyt_log"><li class="xyt_log_empty">还没有操作记录，点上面任意方法的「运行」试试看。</li></ol>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>JavaScript 数组方法 / 16-1</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：DeepSeek-V4.1-Flash | 功能：数组方法的可视化演示逻辑
+  var xyt_arr = [5, 3, 8, 1, 9, 2];
+  var xyt_seed = [5, 3, 8, 1, 9, 2];
+  var xyt_logs = [];
+
+  var xyt_track = document.getElementById("xyt_track");
+  var xyt_input = document.getElementById("xyt_input");
+
+  function xyt_fmt(xyt_v) {
+    if (Array.isArray(xyt_v)) {
+      return "[" + xyt_v.map(function (xyt_x) { return String(xyt_x); }).join(", ") + "]";
+    }
+    if (typeof xyt_v === "string") { return '"' + xyt_v + '"'; }
+    if (xyt_v === undefined) { return "undefined"; }
+    if (xyt_v === null) { return "null"; }
+    return String(xyt_v);
+  }
+
+  function xyt_kind(xyt_v) {
+    if (Array.isArray(xyt_v)) { return "Array · 长度 " + xyt_v.length; }
+    if (xyt_v === null) { return "null"; }
+    return typeof xyt_v;
+  }
+
+  function xyt_render(xyt_focus) {
+    xyt_track.innerHTML = "";
+    document.getElementById("xyt_len").textContent = xyt_arr.length;
+
+    if (xyt_arr.length === 0) {
+      var xyt_blank = document.createElement("div");
+      xyt_blank.className = "xyt_empty";
+      xyt_blank.textContent = "空数组 —— 抽屉里什么都没了";
+      xyt_track.appendChild(xyt_blank);
+    }
+
+    for (var xyt_i = 0; xyt_i < xyt_arr.length; xyt_i++) {
+      var xyt_cell = document.createElement("div");
+      xyt_cell.className = "xyt_cell" + (xyt_i === xyt_focus ? " xyt_cell_focus" : "");
+      xyt_cell.style.animationDelay = (xyt_i * 22) + "ms";
+
+      var xyt_box = document.createElement("div");
+      xyt_box.className = "xyt_box";
+      xyt_box.textContent = xyt_arr[xyt_i];
+
+      var xyt_idx = document.createElement("span");
+      xyt_idx.className = "xyt_idx";
+      xyt_idx.textContent = "[" + xyt_i + "]";
+
+      xyt_cell.appendChild(xyt_box);
+      xyt_cell.appendChild(xyt_idx);
+      xyt_track.appendChild(xyt_cell);
+    }
+
+    var xyt_ghost = document.createElement("div");
+    xyt_ghost.className = "xyt_cell xyt_cell_ghost";
+    xyt_ghost.innerHTML = '<div class="xyt_box">末尾 ← push</div><span class="xyt_idx">length = ' + xyt_arr.length + "</span>";
+    xyt_track.appendChild(xyt_ghost);
+  }
+
+  function xyt_pushLog(xyt_name, xyt_code, xyt_ret) {
+    xyt_logs.unshift({ name: xyt_name, code: xyt_code, ret: xyt_ret });
+    if (xyt_logs.length > 8) { xyt_logs.pop(); }
+    var xyt_list = document.getElementById("xyt_log");
+    xyt_list.innerHTML = "";
+    xyt_logs.forEach(function (xyt_item) {
+      var xyt_li = document.createElement("li");
+      xyt_li.innerHTML = "<span>" + xyt_item.name + "</span><code>" + xyt_item.code +
+        "</code><span>返回</span><b>" + xyt_item.ret + "</b>";
+      xyt_list.appendChild(xyt_li);
+    });
+  }
+
+  function xyt_run(xyt_item, xyt_card) {
+    var xyt_v = 0;
+    if (xyt_item.useValue) {
+      var xyt_raw = xyt_input.value.trim();
+      xyt_v = xyt_raw === "" ? 0 : Number(xyt_raw);
+      if (isNaN(xyt_v)) {
+        xyt_input.classList.add("xyt_input_bad");
+        document.getElementById("xyt_note").textContent = "输入框里要填数字（例如 6），不然 push / unshift / indexOf 不知道该处理谁。";
+        return;
+      }
+    }
+    xyt_input.classList.remove("xyt_input_bad");
+
+    var xyt_res = xyt_item.run(xyt_v) || {};
+    document.getElementById("xyt_code").textContent = xyt_item.code;
+    document.getElementById("xyt_ret").textContent = xyt_fmt(xyt_res.ret);
+    document.getElementById("xyt_type").textContent = xyt_kind(xyt_res.ret);
+    document.getElementById("xyt_note").textContent = xyt_res.note || xyt_item.desc;
+
+    xyt_render(xyt_res.focus);
+    xyt_pushLog(xyt_item.name, xyt_item.code, xyt_fmt(xyt_res.ret));
+
+    if (xyt_card) {
+      xyt_card.classList.add("xyt_card_hit");
+      window.setTimeout(function () { xyt_card.classList.remove("xyt_card_hit"); }, 700);
+    }
+  }
+
+  var xyt_groups = [
+    {
+      title: "增删元素",
+      tip: "这几个都会直接改动原数组",
+      icon: "icon-bianji",
+      items: [
+        {
+          name: "push()",
+          desc: "在数组末尾追加一个元素，返回新的长度。",
+          useValue: true,
+          code: "xyt_arr.push(值)",
+          run: function (xyt_v) {
+            var xyt_n = xyt_arr.push(xyt_v);
+            return { ret: xyt_n, focus: xyt_arr.length - 1, note: "push(" + xyt_v + ") 把新元素塞进最后一个抽屉，返回的不是数组而是新长度 " + xyt_n + "。" };
+          }
+        },
+        {
+          name: "pop()",
+          desc: "删除最后一个元素，返回被删掉的那个值。",
+          code: "xyt_arr.pop()",
+          run: function () {
+            if (xyt_arr.length === 0) {
+              return { ret: undefined, focus: null, note: "空数组没有尾巴可以剪，pop() 返回 undefined。" };
+            }
+            var xyt_v = xyt_arr.pop();
+            return { ret: xyt_v, focus: xyt_arr.length - 1, note: "pop() 从末尾剪掉一个元素，返回被剪掉的 " + xyt_fmt(xyt_v) + "，原数组变短了。" };
+          }
+        },
+        {
+          name: "unshift()",
+          desc: "在数组开头插入一个元素，返回新的长度。",
+          useValue: true,
+          code: "xyt_arr.unshift(值)",
+          run: function (xyt_v) {
+            var xyt_n = xyt_arr.unshift(xyt_v);
+            return { ret: xyt_n, focus: 0, note: "unshift(" + xyt_v + ") 从头部插队，原来的元素集体后移一格，下标全部变了。" };
+          }
+        },
+        {
+          name: "shift()",
+          desc: "删除第一个元素，返回被删掉的那个值。",
+          code: "xyt_arr.shift()",
+          run: function () {
+            if (xyt_arr.length === 0) {
+              return { ret: undefined, focus: null, note: "空数组里取不出东西，shift() 返回 undefined。" };
+            }
+            var xyt_v = xyt_arr.shift();
+            return { ret: xyt_v, focus: 0, note: "shift() 把第一个抽屉抽走，返回 " + xyt_fmt(xyt_v) + "，后面的元素整体前移。" };
+          }
+        },
+        {
+          name: "splice()",
+          desc: "从指定位置剪掉若干元素，返回被剪掉的数组。",
+          code: "xyt_arr.splice(1, 2)",
+          run: function () {
+            var xyt_cut = xyt_arr.splice(1, 2);
+            return { ret: xyt_cut, focus: 1, note: "splice(1, 2) 从下标 1 起剪掉 2 个元素，返回被剪掉的部分，原数组中间被「缝」了起来。" };
+          }
+        }
+      ]
+    },
+    {
+      title: "查找元素",
+      tip: "给出位置、判断存在，或找出满足条件的那一个",
+      icon: "icon-sousuo",
+      items: [
+        {
+          name: "indexOf()",
+          desc: "查找某个值第一次出现的下标，找不到返回 -1。",
+          useValue: true,
+          code: "xyt_arr.indexOf(值)",
+          run: function (xyt_v) {
+            var xyt_at = xyt_arr.indexOf(xyt_v);
+            return {
+              ret: xyt_at,
+              focus: xyt_at >= 0 ? xyt_at : null,
+              note: xyt_at >= 0 ? "值 " + xyt_v + " 第一次出现在下标 " + xyt_at + "。" : "数组里没有 " + xyt_v + "，indexOf() 只能返回 -1。"
+            };
+          }
+        },
+        {
+          name: "includes()",
+          desc: "判断数组是否包含某个值，返回 true / false。",
+          useValue: true,
+          code: "xyt_arr.includes(值)",
+          run: function (xyt_v) {
+            return { ret: xyt_arr.includes(xyt_v), focus: xyt_arr.indexOf(xyt_v), note: "includes(" + xyt_v + ") 只回答「有没有」，不告诉你「在哪」。" };
+          }
+        },
+        {
+          name: "find()",
+          desc: "找出第一个满足条件的元素，没有则返回 undefined。",
+          code: "xyt_arr.find(x => x > 4)",
+          run: function () {
+            var xyt_hit = xyt_arr.find(function (xyt_x) { return xyt_x > 4; });
+            return { ret: xyt_hit, focus: xyt_arr.indexOf(xyt_hit), note: "find() 顺着抽屉逐个检查，遇到第一个大于 4 的就收工，返回 " + xyt_fmt(xyt_hit) + "。" };
+          }
+        },
+        {
+          name: "findIndex()",
+          desc: "找出第一个满足条件的元素下标。",
+          code: "xyt_arr.findIndex(x => x > 4)",
+          run: function () {
+            var xyt_at = xyt_arr.findIndex(function (xyt_x) { return xyt_x > 4; });
+            return { ret: xyt_at, focus: xyt_at, note: "findIndex() 和 find() 一样是「第一个」，只不过它返回下标 " + xyt_at + "。" };
+          }
+        }
+      ]
+    },
+    {
+      title: "遍历与计算",
+      tip: "把每个元素都过一遍，再汇总成结果",
+      icon: "icon-gengduo",
+      items: [
+        {
+          name: "forEach()",
+          desc: "逐个遍历元素，本身返回 undefined。",
+          code: "xyt_arr.forEach((v, i) => ...)",
+          run: function () {
+            var xyt_visit = [];
+            xyt_arr.forEach(function (xyt_x, xyt_i) { xyt_visit.push(xyt_x + "@" + xyt_i); });
+            return { ret: undefined, focus: null, note: "forEach() 依次访问：" + (xyt_visit.join(" → ") || "（空数组，一次都没访问）") + "。它只负责走一圈，没有返回值。" };
+          }
+        },
+        {
+          name: "map()",
+          desc: "把每个元素加工一遍，返回同样长度的新数组。",
+          code: "xyt_arr.map(x => x * 2)",
+          run: function () {
+            var xyt_new = xyt_arr.map(function (xyt_x) { return xyt_x * 2; });
+            return { ret: xyt_new, focus: null, note: "map() 给每个元素都乘以 2，得到一个全新的数组，原数组一点没动。" };
+          }
+        },
+        {
+          name: "filter()",
+          desc: "只留下满足条件的元素，返回新数组。",
+          code: "xyt_arr.filter(x => x > 4)",
+          run: function () {
+            var xyt_keep = xyt_arr.filter(function (xyt_x) { return xyt_x > 4; });
+            return { ret: xyt_keep, focus: null, note: "filter() 就像筛子：大于 4 的留下，其余被过滤掉，新数组长度是 " + xyt_keep.length + "。" };
+          }
+        },
+        {
+          name: "reduce()",
+          desc: "把数组折叠成一个值，例如求和。",
+          code: "xyt_arr.reduce((a, b) => a + b, 0)",
+          run: function () {
+            var xyt_sum = xyt_arr.reduce(function (xyt_a, xyt_b) { return xyt_a + xyt_b; }, 0);
+            return { ret: xyt_sum, focus: null, note: "reduce() 用「累加器」一路摞加，把 " + xyt_arr.length + " 个元素折叠成单个值 " + xyt_sum + "。" };
+          }
+        },
+        {
+          name: "every()",
+          desc: "是否所有元素都满足条件，返回布尔值。",
+          code: "xyt_arr.every(x => x > 0)",
+          run: function () {
+            return { ret: xyt_arr.every(function (xyt_x) { return xyt_x > 0; }), focus: null, note: "every() 要求「全员合格」才算 true；只要有一个不合格就立刻返回 false。（空数组默认返回 true）" };
+          }
+        },
+        {
+          name: "some()",
+          desc: "是否至少有一个元素满足条件。",
+          code: "xyt_arr.some(x => x > 7)",
+          run: function () {
+            var xyt_hit = xyt_arr.some(function (xyt_x) { return xyt_x > 7; });
+            return { ret: xyt_hit, focus: xyt_arr.findIndex(function (xyt_x) { return xyt_x > 7; }), note: "some() 只要「有一个」大于 7 就返回 true，这一点和 every() 正好相反。" };
+          }
+        }
+      ]
+    },
+    {
+      title: "截取、拼接与排序",
+      tip: "注意哪些会改变原数组",
+      icon: "icon-faxian",
+      items: [
+        {
+          name: "slice()",
+          desc: "按下标截取一段，返回新数组，不改原数组。",
+          code: "xyt_arr.slice(1, 3)",
+          run: function () {
+            var xyt_part = xyt_arr.slice(1, 3);
+            return { ret: xyt_part, focus: null, note: "slice(1, 3) 取下标 1、2 两个元素（含头不含尾），像复印件，原数组完好无损。" };
+          }
+        },
+        {
+          name: "concat()",
+          desc: "把另一个数组接到后面，返回新数组。",
+          code: "xyt_arr.concat([100, 200])",
+          run: function () {
+            var xyt_all = xyt_arr.concat([100, 200]);
+            return { ret: xyt_all, focus: null, note: "concat() 把 [100, 200] 接在尾巴后面拼成新数组，长度变成 " + xyt_all.length + "，原数组不变。" };
+          }
+        },
+        {
+          name: "join()",
+          desc: "用分隔符把元素连成一串字符串。",
+          code: 'xyt_arr.join(" + ")',
+          run: function () {
+            var xyt_str = xyt_arr.join(" + ");
+            return { ret: xyt_str, focus: null, note: "join() 把数组摊平成字符串，元素之间插入指定的连接符 —— 这正是把数组「打印」出来的常用手法。" };
+          }
+        },
+        {
+          name: "reverse()",
+          desc: "把数组顺序前后颠倒，会改变原数组。",
+          code: "xyt_arr.reverse()",
+          run: function () {
+            var xyt_r = xyt_arr.reverse();
+            return { ret: xyt_r, focus: null, note: "reverse() 让整排抽屉原地掉头，第一个和最后一个互换，原数组被改写了。" };
+          }
+        },
+        {
+          name: "sort()",
+          desc: "排序，传入比较函数才能按数值大小排。",
+          code: "xyt_arr.sort((a, b) => a - b)",
+          run: function () {
+            var xyt_s = xyt_arr.sort(function (xyt_a, xyt_b) { return xyt_a - xyt_b; });
+            return { ret: xyt_s, focus: null, note: "不传比较函数时 sort() 会按字符串比较（10 会排在 9 前面）；加上 (a, b) => a - b 才是真正的数值升序。" };
+          }
+        },
+        {
+          name: "length",
+          desc: "数组长度，是属性不是方法，末尾加 1 即可延长。",
+          code: "xyt_arr.length",
+          run: function () {
+            return { ret: xyt_arr.length, focus: xyt_arr.length - 1, note: "length 是属性，不带括号。给它赋值还能直接截断数组，例如 xyt_arr.length = 3。" };
+          }
+        }
+      ]
+    }
+  ];
+
+  (function xyt_buildCards() {
+    var xyt_wrapBox = document.getElementById("xyt_groups");
+    xyt_groups.forEach(function (xyt_g) {
+      var xyt_block = document.createElement("div");
+      xyt_block.className = "xyt_group";
+
+      var xyt_title = document.createElement("h3");
+      xyt_title.innerHTML = '<i class="iconfont ' + xyt_g.icon + '"></i>' + xyt_g.title + "<em>" + xyt_g.tip + "</em>";
+      xyt_block.appendChild(xyt_title);
+
+      var xyt_grid = document.createElement("div");
+      xyt_grid.className = "xyt_card_grid";
+
+      xyt_g.items.forEach(function (xyt_item) {
+        var xyt_card = document.createElement("article");
+        xyt_card.className = "xyt_card";
+
+        var xyt_name = document.createElement("div");
+        xyt_name.className = "xyt_card_name";
+        xyt_name.textContent = xyt_item.name;
+
+        var xyt_desc = document.createElement("p");
+        xyt_desc.className = "xyt_card_desc";
+        xyt_desc.textContent = xyt_item.desc;
+
+        var xyt_code = document.createElement("div");
+        xyt_code.className = "xyt_card_code";
+        xyt_code.textContent = xyt_item.code;
+
+        var xyt_btn = document.createElement("button");
+        xyt_btn.type = "button";
+        xyt_btn.className = "xyt_run_btn";
+        xyt_btn.innerHTML = '<i class="iconfont icon-faxian"></i>运行';
+        xyt_btn.addEventListener("click", function () { xyt_run(xyt_item, xyt_card); });
+
+        xyt_card.appendChild(xyt_name);
+        xyt_card.appendChild(xyt_desc);
+        xyt_card.appendChild(xyt_code);
+        xyt_card.appendChild(xyt_btn);
+        xyt_grid.appendChild(xyt_card);
+      });
+
+      xyt_block.appendChild(xyt_grid);
+      xyt_wrapBox.appendChild(xyt_block);
+    });
+  })();
+
+  document.getElementById("xyt_reset").addEventListener("click", function () {
+    xyt_arr = xyt_seed.slice();
+    xyt_render(null);
+    document.getElementById("xyt_code").textContent = "xyt_arr = [5, 3, 8, 1, 9, 2]";
+    document.getElementById("xyt_ret").textContent = xyt_fmt(xyt_arr);
+    document.getElementById("xyt_type").textContent = xyt_kind(xyt_arr);
+    document.getElementById("xyt_note").textContent = "数组已复原成初始状态，可以重新开始尝试。";
+  });
+
+  document.getElementById("xyt_shuffle").addEventListener("click", function () {
+    for (var xyt_i = xyt_arr.length - 1; xyt_i > 0; xyt_i--) {
+      var xyt_j = Math.floor(Math.random() * (xyt_i + 1));
+      var xyt_tmp = xyt_arr[xyt_i];
+      xyt_arr[xyt_i] = xyt_arr[xyt_j];
+      xyt_arr[xyt_j] = xyt_tmp;
+    }
+    xyt_render(null);
+    document.getElementById("xyt_code").textContent = "// 用 Fisher-Yates 算法原地打乱数组";
+    document.getElementById("xyt_ret").textContent = xyt_fmt(xyt_arr);
+    document.getElementById("xyt_type").textContent = xyt_kind(xyt_arr);
+    document.getElementById("xyt_note").textContent = "顺序被打乱了，现在再试 sort() 看看能不能复原成升序。";
+  });
+
+  xyt_render(null);
+</script>
+</body>
+</html>

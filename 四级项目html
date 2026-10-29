@@ -4,6 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="theme-color" content="#f3f5f2">
+	<link rel="stylesheet" href="font/iconfont.css">
 	<title>栖习 · 自习室预约</title>
 	<style>
 		:root {
@@ -189,23 +190,75 @@
 			th, td { padding: 11px 12px; }
 		}
 		@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+		/* ===== 首页（四级项目新增，xyt_ 前缀） ===== */
+		.xyt_header_cta { margin-right: 12px; white-space: nowrap; }
+		.xyt_hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center; padding: 48px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); }
+		.xyt_hero_tag { display: inline-block; padding: 5px 14px; border-radius: 99px; color: var(--green-dark); background: var(--green-pale); font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+		.xyt_hero_title { margin: 16px 0 12px; font-size: clamp(30px, 4vw, 44px); line-height: 1.18; }
+		.xyt_hero_desc { max-width: 46ch; margin: 0 0 26px; color: var(--muted); font-size: 15px; }
+		.xyt_hero_actions { display: flex; flex-wrap: wrap; gap: 12px; }
+		.xyt_btn_lg { min-height: 44px; padding: 0 24px; border-radius: 8px; font-size: 15px; }
+		.xyt_hero_img { display: block; width: 100%; height: 340px; border-radius: 14px; object-fit: cover; }
+		.xyt_search { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding: 10px 10px 10px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+		.xyt_search .iconfont { color: var(--muted); font-size: 18px; }
+		.xyt_search input { flex: 1; min-width: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 14px; }
+		.xyt_chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+		.xyt_chip { padding: 7px 16px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); background: var(--surface); cursor: pointer; font-size: 13px; transition: border-color .16s ease, color .16s ease, background .16s ease; }
+		.xyt_chip:hover { border-color: var(--green); color: var(--green-dark); }
+		.xyt_chip.active { border-color: var(--green); color: #fff; background: var(--green); font-weight: 700; }
+		@media (max-width: 900px) {
+			.xyt_hero { grid-template-columns: 1fr; padding: 28px 22px; }
+			.xyt_hero_img { height: 220px; }
+		}
+		@media (max-width: 760px) { .xyt_header_cta { display: none; } }
 	</style>
 </head>
 <body>
+	<!-- 徐玥桐 | 建立时间：2026-10-29 | 使用大模型：Kimi-K3 | 功能：校园自习室预约平台首页（栖习） -->
 	<header class="app-header">
 		<div class="header-inner">
-			<a class="brand" href="#rooms" aria-label="栖习自习室预约首页"><span class="brand-mark" aria-hidden="true">栖</span><span>栖习<small>校园自习空间</small></span></a>
+			<a class="brand" href="javascript:void(0)" data-xyt-go="home" aria-label="栖习自习室预约首页"><span class="brand-mark" aria-hidden="true">栖</span><span>栖习<small>校园自习空间</small></span></a>
 			<nav class="main-nav" aria-label="主导航">
-				<button class="nav-button active" data-view="rooms">自习室</button>
+				<button class="nav-button active" data-view="home">首页</button>
+				<button class="nav-button" data-view="rooms">自习室</button>
 				<button class="nav-button" data-view="bookings">我的预约</button>
 				<button class="nav-button" data-view="admin" id="adminNav" hidden>管理端</button>
 			</nav>
+			<button class="primary-button xyt_header_cta" data-xyt-go="rooms">立即预约</button>
 			<div class="header-account" id="accountArea"><button class="quiet-button" id="openAuth">登录 / 注册</button></div>
 		</div>
 	</header>
 
 	<main class="page">
-		<section id="roomsView">
+		<section id="homeView" class="xyt_home">
+			<div class="xyt_hero">
+				<div>
+					<span class="xyt_hero_tag">校园学习平台</span>
+					<h1 class="xyt_hero_title">找到最适合你的自习室</h1>
+					<p class="xyt_hero_desc">提供清晰的自习室查找筛选、可用座位信息与预约入口，为你的学习提供最优质的环境。</p>
+					<div class="xyt_hero_actions">
+						<button class="primary-button xyt_btn_lg" data-xyt-go="rooms">立即预约</button>
+						<button class="quiet-button xyt_btn_lg" data-xyt-go="rooms">查看所有房间</button>
+					</div>
+				</div>
+				<img class="xyt_hero_img" src="img/xyt_study_hero.jpg" alt="明亮安静的校园自习室">
+			</div>
+			<div class="xyt_search">
+				<i class="iconfont icon-sousuo" aria-hidden="true"></i>
+				<input id="xyt_homeKeyword" type="search" placeholder="搜索自习室名称、楼号或座位类型…" aria-label="搜索自习室">
+				<button class="primary-button" data-xyt-go="rooms">开始查找</button>
+			</div>
+			<div class="xyt_chips" aria-label="快捷筛选">
+				<button class="xyt_chip active" data-xyt-go="rooms">全部</button>
+				<button class="xyt_chip" data-xyt-go="rooms">有空座位</button>
+				<button class="xyt_chip" data-xyt-go="rooms">24小时开放</button>
+				<button class="xyt_chip" data-xyt-go="rooms">团队学习</button>
+				<button class="xyt_chip" data-xyt-go="rooms">安静区</button>
+				<button class="xyt_chip" data-xyt-go="rooms">有电源</button>
+			</div>
+		</section>
+
+		<section id="roomsView" hidden>
 			<div class="page-heading">
 				<div><p class="eyebrow">CAMPUS STUDY SPACES</p><h1>预约一个专注的位置</h1><p class="page-subtitle">选好自习室与时段，空闲座位一目了然。</p></div>
 				<div class="date-stamp" id="todayLabel"></div>
@@ -331,7 +384,7 @@
 			let selectedRoom = rooms[0]?.id;
 			let selectedSeat = null;
 			let selectedPeriod = 'morning';
-			let view = 'rooms';
+			let view = 'home';
 			let authMode = 'login';
 
 			const $ = (selector) => document.querySelector(selector);
@@ -450,6 +503,7 @@
 			function setView(nextView) {
 				if (nextView === 'admin' && currentUser?.role !== 'admin') nextView = 'rooms';
 				view = nextView;
+				$('#homeView').hidden = view !== 'home';
 				$('#roomsView').hidden = view !== 'rooms';
 				$('#bookingsView').hidden = view !== 'bookings';
 				$('#adminView').hidden = view !== 'admin';
@@ -558,6 +612,21 @@
 				if (button.dataset.action === 'checkin' && booking.status === 'booked' && Date.now() >= slotStart(booking.date, booking.period).getTime() && Date.now() <= Date.parse(booking.deadline)) booking.status = 'checked-in';
 				write(KEYS.bookings, bookings);
 				render();
+			});
+
+			// 首页交互：带 data-xyt-go 的元素点击进入对应视图
+			document.querySelectorAll('[data-xyt-go]').forEach((xyt_el) => {
+				xyt_el.addEventListener('click', () => setView(xyt_el.dataset.xytGo));
+			});
+			// 首页快捷筛选：切换选中态后由 data-xyt-go 跳转到自习室列表
+			document.querySelectorAll('.xyt_chip').forEach((xyt_chip) => {
+				xyt_chip.addEventListener('click', () => {
+					document.querySelectorAll('.xyt_chip').forEach((xyt_c) => xyt_c.classList.toggle('active', xyt_c === xyt_chip));
+				});
+			});
+			// 首页搜索框：回车直接进入自习室列表
+			$('#xyt_homeKeyword').addEventListener('keydown', (xyt_event) => {
+				if (xyt_event.key === 'Enter') setView('rooms');
 			});
 
 			render();
