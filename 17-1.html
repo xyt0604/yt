@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | JSON 数据格式</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --violet:#7a5c9e;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 26px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,54px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:720px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+  .xyt_heading { display:flex; justify-content:space-between; align-items:baseline; margin:0 0 18px; }
+  h2 { margin:0; font:500 28px Georgia,"Songti SC",serif; }
+  .xyt_heading span { color:var(--muted); font-size:13px; }
+
+  /* ---------- 规则卡片 ---------- */
+  .xyt_rules { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:48px; }
+  .xyt_rule {
+    padding:18px 20px; border:1px solid var(--line); border-radius:12px;
+    background:var(--card); transition:border-color .16s ease,box-shadow .16s ease;
+  }
+  .xyt_rule:hover { border-color:var(--blue); box-shadow:var(--shadow); }
+  .xyt_rule_no {
+    display:inline-grid; width:24px; height:24px; place-items:center; margin-bottom:10px;
+    border-radius:50%; background:rgba(23,107,135,.1); color:var(--blue);
+    font:700 12px Consolas,monospace;
+  }
+  .xyt_rule h3 { margin:0 0 6px; font-size:15px; }
+  .xyt_rule p { margin:0; color:var(--muted); font-size:13.5px; }
+  .xyt_rule code {
+    padding:1px 6px; border-radius:5px; background:rgba(228,107,75,.08);
+    color:var(--coral); font:12px Consolas,monospace;
+  }
+
+  /* ---------- 解析工作台 ---------- */
+  .xyt_bench { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px; align-items:start; margin-bottom:16px; }
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 18px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+  }
+  .xyt_panel_head strong { font-size:14px; letter-spacing:.04em; }
+  .xyt_state {
+    padding:3px 11px; border-radius:20px; border:1px solid var(--line); background:#fff;
+    font:11.5px Consolas,monospace; color:var(--muted);
+  }
+  .xyt_state.xyt_ok { border-color:rgba(63,125,92,.4); color:var(--green); background:rgba(63,125,92,.08); }
+  .xyt_state.xyt_bad { border-color:rgba(228,107,75,.4); color:var(--coral); background:rgba(228,107,75,.08); }
+
+  .xyt_editor {
+    display:block; width:100%; height:330px; padding:16px 18px; border:0; outline:0; resize:vertical;
+    color:var(--ink); background:#fdfcf7; font:13px/1.85 Consolas,"Courier New",monospace;
+    tab-size:2;
+  }
+  .xyt_editor:focus { background:#fff; box-shadow:inset 0 0 0 1px rgba(23,107,135,.25); }
+
+  .xyt_actions { display:flex; flex-wrap:wrap; gap:8px; padding:12px 18px; border-top:1px solid var(--line); }
+  .xyt_btn {
+    display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px;
+    border:1px solid var(--line); background:#fff; color:var(--blue); cursor:pointer;
+    font-family:inherit; font-size:13px; transition:border-color .16s ease,background .16s ease;
+  }
+  .xyt_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.06); }
+  .xyt_btn.xyt_btn_main { border-color:var(--blue); background:var(--blue); color:#fff; }
+  .xyt_btn.xyt_btn_main:hover { background:#135a72; }
+  .xyt_btn .iconfont { font-size:14px; }
+
+  .xyt_result { min-height:330px; max-height:470px; overflow:auto; padding:14px 18px 18px; }
+  .xyt_node { font:13px/1.9 Consolas,"Courier New",monospace; white-space:nowrap; }
+  .xyt_key { color:var(--blue); }
+  .xyt_idx { color:var(--muted); }
+  .xyt_colon { color:var(--muted); }
+  .xyt_brace { color:var(--muted); }
+  .xyt_val.xyt_str { color:var(--coral); }
+  .xyt_val.xyt_num { color:#b5651d; }
+  .xyt_val.xyt_bool { color:var(--violet); }
+  .xyt_val.xyt_null { color:var(--muted); font-style:italic; }
+  .xyt_val.xyt_arr { color:var(--green); }
+  .xyt_val.xyt_obj { color:var(--green); }
+  .xyt_err { padding:14px 16px; border:1px solid rgba(228,107,75,.35); border-radius:10px; background:rgba(228,107,75,.07); }
+  .xyt_err strong { display:block; margin-bottom:6px; color:var(--coral); font-size:13.5px; }
+  .xyt_err p { margin:0; color:var(--muted); font-size:13px; word-break:break-word; }
+  .xyt_empty { color:var(--muted); font-size:13.5px; }
+
+  /* ---------- 类型示例 ---------- */
+  .xyt_chips { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:48px; }
+  .xyt_chip {
+    padding:8px 16px; border:1px solid var(--line); border-radius:30px; background:var(--card);
+    color:var(--muted); font-size:13px; cursor:pointer; transition:all .16s ease;
+  }
+  .xyt_chip:hover { border-color:var(--blue); color:var(--blue); }
+  .xyt_chip.xyt_on { border-color:var(--blue); background:var(--blue); color:#fff; }
+
+  /* ---------- API 说明 ---------- */
+  .xyt_api { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:48px; }
+  .xyt_api_card { padding:20px 22px; border:1px solid var(--line); border-radius:12px; background:var(--card); }
+  .xyt_api_card h3 { margin:0 0 10px; color:var(--blue); font:700 16px Consolas,monospace; }
+  .xyt_code {
+    margin:0 0 12px; padding:12px 14px; border-radius:8px; background:#f0ede4;
+    font:12.5px/1.7 Consolas,monospace; white-space:pre; overflow-x:auto;
+  }
+  .xyt_api_card p { margin:0; color:var(--muted); font-size:13.5px; }
+
+  /* ---------- 对比表 ---------- */
+  .xyt_table { width:100%; border-collapse:collapse; border:1px solid var(--line); background:var(--card); border-radius:12px; overflow:hidden; }
+  .xyt_table th, .xyt_table td { padding:12px 16px; border-bottom:1px solid var(--line); text-align:left; font-size:13.5px; }
+  .xyt_table th { background:rgba(23,107,135,.05); color:var(--blue); font-weight:700; }
+  .xyt_table tr:last-child td { border-bottom:0; }
+  .xyt_table td { color:var(--muted); }
+  .xyt_table td:first-child { color:var(--ink); font-weight:600; }
+  .xyt_table code { font:12.5px Consolas,monospace; background:rgba(23,107,135,.06); padding:1px 6px; border-radius:5px; color:var(--ink); }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+  }
+  @media (max-width:900px) {
+    .xyt_rules { grid-template-columns:1fr 1fr; }
+    .xyt_bench { grid-template-columns:1fr; }
+    .xyt_api { grid-template-columns:1fr; }
+    .xyt_editor { height:260px; }
+  }
+  @media (max-width:760px) {
+    .xyt_rules { grid-template-columns:1fr; }
+    .xyt_hero { padding:28px 20px 22px; }
+    .xyt_topbar, .xyt_wrap, .xyt_footer { padding-left:20px; padding-right:20px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+    .xyt_table { font-size:12.5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：JSON 数据格式规则、在线解析与类型演示 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页 →</a>
+  </header>
+
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · JSON DATA FORMAT</p>
+      <h1>JSON<br>数据格式</h1>
+      <p class="xyt_hero_intro">JSON（JavaScript Object Notation）是一种轻量的数据交换格式。它借用 JavaScript 的对象写法，但语法更严格：键必须用双引号、不允许注释和末尾逗号，因此任何语言都能安全地解析它。</p>
+    </section>
+
+    <section class="xyt_wrap">
+      <div class="xyt_heading"><h2>六条核心规则</h2><span>写错任何一条都会解析失败</span></div>
+      <div class="xyt_rules">
+        <div class="xyt_rule">
+          <span class="xyt_rule_no">01</span>
+          <h3>键名必须用双引号</h3>
+          <p>JSON 里的键是字符串，<code>"name"</code> 合法，<code>name</code> 或 <code>'name'</code> 都非法。</p>
+        </div>
+        <div class="xyt_rule">
+          <span class="xyt_rule_no">02</span>
+          <h3>值只有六种类型</h3>
+          <p>字符串、数字、布尔、null、对象、数组，其他如函数、日期都会在序列化时丢失。</p>
+        </div>
+        <div class="xyt_rule">
+          <span class="xyt_rule_no">03</span>
+          <h3>不允许写注释</h3>
+          <p><code>//</code> 和 <code>/* */</code> 都不是合法 JSON，解析时会直接报错。</p>
+        </div>
+        <div class="xyt_rule">
+          <span class="xyt_rule_no">04</span>
+          <h3>末尾不能有逗号</h3>
+          <p>最后一个成员后面加逗号会报错，这一点和 JavaScript 对象字面量不同。</p>
+        </div>
+        <div class="xyt_rule">
+          <span class="xyt_rule_no">05</span>
+          <h3>不支持 undefined / NaN</h3>
+          <p>这类值会被 <code>JSON.stringify</code> 直接忽略，放到数组里则变成 null。</p>
+        </div>
+        <div class="xyt_rule">
+          <span class="xyt_rule_no">06</span>
+          <h3>字符串只能双引号</h3>
+          <p>单引号包裹的字符串在 JSON 中非法，换行等特殊字符必须转义。</p>
+        </div>
+      </div>
+
+      <div class="xyt_heading"><h2>在线解析台</h2><span>编辑左侧文本，右侧实时显示结构</span></div>
+      <div class="xyt_bench">
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <strong>JSON 文本</strong>
+            <span class="xyt_state" id="xyt_state">等待校验</span>
+          </div>
+          <textarea class="xyt_editor" id="xyt_jsonText" spellcheck="false" aria-label="JSON 文本输入框"></textarea>
+          <div class="xyt_actions">
+            <button class="xyt_btn xyt_btn_main" id="xyt_parseBtn"><i class="iconfont icon-sousuo"></i>校验解析</button>
+            <button class="xyt_btn" id="xyt_formatBtn"><i class="iconfont icon-bianji"></i>格式化</button>
+            <button class="xyt_btn" id="xyt_minifyBtn"><i class="iconfont icon-shanchu"></i>压缩</button>
+            <button class="xyt_btn" id="xyt_resetBtn"><i class="iconfont icon-fanhui"></i>还原示例</button>
+          </div>
+        </div>
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <strong>解析结果</strong>
+            <span class="xyt_state" id="xyt_info">—</span>
+          </div>
+          <div class="xyt_result" id="xyt_result">
+            <p class="xyt_empty">点击「校验解析」查看 JSON.parse 得到的结构。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="xyt_heading"><h2>六种合法值类型</h2><span>点击查看对应的 JSON 片段</span></div>
+      <div class="xyt_chips" id="xyt_chips">
+        <button class="xyt_chip xyt_on" data-xyt-type="string">字符串 string</button>
+        <button class="xyt_chip" data-xyt-type="number">数字 number</button>
+        <button class="xyt_chip" data-xyt-type="boolean">布尔 boolean</button>
+        <button class="xyt_chip" data-xyt-type="null">空值 null</button>
+        <button class="xyt_chip" data-xyt-type="array">数组 array</button>
+        <button class="xyt_chip" data-xyt-type="object">对象 object</button>
+      </div>
+
+      <div class="xyt_heading"><h2>两个核心方法</h2><span>解析与序列化</span></div>
+      <div class="xyt_api">
+        <div class="xyt_api_card">
+          <h3>JSON.parse(str)</h3>
+          <pre class="xyt_code">var xyt_obj = JSON.parse('{"name":"徐玥桐"}');
+console.log(xyt_obj.name); // 徐玥桐</pre>
+          <p>把 JSON 字符串转换成 JavaScript 对象。文本不合法时抛出 SyntaxError，需要 try…catch 捕获。</p>
+        </div>
+        <div class="xyt_api_card">
+          <h3>JSON.stringify(obj, null, 2)</h3>
+          <pre class="xyt_code">var xyt_str = JSON.stringify({name:"徐玥桐"}, null, 2);
+// {
+//   "name": "徐玥桐"
+// }</pre>
+          <p>把对象序列化为 JSON 字符串。第三个参数是缩进空格数，传 2 即可得到人类可读的格式化结果。</p>
+        </div>
+      </div>
+
+      <div class="xyt_heading"><h2>JSON 与 JS 对象的差别</h2><span>看起来像，规则不一样</span></div>
+      <table class="xyt_table">
+        <thead>
+          <tr><th>对比项</th><th>JSON</th><th>JavaScript 对象字面量</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>键名</td><td>必须双引号包裹</td><td>可以不加引号</td></tr>
+          <tr><td>字符串引号</td><td>只允许 <code>"</code></td><td><code>"</code> 或 <code>'</code> 都行</td></tr>
+          <tr><td>注释</td><td>不支持</td><td>支持 <code>//</code> 与 <code>/* */</code></td></tr>
+          <tr><td>末尾逗号</td><td>非法</td><td>允许</td></tr>
+          <tr><td>值类型</td><td>六种，无 undefined / 函数</td><td>可以是任意类型</td></tr>
+          <tr><td>用途</td><td>跨语言的数据交换</td><td>编写程序里的数据结构</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>JSON 数据格式 · 原生 HTML / CSS / JavaScript</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：JSON 在线解析、格式化、压缩与类型演示逻辑
+  (function () {
+    var xyt_jsonText = document.getElementById('xyt_jsonText');
+    var xyt_result = document.getElementById('xyt_result');
+    var xyt_state = document.getElementById('xyt_state');
+    var xyt_info = document.getElementById('xyt_info');
+
+    // 默认示例：一个学生档案，覆盖字符串、数字、布尔、null、数组、对象六种值
+    var xyt_sample = [
+      '{',
+      '  "student": "徐玥桐",',
+      '  "course": "高级网页设计",',
+      '  "lesson": 17,',
+      '  "passed": true,',
+      '  "remark": null,',
+      '  "skills": ["HTML", "CSS", "JavaScript"],',
+      '  "contact": {',
+      '    "email": "xyt@example.com",',
+      '    "campus": "主校区"',
+      '  }',
+      '}'
+    ].join('\n');
+
+    // 六种类型的演示片段
+    var xyt_typeSamples = {
+      string: '{\n  "type": "string",\n  "value": "徐玥桐"\n}',
+      number: '{\n  "type": "number",\n  "value": 3.14\n}',
+      boolean: '{\n  "type": "boolean",\n  "value": true\n}',
+      null: '{\n  "type": "null",\n  "value": null\n}',
+      array: '{\n  "type": "array",\n  "values": ["HTML", "CSS", "JavaScript"]\n}',
+      object: '{\n  "type": "object",\n  "user": {\n    "name": "徐玥桐",\n    "age": 20\n  }\n}'
+    };
+
+    // 转义字符串中的 HTML 特殊字符，避免结构被当成标签渲染
+    function xyt_escape(xyt_text) {
+      return String(xyt_text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // 按类型渲染叶子值，不同数据类型用不同颜色
+    function xyt_valueHtml(xyt_value) {
+      if (xyt_value === null) return '<span class="xyt_val xyt_null">null</span>';
+      if (Array.isArray(xyt_value)) return '<span class="xyt_val xyt_arr">Array(' + xyt_value.length + ')</span>';
+      if (typeof xyt_value === 'string') return '<span class="xyt_val xyt_str">"' + xyt_escape(xyt_value) + '"</span>';
+      if (typeof xyt_value === 'number') return '<span class="xyt_val xyt_num">' + xyt_value + '</span>';
+      if (typeof xyt_value === 'boolean') return '<span class="xyt_val xyt_bool">' + xyt_value + '</span>';
+      return '<span class="xyt_val xyt_obj">Object</span>';
+    }
+
+    // 递归渲染树形结构，用缩进体现层级
+    function xyt_treeHtml(xyt_value, xyt_key, xyt_depth) {
+      var xyt_pad = 'padding-left:' + (xyt_depth * 18) + 'px';
+      var xyt_head = '';
+      if (typeof xyt_key === 'number') {
+        xyt_head = '<span class="xyt_idx">' + xyt_key + '</span><span class="xyt_colon">: </span>';
+      } else if (xyt_key !== null) {
+        xyt_head = '<span class="xyt_key">"' + xyt_escape(xyt_key) + '"</span><span class="xyt_colon">: </span>';
+      }
+
+      if (xyt_value !== null && typeof xyt_value === 'object') {
+        var xyt_isArray = Array.isArray(xyt_value);
+        var xyt_open = xyt_isArray ? '[' : '{';
+        var xyt_close = xyt_isArray ? ']' : '}';
+        var xyt_out = '<div class="xyt_node" style="' + xyt_pad + '">' + xyt_head + '<span class="xyt_brace">' + xyt_open + '</span></div>';
+        var xyt_keys = xyt_isArray ? xyt_value.map(function (xyt_item, xyt_i) { return xyt_i; }) : Object.keys(xyt_value);
+        xyt_keys.forEach(function (xyt_oneKey) {
+          xyt_out += xyt_treeHtml(xyt_value[xyt_oneKey], xyt_oneKey, xyt_depth + 1);
+        });
+        xyt_out += '<div class="xyt_node" style="' + xyt_pad + '"><span class="xyt_brace">' + xyt_close + '</span></div>';
+        return xyt_out;
+      }
+
+      return '<div class="xyt_node" style="' + xyt_pad + '">' + xyt_head + xyt_valueHtml(xyt_value) + '</div>';
+    }
+
+    // 统计节点数量，作为解析成功的附加信息
+    function xyt_countNodes(xyt_value) {
+      var xyt_total = 1;
+      if (xyt_value !== null && typeof xyt_value === 'object') {
+        Object.keys(xyt_value).forEach(function (xyt_k) {
+          xyt_total += xyt_countNodes(xyt_value[xyt_k]);
+        });
+      }
+      return xyt_total;
+    }
+
+    // 校验并解析：成功渲染树，失败显示错误原因
+    function xyt_parse(xyt_keepState) {
+      var xyt_raw = xyt_jsonText.value.trim();
+      if (!xyt_raw) {
+        xyt_state.textContent = '内容为空';
+        xyt_state.className = 'xyt_state xyt_bad';
+        xyt_info.textContent = '—';
+        xyt_result.innerHTML = '<p class="xyt_empty">请先输入一段 JSON 文本。</p>';
+        return;
+      }
+      try {
+        var xyt_obj = JSON.parse(xyt_raw);
+        var xyt_size = xyt_countNodes(xyt_obj);
+        xyt_result.innerHTML = xyt_treeHtml(xyt_obj, null, 0);
+        if (!xyt_keepState) {
+          xyt_state.textContent = '✓ 语法合法';
+          xyt_state.className = 'xyt_state xyt_ok';
+        }
+        xyt_info.textContent = xyt_size + ' 个节点 · ' + xyt_raw.length + ' 字符';
+      } catch (xyt_error) {
+        xyt_state.textContent = '✗ 语法错误';
+        xyt_state.className = 'xyt_state xyt_bad';
+        xyt_info.textContent = '解析失败';
+        xyt_result.innerHTML = '<div class="xyt_err"><strong>JSON.parse 抛出了 SyntaxError</strong><p>' + xyt_escape(xyt_error.message) + '</p></div>';
+      }
+    }
+
+    // 格式化：解析后以 2 空格缩进重新序列化
+    function xyt_format() {
+      try {
+        var xyt_obj = JSON.parse(xyt_jsonText.value);
+        xyt_jsonText.value = JSON.stringify(xyt_obj, null, 2);
+        xyt_state.textContent = '✓ 已格式化';
+        xyt_state.className = 'xyt_state xyt_ok';
+        xyt_parse(true);
+      } catch (xyt_error) {
+        xyt_parse();
+      }
+    }
+
+    // 压缩：去掉所有缩进与换行
+    function xyt_minify() {
+      try {
+        var xyt_obj = JSON.parse(xyt_jsonText.value);
+        xyt_jsonText.value = JSON.stringify(xyt_obj);
+        xyt_state.textContent = '✓ 已压缩';
+        xyt_state.className = 'xyt_state xyt_ok';
+        xyt_parse(true);
+      } catch (xyt_error) {
+        xyt_parse();
+      }
+    }
+
+    function xyt_reset() {
+      xyt_jsonText.value = xyt_sample;
+      xyt_parse();
+    }
+
+    // 类型示例：切换片段后立即解析
+    document.querySelectorAll('.xyt_chip').forEach(function (xyt_chip) {
+      xyt_chip.addEventListener('click', function () {
+        document.querySelectorAll('.xyt_chip').forEach(function (xyt_other) {
+          xyt_other.classList.toggle('xyt_on', xyt_other === xyt_chip);
+        });
+        xyt_jsonText.value = xyt_typeSamples[xyt_chip.dataset.xytType];
+        xyt_parse();
+      });
+    });
+
+    document.getElementById('xyt_parseBtn').addEventListener('click', function () { xyt_parse(); });
+    document.getElementById('xyt_formatBtn').addEventListener('click', xyt_format);
+    document.getElementById('xyt_minifyBtn').addEventListener('click', xyt_minify);
+    document.getElementById('xyt_resetBtn').addEventListener('click', xyt_reset);
+
+    // 输入时自动延迟校验，边改边看结果
+    var xyt_timer = null;
+    xyt_jsonText.addEventListener('input', function () {
+      window.clearTimeout(xyt_timer);
+      xyt_timer = window.setTimeout(function () { xyt_parse(); }, 400);
+    });
+
+    xyt_reset();
+  })();
+</script>
+</body>
+</html>

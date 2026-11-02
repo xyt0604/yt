@@ -271,3 +271,65 @@ D:\wangyesheji\13-3.html下导航改成首页 预约 订单 我的
 D:\wangyesheji\四级项目html生成个这样的首页（附“校园自习室预约”首页设计图）
 
 ---
+
+## 2026-11-02（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成17-1.html展示json
+
+---
+
+## 2026-11-02（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成17-2.html获取一个接口`https://dog.ceo/api/breeds/image/random`，显示数据
+
+---
+
+## 2026-11-02（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成17-2.html获取一个接口`https://dog.ceo/api/breeds/image/random`，显示数据并展示，可以跨域访问，使用fetch和原生代码实现
+
+---
+
+## 2026-11-02（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成17-3.html 和17-3-detail.html,显示列表和列表详情，数据来源于接口，使用fetch列表与列表详情：
+列表：`https://dummyjson.com/products?limit=8`，默认商品列表。
+详情：`https://dummyjson.com/products/1`，根据 ID 获取单个商品。点哪个商品就看到那个商品的详情
+
+---
+
+## 2026-11-02（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成17-4.html对远程接口测试，支持get post等，显示返回的数据和错误提示信息，实例post接口:`https://jsonplaceholder.typicode.com/posts`,类似图片（附 Postman 轻量客户端截图）
+
+---
+
+## 2026-11-02（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成17-5.html，展示javascrip的两种定时器；完成17-6.html使用promise和async完成异步操作的演示包饺子流程。先买原料，取原料、买完原料后同时和面、和馅，两个活动都完成后包饺子，包饺子之后吃饺子。使用settimeout模拟每一个流程，如买原料6s.在页面上显示流程
+
+---

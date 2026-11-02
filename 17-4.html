@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 接口调试台 · fetch</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --gold:#b8891b; --violet:#7a5c9e;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1240px; margin:auto; padding:22px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+
+  .xyt_hero { max-width:1240px; margin:10px auto 0; padding:26px 28px 8px; }
+  .xyt_eyebrow { margin:0 0 14px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.4vw,46px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:760px; margin:16px 0 0; color:var(--muted); font-size:15px; }
+  .xyt_hero_intro code {
+    padding:1px 6px; border-radius:5px; background:rgba(23,107,135,.08);
+    color:var(--blue); font:13px Consolas,monospace;
+  }
+
+  /* ---------- 整体布局：历史侧栏 + 主区 ---------- */
+  .xyt_layout {
+    display:grid; grid-template-columns:230px minmax(0,1fr); gap:18px;
+    max-width:1240px; margin:22px auto 0; padding:0 28px 60px; align-items:start;
+  }
+
+  /* ---------- 历史记录 ---------- */
+  .xyt_history {
+    border:1px solid var(--line); border-radius:14px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden; position:sticky; top:20px;
+  }
+  .xyt_history_head {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 16px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+  }
+  .xyt_history_head b { font-size:13.5px; }
+  .xyt_clear {
+    border:0; background:none; color:var(--muted); font-size:12px; cursor:pointer;
+    padding:2px 4px; border-radius:5px; transition:color .15s ease;
+  }
+  .xyt_clear:hover { color:var(--coral); }
+  .xyt_history_list { max-height:480px; overflow-y:auto; padding:6px; }
+  .xyt_his_item {
+    display:block; width:100%; text-align:left; border:0; background:none; cursor:pointer;
+    padding:8px 10px; border-radius:9px; font-family:inherit;
+    transition:background .15s ease;
+  }
+  .xyt_his_item:hover { background:rgba(23,107,135,.07); }
+  .xyt_his_url {
+    display:block; margin-top:2px; color:var(--muted); font:11.5px Consolas,monospace;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .xyt_his_empty { margin:0; padding:22px 14px; color:var(--muted); font-size:12.5px; text-align:center; }
+
+  .xyt_method {
+    display:inline-block; min-width:52px; font:700 11.5px Consolas,monospace; letter-spacing:.04em;
+  }
+  .xyt_m_get { color:var(--green); }
+  .xyt_m_post { color:var(--gold); }
+  .xyt_m_put { color:var(--blue); }
+  .xyt_m_patch { color:var(--violet); }
+  .xyt_m_delete { color:var(--coral); }
+
+  /* ---------- 请求卡片 ---------- */
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel + .xyt_panel { margin-top:18px; }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px;
+    padding:13px 18px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+  }
+  .xyt_panel_head b { font-size:14px; }
+  .xyt_panel_head .xyt_note { color:var(--muted); font-size:12px; }
+
+  .xyt_presets { display:flex; flex-wrap:wrap; gap:8px; padding:14px 18px 0; }
+  .xyt_preset {
+    padding:5px 12px; border:1px solid var(--line); border-radius:20px; background:#fff;
+    color:var(--blue); font:12px Consolas,monospace; cursor:pointer;
+    transition:all .16s ease;
+  }
+  .xyt_preset:hover { border-color:var(--blue); background:rgba(23,107,135,.07); }
+
+  .xyt_reqbar { display:flex; gap:10px; padding:14px 18px; }
+  .xyt_reqbar select {
+    flex:none; width:112px; padding:9px 10px; border:1px solid var(--line); border-radius:9px;
+    background:#fff; color:var(--ink); font:700 13px Consolas,monospace; outline:none; cursor:pointer;
+  }
+  .xyt_reqbar input {
+    flex:1; min-width:0; padding:9px 13px; border:1px solid var(--line); border-radius:9px;
+    background:#fff; color:var(--ink); font:13px Consolas,monospace; outline:none;
+    transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_reqbar input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_send {
+    flex:none; display:inline-flex; align-items:center; gap:7px;
+    padding:9px 22px; border:1px solid var(--blue); border-radius:9px;
+    background:var(--blue); color:#fff; font:14px/1.5 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:background .18s ease,border-color .18s ease;
+  }
+  .xyt_send:hover:not(:disabled) { background:#135a72; border-color:#135a72; }
+  .xyt_send:disabled { opacity:.6; cursor:not-allowed; }
+  .xyt_send .xyt_spin {
+    width:13px; height:13px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff;
+    border-radius:50%; animation:xytSpin .7s linear infinite;
+  }
+  @keyframes xytSpin { to { transform:rotate(360deg); } }
+
+  /* ---------- 选项卡 ---------- */
+  .xyt_tabs { display:flex; gap:4px; padding:0 18px; border-bottom:1px solid var(--line); }
+  .xyt_tab {
+    border:0; background:none; padding:9px 14px; margin-bottom:-1px; cursor:pointer;
+    color:var(--muted); font:13px "Microsoft YaHei",sans-serif; border-bottom:2px solid transparent;
+    transition:color .15s ease,border-color .15s ease;
+  }
+  .xyt_tab:hover { color:var(--ink); }
+  .xyt_tab.xyt_active { color:var(--blue); border-bottom-color:var(--blue); font-weight:600; }
+  .xyt_tabpane { display:none; padding:14px 18px 18px; }
+  .xyt_tabpane.xyt_active { display:block; }
+
+  /* ---------- 键值对行 ---------- */
+  .xyt_row { display:flex; gap:8px; margin-bottom:8px; }
+  .xyt_row input {
+    flex:1; min-width:0; padding:8px 11px; border:1px solid var(--line); border-radius:8px;
+    background:#fff; font:12.5px Consolas,monospace; color:var(--ink); outline:none;
+    transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_row input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_row_del {
+    flex:none; width:34px; border:1px solid var(--line); border-radius:8px; background:#fff;
+    color:#b9c2c8; cursor:pointer; font-size:13px;
+    transition:all .16s ease;
+  }
+  .xyt_row_del:hover { border-color:var(--coral); color:var(--coral); background:rgba(228,107,75,.08); }
+  .xyt_addrow {
+    margin-top:2px; padding:6px 14px; border:1px dashed var(--line); border-radius:8px;
+    background:none; color:var(--blue); font:12.5px "Microsoft YaHei",sans-serif; cursor:pointer;
+    transition:border-color .16s ease,background .16s ease;
+  }
+  .xyt_addrow:hover { border-color:var(--blue); background:rgba(23,107,135,.06); }
+
+  .xyt_body_area {
+    width:100%; min-height:170px; padding:12px 14px; resize:vertical;
+    border:1px solid var(--line); border-radius:9px; background:#fff;
+    font:12.5px/1.7 Consolas,monospace; color:var(--ink); outline:none;
+    transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_body_area:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_body_hint { margin:8px 0 0; color:var(--muted); font-size:12px; }
+
+  /* ---------- 响应区 ---------- */
+  .xyt_status { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .xyt_badge {
+    padding:3px 12px; border-radius:20px; border:1px solid var(--line); background:#fff;
+    font:700 11.5px Consolas,monospace; color:var(--muted);
+  }
+  .xyt_badge.xyt_b_ok { border-color:rgba(63,125,92,.45); color:var(--green); background:rgba(63,125,92,.08); }
+  .xyt_badge.xyt_b_warn { border-color:rgba(184,137,27,.45); color:var(--gold); background:rgba(184,137,27,.08); }
+  .xyt_badge.xyt_b_bad { border-color:rgba(228,107,75,.45); color:var(--coral); background:rgba(228,107,75,.08); }
+  .xyt_badge.xyt_b_info { border-color:rgba(23,107,135,.4); color:var(--blue); background:rgba(23,107,135,.07); }
+
+  .xyt_resp_body {
+    min-height:230px; max-height:460px; overflow:auto; padding:16px 18px;
+    background:#1f2a33; border-top:1px solid var(--line);
+  }
+  .xyt_resp_body pre {
+    margin:0; color:#e9eef2; font:12.5px/1.75 Consolas,monospace;
+    white-space:pre-wrap; word-break:break-all;
+  }
+  .xyt_j_key { color:#8fd0e8; }
+  .xyt_j_str { color:#9dd8a8; }
+  .xyt_j_num { color:#ffcf8a; }
+  .xyt_j_bool, .xyt_j_null { color:#e0a3ff; }
+
+  .xyt_resp_headers { padding:8px 18px 16px; }
+  .xyt_hline {
+    display:flex; gap:14px; padding:7px 2px; border-bottom:1px dashed var(--line);
+    font:12.5px Consolas,monospace;
+  }
+  .xyt_hline:last-child { border-bottom:0; }
+  .xyt_hline b { flex:none; min-width:170px; color:var(--blue); font-weight:600; }
+  .xyt_hline span { min-width:0; word-break:break-all; color:var(--muted); }
+
+  .xyt_empty {
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+    min-height:230px; padding:20px; border-top:1px dashed var(--line);
+    color:var(--muted); text-align:center;
+  }
+  .xyt_empty .iconfont { font-size:40px; color:#c4cdc9; }
+  .xyt_empty p { margin:0; font-size:13px; }
+
+  .xyt_error {
+    display:flex; flex-direction:column; gap:8px; margin:0;
+    padding:20px 22px; border-top:3px solid var(--coral);
+    background:rgba(228,107,75,.06);
+  }
+  .xyt_error strong { color:var(--coral); font-size:14px; }
+  .xyt_error p { margin:0; color:var(--muted); font:12.5px/1.7 Consolas,monospace; word-break:break-all; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1240px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+  }
+
+  @media (max-width:900px) {
+    .xyt_layout { grid-template-columns:1fr; }
+    .xyt_history { position:static; }
+    .xyt_history_list { max-height:200px; }
+  }
+  @media (max-width:640px) {
+    .xyt_topbar, .xyt_hero, .xyt_layout, .xyt_footer { padding-left:20px; padding-right:20px; }
+    .xyt_reqbar { flex-wrap:wrap; }
+    .xyt_reqbar select { width:100%; }
+    .xyt_send { width:100%; justify-content:center; }
+    .xyt_hline b { min-width:110px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：仿 Postman 的远程接口调试台，支持 GET/POST 等方法，展示响应数据与错误提示 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页 →</a>
+  </header>
+
+  <section class="xyt_hero">
+    <p class="xyt_eyebrow">JAVASCRIPT · FETCH API TESTER</p>
+    <h1>接口调试台</h1>
+    <p class="xyt_hero_intro">一个迷你版 Postman：选择请求方法、填写地址、参数、请求头和 JSON Body，点击 Send 后用 <code>fetch</code> 发请求，下方展示状态码、耗时、返回数据；请求失败或地址非法时会显示错误提示。</p>
+  </section>
+
+  <div class="xyt_layout">
+    <!-- 历史记录 -->
+    <aside class="xyt_history">
+      <div class="xyt_history_head">
+        <b>History</b>
+        <button type="button" class="xyt_clear" id="xyt_clear">清空</button>
+      </div>
+      <div class="xyt_history_list" id="xyt_history"></div>
+    </aside>
+
+    <div>
+      <!-- 请求卡片 -->
+      <div class="xyt_panel">
+        <div class="xyt_panel_head">
+          <b>Request</b>
+          <span class="xyt_note">点击示例可一键填充</span>
+        </div>
+        <div class="xyt_presets">
+          <button type="button" class="xyt_preset" data-xyt-preset="post">POST 新建文章</button>
+          <button type="button" class="xyt_preset" data-xyt-preset="get">GET 单篇文章</button>
+          <button type="button" class="xyt_preset" data-xyt-preset="list">GET 文章列表</button>
+          <button type="button" class="xyt_preset" data-xyt-preset="del">DELETE 删除文章</button>
+        </div>
+        <div class="xyt_reqbar">
+          <select id="xyt_method" aria-label="请求方法">
+            <option value="GET">GET</option>
+            <option value="POST" selected>POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <input id="xyt_url" type="text" spellcheck="false"
+                 value="https://jsonplaceholder.typicode.com/posts"
+                 placeholder="https://jsonplaceholder.typicode.com/posts">
+          <button type="button" class="xyt_send" id="xyt_send"><i class="iconfont icon-faxian"></i>Send</button>
+        </div>
+
+        <div class="xyt_tabs">
+          <button type="button" class="xyt_tab xyt_active" data-xyt-tab="params">Params</button>
+          <button type="button" class="xyt_tab" data-xyt-tab="headers">Headers</button>
+          <button type="button" class="xyt_tab" data-xyt-tab="body">Body</button>
+        </div>
+
+        <div class="xyt_tabpane xyt_active" data-xyt-pane="params">
+          <div id="xyt_params"></div>
+          <button type="button" class="xyt_addrow" data-xyt-add="params">+ 添加参数</button>
+        </div>
+        <div class="xyt_tabpane" data-xyt-pane="headers">
+          <div id="xyt_headers"></div>
+          <button type="button" class="xyt_addrow" data-xyt-add="headers">+ 添加请求头</button>
+        </div>
+        <div class="xyt_tabpane" data-xyt-pane="body">
+          <textarea class="xyt_body_area" id="xyt_body" spellcheck="false" placeholder='{"title":"..."}'></textarea>
+          <p class="xyt_body_hint">Body 仅随 POST / PUT / PATCH 发送，需为合法 JSON；GET / DELETE 会忽略此内容。</p>
+        </div>
+      </div>
+
+      <!-- 响应卡片 -->
+      <div class="xyt_panel">
+        <div class="xyt_panel_head">
+          <b>Response</b>
+          <span class="xyt_status" id="xyt_status"></span>
+        </div>
+        <div class="xyt_tabs">
+          <button type="button" class="xyt_tab xyt_active" data-xyt-rtab="body">Body</button>
+          <button type="button" class="xyt_tab" data-xyt-rtab="headers">Headers</button>
+        </div>
+        <div class="xyt_tabpane xyt_active" data-xyt-rpane="body" style="padding:0">
+          <div id="xyt_respBody">
+            <div class="xyt_empty">
+              <i class="iconfont icon-faxian"></i>
+              <p>点击 Send 发送请求，响应数据会显示在这里</p>
+            </div>
+          </div>
+        </div>
+        <div class="xyt_tabpane" data-xyt-rpane="headers" style="padding:0">
+          <div class="xyt_resp_headers" id="xyt_respHeaders">
+            <div class="xyt_empty" style="border-top:0">
+              <i class="iconfont icon-faxian"></i>
+              <p>响应头会显示在这里</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>接口调试台 · 原生 HTML / CSS / JavaScript</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：用原生 fetch 调试 GET/POST 等请求，展示响应与错误
+  (function () {
+    var xyt_methodEl = document.getElementById('xyt_method');
+    var xyt_urlEl = document.getElementById('xyt_url');
+    var xyt_sendBtn = document.getElementById('xyt_send');
+    var xyt_bodyEl = document.getElementById('xyt_body');
+    var xyt_statusEl = document.getElementById('xyt_status');
+    var xyt_respBody = document.getElementById('xyt_respBody');
+    var xyt_respHeaders = document.getElementById('xyt_respHeaders');
+    var xyt_paramsEl = document.getElementById('xyt_params');
+    var xyt_headersEl = document.getElementById('xyt_headers');
+    var xyt_historyEl = document.getElementById('xyt_history');
+
+    var xyt_history = [];
+
+    var xyt_presets = {
+      post: {
+        method: 'POST',
+        url: 'https://jsonplaceholder.typicode.com/posts',
+        params: [],
+        headers: [['Content-Type', 'application/json']],
+        body: '{\n  "title": "徐玥桐的测试文章",\n  "body": "这是一条通过 fetch POST 发送的测试数据",\n  "userId": 1\n}'
+      },
+      get: {
+        method: 'GET',
+        url: 'https://jsonplaceholder.typicode.com/posts/1',
+        params: [],
+        headers: [],
+        body: ''
+      },
+      list: {
+        method: 'GET',
+        url: 'https://jsonplaceholder.typicode.com/posts',
+        params: [['_limit', '5']],
+        headers: [],
+        body: ''
+      },
+      del: {
+        method: 'DELETE',
+        url: 'https://jsonplaceholder.typicode.com/posts/1',
+        params: [],
+        headers: [],
+        body: ''
+      }
+    };
+
+    function xyt_escape(xyt_text) {
+      return String(xyt_text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // JSON 语法高亮
+    function xyt_highlight(xyt_obj) {
+      var xyt_str = xyt_escape(JSON.stringify(xyt_obj, null, 2));
+      return xyt_str.replace(
+        /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*")(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(\.\d+)?([eE][+-]?\d+)?/g,
+        function (xyt_m) {
+          var xyt_cls = 'xyt_j_num';
+          if (/^"/.test(xyt_m)) {
+            xyt_cls = /:\s*$/.test(xyt_m) ? 'xyt_j_key' : 'xyt_j_str';
+          } else if (/true|false/.test(xyt_m)) {
+            xyt_cls = 'xyt_j_bool';
+          } else if (/null/.test(xyt_m)) {
+            xyt_cls = 'xyt_j_null';
+          }
+          return '<span class="' + xyt_cls + '">' + xyt_m + '</span>';
+        }
+      );
+    }
+
+    // 键值对行
+    function xyt_makeRow(xyt_key, xyt_value) {
+      var xyt_row = document.createElement('div');
+      xyt_row.className = 'xyt_row';
+      xyt_row.innerHTML =
+        '<input type="text" placeholder="Key" spellcheck="false" value="' + xyt_escape(xyt_key || '') + '">' +
+        '<input type="text" placeholder="Value" spellcheck="false" value="' + xyt_escape(xyt_value || '') + '">' +
+        '<button type="button" class="xyt_row_del" title="删除此行"><i class="iconfont icon-shanchu"></i></button>';
+      xyt_row.querySelector('.xyt_row_del').addEventListener('click', function () {
+        xyt_row.remove();
+      });
+      return xyt_row;
+    }
+
+    function xyt_fillRows(xyt_box, xyt_pairs) {
+      xyt_box.innerHTML = '';
+      (xyt_pairs.length ? xyt_pairs : [['', '']]).forEach(function (xyt_pair) {
+        xyt_box.appendChild(xyt_makeRow(xyt_pair[0], xyt_pair[1]));
+      });
+    }
+
+    function xyt_readRows(xyt_box) {
+      var xyt_pairs = [];
+      xyt_box.querySelectorAll('.xyt_row').forEach(function (xyt_row) {
+        var xyt_inputs = xyt_row.querySelectorAll('input');
+        var xyt_key = xyt_inputs[0].value.trim();
+        if (xyt_key) {
+          xyt_pairs.push([xyt_key, xyt_inputs[1].value.trim()]);
+        }
+      });
+      return xyt_pairs;
+    }
+
+    // 选项卡切换（请求区与响应区通用）
+    function xyt_bindTabs(xyt_attr, xyt_paneAttr) {
+      document.querySelectorAll('[' + xyt_attr + ']').forEach(function (xyt_tab) {
+        xyt_tab.addEventListener('click', function () {
+          var xyt_name = xyt_tab.getAttribute(xyt_attr);
+          document.querySelectorAll('[' + xyt_attr + ']').forEach(function (xyt_t) {
+            xyt_t.classList.toggle('xyt_active', xyt_t === xyt_tab);
+          });
+          document.querySelectorAll('[' + xyt_paneAttr + ']').forEach(function (xyt_pane) {
+            xyt_pane.classList.toggle('xyt_active', xyt_pane.getAttribute(xyt_paneAttr) === xyt_name);
+          });
+        });
+      });
+    }
+
+    function xyt_methodClass(xyt_method) {
+      return 'xyt_m_' + String(xyt_method).toLowerCase();
+    }
+
+    function xyt_statusBadge(xyt_res, xyt_time, xyt_size) {
+      var xyt_code = xyt_res.status;
+      var xyt_cls = xyt_code < 300 ? 'xyt_b_ok' : xyt_code < 400 ? 'xyt_b_info' : xyt_code < 500 ? 'xyt_b_warn' : 'xyt_b_bad';
+      return '<span class="xyt_badge ' + xyt_cls + '">' + xyt_code + ' ' + xyt_escape(xyt_res.statusText) + '</span>' +
+        '<span class="xyt_badge">' + xyt_time + ' ms</span>' +
+        '<span class="xyt_badge">' + xyt_size + ' B</span>';
+    }
+
+    function xyt_showError(xyt_title, xyt_detail) {
+      xyt_statusEl.innerHTML = '<span class="xyt_badge xyt_b_bad">请求失败</span>';
+      xyt_respBody.innerHTML =
+        '<div class="xyt_error">' +
+          '<strong>' + xyt_escape(xyt_title) + '</strong>' +
+          '<p>' + xyt_escape(xyt_detail) + '</p>' +
+        '</div>';
+      xyt_respHeaders.innerHTML =
+        '<div class="xyt_empty" style="border-top:0"><i class="iconfont icon-faxian"></i><p>本次请求没有拿到响应头</p></div>';
+    }
+
+    function xyt_renderHistory() {
+      if (!xyt_history.length) {
+        xyt_historyEl.innerHTML = '<p class="xyt_his_empty">暂无请求记录</p>';
+        return;
+      }
+      xyt_historyEl.innerHTML = xyt_history.map(function (xyt_h, xyt_i) {
+        return '<button type="button" class="xyt_his_item" data-xyt-i="' + xyt_i + '">' +
+          '<span class="xyt_method ' + xyt_methodClass(xyt_h.method) + '">' + xyt_h.method + '</span>' +
+          '<span class="xyt_his_url" title="' + xyt_escape(xyt_h.url) + '">' + xyt_escape(xyt_h.url) + '</span>' +
+        '</button>';
+      }).join('');
+      xyt_historyEl.querySelectorAll('.xyt_his_item').forEach(function (xyt_item) {
+        xyt_item.addEventListener('click', function () {
+          var xyt_h = xyt_history[Number(xyt_item.getAttribute('data-xyt-i'))];
+          xyt_methodEl.value = xyt_h.method;
+          xyt_urlEl.value = xyt_h.url;
+          xyt_fillRows(xyt_paramsEl, xyt_h.params);
+          xyt_fillRows(xyt_headersEl, xyt_h.headers);
+          xyt_bodyEl.value = xyt_h.body;
+        });
+      });
+    }
+
+    async function xyt_send() {
+      var xyt_method = xyt_methodEl.value;
+      var xyt_url = xyt_urlEl.value.trim();
+      var xyt_params = xyt_readRows(xyt_paramsEl);
+      var xyt_headers = xyt_readRows(xyt_headersEl);
+      var xyt_bodyText = xyt_bodyEl.value.trim();
+
+      // 地址必须是 http/https
+      if (!/^https?:\/\//i.test(xyt_url)) {
+        xyt_showError('地址格式不正确', '请求地址需要以 http:// 或 https:// 开头，当前为：' + (xyt_url || '（空）'));
+        return;
+      }
+
+      // 拼接查询参数
+      if (xyt_params.length) {
+        var xyt_query = xyt_params.map(function (xyt_pair) {
+          return encodeURIComponent(xyt_pair[0]) + '=' + encodeURIComponent(xyt_pair[1]);
+        }).join('&');
+        xyt_url += (xyt_url.indexOf('?') === -1 ? '?' : '&') + xyt_query;
+      }
+
+      // Body 校验：POST / PUT / PATCH 且填了内容时必须是合法 JSON
+      var xyt_hasBody = ['POST', 'PUT', 'PATCH'].indexOf(xyt_method) !== -1 && xyt_bodyText !== '';
+      if (xyt_hasBody) {
+        try {
+          JSON.parse(xyt_bodyText);
+        } catch (xyt_err) {
+          xyt_showError('Body 不是合法的 JSON', xyt_err.message);
+          return;
+        }
+      }
+
+      // 组装请求头
+      var xyt_headerObj = {};
+      xyt_headers.forEach(function (xyt_pair) {
+        xyt_headerObj[xyt_pair[0]] = xyt_pair[1];
+      });
+      if (xyt_hasBody && !Object.keys(xyt_headerObj).some(function (xyt_k) {
+        return xyt_k.toLowerCase() === 'content-type';
+      })) {
+        xyt_headerObj['Content-Type'] = 'application/json';
+      }
+
+      var xyt_options = {
+        method: xyt_method,
+        headers: xyt_headerObj,
+        cache: 'no-store'
+      };
+      if (xyt_hasBody) {
+        xyt_options.body = xyt_bodyText;
+      }
+
+      xyt_sendBtn.disabled = true;
+      xyt_sendBtn.innerHTML = '<span class="xyt_spin"></span>请求中…';
+      xyt_statusEl.innerHTML = '<span class="xyt_badge xyt_b_info">正在请求…</span>';
+      xyt_respBody.innerHTML =
+        '<div class="xyt_empty"><i class="iconfont icon-faxian"></i><p>正在等待服务器响应…</p></div>';
+
+      var xyt_start = window.performance.now();
+      try {
+        var xyt_res = await fetch(xyt_url, xyt_options);
+        var xyt_text = await xyt_res.text();
+        var xyt_time = Math.round(window.performance.now() - xyt_start);
+        var xyt_size = new TextEncoder().encode(xyt_text).length;
+
+        xyt_statusEl.innerHTML = xyt_statusBadge(xyt_res, xyt_time, xyt_size);
+
+        var xyt_parsed = null;
+        try { xyt_parsed = JSON.parse(xyt_text); } catch (xyt_e) { /* 非 JSON 就原样展示 */ }
+        xyt_respBody.innerHTML = xyt_parsed !== null
+          ? '<pre>' + xyt_highlight(xyt_parsed) + '</pre>'
+          : '<pre>' + (xyt_escape(xyt_text) || '（响应体为空）') + '</pre>';
+
+        var xyt_hlines = '';
+        xyt_res.headers.forEach(function (xyt_value, xyt_key) {
+          xyt_hlines += '<div class="xyt_hline"><b>' + xyt_escape(xyt_key) + '</b><span>' + xyt_escape(xyt_value) + '</span></div>';
+        });
+        xyt_respHeaders.innerHTML = xyt_hlines ||
+          '<div class="xyt_empty" style="border-top:0"><i class="iconfont icon-faxian"></i><p>响应头为空</p></div>';
+
+        // 记入历史（最多 20 条）
+        xyt_history.unshift({
+          method: xyt_method,
+          url: xyt_urlEl.value.trim(),
+          params: xyt_params,
+          headers: xyt_headers,
+          body: xyt_bodyText
+        });
+        if (xyt_history.length > 20) { xyt_history.length = 20; }
+        xyt_renderHistory();
+      } catch (xyt_error) {
+        var xyt_time2 = Math.round(window.performance.now() - xyt_start);
+        xyt_statusEl.innerHTML = '<span class="xyt_badge xyt_b_bad">请求失败</span>' +
+          '<span class="xyt_badge">' + xyt_time2 + ' ms</span>';
+        xyt_respBody.innerHTML =
+          '<div class="xyt_error">' +
+            '<strong>网络请求失败</strong>' +
+            '<p>' + xyt_escape(xyt_error.message) + '</p>' +
+            '<p>可能原因：目标服务器不支持跨域（CORS）、地址不存在，或当前网络不可用。</p>' +
+          '</div>';
+      } finally {
+        xyt_sendBtn.disabled = false;
+        xyt_sendBtn.innerHTML = '<i class="iconfont icon-faxian"></i>Send';
+      }
+    }
+
+    // 事件绑定
+    xyt_sendBtn.addEventListener('click', xyt_send);
+    xyt_urlEl.addEventListener('keydown', function (xyt_event) {
+      if (xyt_event.key === 'Enter') { xyt_send(); }
+    });
+    document.getElementById('xyt_clear').addEventListener('click', function () {
+      xyt_history = [];
+      xyt_renderHistory();
+    });
+    document.querySelectorAll('[data-xyt-add]').forEach(function (xyt_btn) {
+      xyt_btn.addEventListener('click', function () {
+        var xyt_box = xyt_btn.getAttribute('data-xyt-add') === 'params' ? xyt_paramsEl : xyt_headersEl;
+        xyt_box.appendChild(xyt_makeRow('', ''));
+      });
+    });
+    document.querySelectorAll('.xyt_preset').forEach(function (xyt_btn) {
+      xyt_btn.addEventListener('click', function () {
+        var xyt_p = xyt_presets[xyt_btn.getAttribute('data-xyt-preset')];
+        xyt_methodEl.value = xyt_p.method;
+        xyt_urlEl.value = xyt_p.url;
+        xyt_fillRows(xyt_paramsEl, xyt_p.params);
+        xyt_fillRows(xyt_headersEl, xyt_p.headers);
+        xyt_bodyEl.value = xyt_p.body;
+      });
+    });
+    xyt_bindTabs('data-xyt-tab', 'data-xyt-pane');
+    xyt_bindTabs('data-xyt-rtab', 'data-xyt-rpane');
+
+    // 初始填充：默认 POST 示例
+    xyt_fillRows(xyt_paramsEl, xyt_presets.post.params);
+    xyt_fillRows(xyt_headersEl, xyt_presets.post.headers);
+    xyt_bodyEl.value = xyt_presets.post.body;
+    xyt_renderHistory();
+  })();
+</script>
+</body>
+</html>

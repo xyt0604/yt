@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | Promise 与 async/await · 包饺子流程</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --gold:#b8891b;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:32px 28px 8px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,52px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:760px; margin:18px 0 0; color:var(--muted); font-size:15px; }
+  .xyt_hero_intro code {
+    padding:1px 6px; border-radius:5px; background:rgba(23,107,135,.08);
+    color:var(--blue); font:13px Consolas,monospace;
+  }
+
+  .xyt_wrap { max-width:1160px; margin:24px auto 0; padding:0 28px 70px; }
+
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel + .xyt_panel { margin-top:18px; }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 20px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+  }
+  .xyt_panel_head b { font-size:15px; }
+  .xyt_panel_head .xyt_note { color:var(--muted); font-size:12px; }
+
+  .xyt_toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:16px 20px 4px; }
+  .xyt_btn {
+    display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:9px;
+    border:1px solid var(--line); background:#fff; color:var(--blue); cursor:pointer;
+    font:14px "Microsoft YaHei",sans-serif;
+    transition:border-color .16s ease,background .16s ease;
+  }
+  .xyt_btn:hover:not(:disabled) { border-color:var(--blue); background:rgba(23,107,135,.06); }
+  .xyt_btn:disabled { opacity:.45; cursor:not-allowed; }
+  .xyt_btn.xyt_btn_main { border-color:var(--blue); background:var(--blue); color:#fff; }
+  .xyt_btn.xyt_btn_main:hover:not(:disabled) { background:#135a72; }
+  .xyt_clock { color:var(--muted); font:13px Consolas,monospace; margin-left:auto; }
+  .xyt_clock b { color:var(--ink); font-variant-numeric:tabular-nums; }
+
+  /* ---------- 流程管道 ---------- */
+  .xyt_pipe { display:flex; flex-wrap:wrap; gap:12px; padding:18px 20px 20px; align-items:stretch; }
+  .xyt_step {
+    flex:1 1 150px; min-width:150px; position:relative;
+    border:1px solid var(--line); border-radius:13px; background:#fdfcf7;
+    padding:14px 14px 12px; overflow:hidden;
+    transition:border-color .25s ease, box-shadow .25s ease;
+  }
+  .xyt_step.xyt_running { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_step.xyt_done { border-color:rgba(63,125,92,.5); }
+  .xyt_step_head { display:flex; align-items:center; gap:8px; }
+  .xyt_step_icon {
+    display:grid; width:32px; height:32px; place-items:center; flex:none;
+    border-radius:9px; background:rgba(23,107,135,.08); color:var(--blue); font-size:16px;
+  }
+  .xyt_step.xyt_done .xyt_step_icon { background:rgba(63,125,92,.12); color:var(--green); }
+  .xyt_step_name { font-size:14px; font-weight:700; }
+  .xyt_step_dur { color:var(--muted); font:11px Consolas,monospace; }
+  .xyt_step_state { margin:8px 0 6px; color:var(--muted); font-size:12px; min-height:20px; }
+  .xyt_step.xyt_running .xyt_step_state { color:var(--blue); }
+  .xyt_step.xyt_done .xyt_step_state { color:var(--green); }
+  .xyt_bar { height:6px; border-radius:4px; background:#eceadf; overflow:hidden; }
+  .xyt_bar_i {
+    height:100%; width:0; border-radius:6px;
+    background:var(--blue); transition:width .12s linear;
+  }
+  .xyt_step.xyt_done .xyt_bar_i { width:100% !important; background:var(--green); }
+
+  .xyt_arrow {
+    align-self:center; color:#c4cdc9; font-size:20px; flex:none;
+    transform:rotate(0deg);
+  }
+  .xyt_parallel {
+    flex:1 1 170px; min-width:170px; display:flex; flex-direction:column; gap:10px;
+    padding:12px; border:1px dashed var(--gold); border-radius:13px; background:rgba(184,137,27,.05);
+  }
+  .xyt_parallel_tag {
+    align-self:flex-start; padding:2px 10px; border-radius:20px;
+    background:rgba(184,137,27,.14); color:var(--gold);
+    font:700 11px Consolas,monospace;
+  }
+  .xyt_parallel .xyt_step { flex:none; min-width:0; background:var(--card); }
+
+  /* ---------- 日志 ---------- */
+  .xyt_log {
+    margin:0 20px 20px; padding:12px 16px; min-height:150px; max-height:240px; overflow-y:auto;
+    border-radius:10px; background:#1f2a33;
+    font:12.5px/1.9 Consolas,monospace; color:#8fa0ac;
+  }
+  .xyt_log p { margin:0; }
+  .xyt_log .xyt_t { color:#5f707c; margin-right:10px; }
+  .xyt_log .xyt_run { color:#8fd0e8; }
+  .xyt_log .xyt_hit { color:#9dd8a8; }
+  .xyt_log .xyt_all { color:#ffcf8a; }
+
+  /* ---------- 代码 ---------- */
+  .xyt_code {
+    margin:0 20px 20px; padding:15px 17px; border-radius:10px; background:#1f2a33; color:#e9eef2;
+    font:12.5px/1.8 Consolas,monospace; overflow-x:auto; white-space:pre;
+  }
+  .xyt_c { color:#8fa0ac; }
+  .xyt_k { color:#e0a3ff; }
+  .xyt_f { color:#ffcf8a; }
+  .xyt_s { color:#9dd8a8; }
+  .xyt_n { color:#8fd0e8; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) {
+    .xyt_topbar, .xyt_hero, .xyt_wrap, .xyt_footer { padding-left:20px; padding-right:20px; }
+    .xyt_arrow { transform:rotate(90deg); }
+    .xyt_pipe { flex-direction:column; }
+    .xyt_step, .xyt_parallel { flex:none; min-width:0; }
+    .xyt_clock { margin-left:0; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：用 Promise + async/await + setTimeout 演示包饺子异步流程 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页 →</a>
+  </header>
+
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · PROMISE & ASYNC / AWAIT</p>
+      <h1>包饺子流程演示</h1>
+      <p class="xyt_hero_intro">先「买原料 6s → 取原料 3s」，然后「和面 4s」和「和馅 3s」用 <code>Promise.all</code> 同时进行，两个都完成后才「包饺子 5s」，最后「吃饺子 2s」。每一步都用 <code>setTimeout</code> 模拟耗时，点击「开始包饺子」观察整个过程。</p>
+    </section>
+
+    <section class="xyt_wrap">
+      <div class="xyt_panel">
+        <div class="xyt_panel_head">
+          <b>流程管道</b>
+          <span class="xyt_note">金色虚线框内的两个步骤同时进行</span>
+        </div>
+        <div class="xyt_toolbar">
+          <button class="xyt_btn xyt_btn_main" id="xyt_start">开始包饺子</button>
+          <button class="xyt_btn" id="xyt_reset" disabled>重置</button>
+          <span class="xyt_clock">总耗时 <b id="xyt_total">0.0</b> s</span>
+        </div>
+
+        <div class="xyt_pipe" id="xyt_pipe">
+          <div class="xyt_step" data-xyt-step="buy">
+            <div class="xyt_step_head">
+              <span class="xyt_step_icon"><i class="iconfont icon-pingguo"></i></span>
+              <div><div class="xyt_step_name">买原料</div><div class="xyt_step_dur">await 6s</div></div>
+            </div>
+            <div class="xyt_step_state">等待</div>
+            <div class="xyt_bar"><div class="xyt_bar_i"></div></div>
+          </div>
+          <span class="xyt_arrow">→</span>
+          <div class="xyt_step" data-xyt-step="pick">
+            <div class="xyt_step_head">
+              <span class="xyt_step_icon"><i class="iconfont icon-shoucang"></i></span>
+              <div><div class="xyt_step_name">取原料</div><div class="xyt_step_dur">await 3s</div></div>
+            </div>
+            <div class="xyt_step_state">等待</div>
+            <div class="xyt_bar"><div class="xyt_bar_i"></div></div>
+          </div>
+          <span class="xyt_arrow">→</span>
+          <div class="xyt_parallel">
+            <span class="xyt_parallel_tag">Promise.all 并行</span>
+            <div class="xyt_step" data-xyt-step="dough">
+              <div class="xyt_step_head">
+                <span class="xyt_step_icon"><i class="iconfont icon-bianji"></i></span>
+                <div><div class="xyt_step_name">和面</div><div class="xyt_step_dur">await 4s</div></div>
+              </div>
+              <div class="xyt_step_state">等待</div>
+              <div class="xyt_bar"><div class="xyt_bar_i"></div></div>
+            </div>
+            <div class="xyt_step" data-xyt-step="filling">
+              <div class="xyt_step_head">
+                <span class="xyt_step_icon"><i class="iconfont icon-yinpin"></i></span>
+                <div><div class="xyt_step_name">和馅</div><div class="xyt_step_dur">await 3s</div></div>
+              </div>
+              <div class="xyt_step_state">等待</div>
+              <div class="xyt_bar"><div class="xyt_bar_i"></div></div>
+            </div>
+          </div>
+          <span class="xyt_arrow">→</span>
+          <div class="xyt_step" data-xyt-step="wrap">
+            <div class="xyt_step_head">
+              <span class="xyt_step_icon"><i class="iconfont icon-gengduo"></i></span>
+              <div><div class="xyt_step_name">包饺子</div><div class="xyt_step_dur">await 5s</div></div>
+            </div>
+            <div class="xyt_step_state">等待</div>
+            <div class="xyt_bar"><div class="xyt_bar_i"></div></div>
+          </div>
+          <span class="xyt_arrow">→</span>
+          <div class="xyt_step" data-xyt-step="eat">
+            <div class="xyt_step_head">
+              <span class="xyt_step_icon"><i class="iconfont icon-xiaolian"></i></span>
+              <div><div class="xyt_step_name">吃饺子</div><div class="xyt_step_dur">await 2s</div></div>
+            </div>
+            <div class="xyt_step_state">等待</div>
+            <div class="xyt_bar"><div class="xyt_bar_i"></div></div>
+          </div>
+        </div>
+
+        <div class="xyt_log" id="xyt_log">
+          <p><span class="xyt_t">+0.0s</span>点击「开始包饺子」启动异步流程</p>
+        </div>
+      </div>
+
+      <div class="xyt_panel">
+        <div class="xyt_panel_head">
+          <b>对应的代码</b>
+          <span class="xyt_note">async 函数里的执行顺序与页面完全一致</span>
+        </div>
+        <pre class="xyt_code"><span class="xyt_c">// 每一步：用 setTimeout 包装成一个 Promise</span>
+<span class="xyt_k">function</span> <span class="xyt_f">xyt_step</span>(xyt_name, xyt_ms) {
+  <span class="xyt_k">return new</span> Promise(<span class="xyt_f">function</span> (xyt_resolve) {
+    <span class="xyt_n">setTimeout</span>(xyt_resolve, xyt_ms);
+  });
+}
+
+<span class="xyt_k">async function</span> <span class="xyt_f">xyt_makeDumplings</span>() {
+  <span class="xyt_k">await</span> <span class="xyt_f">xyt_step</span>(<span class="xyt_s">"买原料"</span>, <span class="xyt_n">6000</span>);            <span class="xyt_c">// 6s 后 resolve</span>
+  <span class="xyt_k">await</span> <span class="xyt_f">xyt_step</span>(<span class="xyt_s">"取原料"</span>, <span class="xyt_n">3000</span>);            <span class="xyt_c">// 接着 3s</span>
+  <span class="xyt_k">await</span> Promise.<span class="xyt_f">all</span>([                     <span class="xyt_c">// 同时开始，都完成才继续</span>
+    <span class="xyt_f">xyt_step</span>(<span class="xyt_s">"和面"</span>, <span class="xyt_n">4000</span>),
+    <span class="xyt_f">xyt_step</span>(<span class="xyt_s">"和馅"</span>, <span class="xyt_n">3000</span>)
+  ]);
+  <span class="xyt_k">await</span> <span class="xyt_f">xyt_step</span>(<span class="xyt_s">"包饺子"</span>, <span class="xyt_n">5000</span>);            <span class="xyt_c">// 两个都完成后 5s</span>
+  <span class="xyt_k">await</span> <span class="xyt_f">xyt_step</span>(<span class="xyt_s">"吃饺子"</span>, <span class="xyt_n">2000</span>);
+  console.log(<span class="xyt_s">"全部完成！"</span>);
+}</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>Promise · async/await · 原生 HTML / CSS / JavaScript</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：Promise + async/await 串行与并行控制包饺子流程
+  (function () {
+    var xyt_steps = {
+      buy:     { name: '买原料', ms: 6000 },
+      pick:    { name: '取原料', ms: 3000 },
+      dough:   { name: '和面',   ms: 4000 },
+      filling: { name: '和馅',   ms: 3000 },
+      wrap:    { name: '包饺子', ms: 5000 },
+      eat:     { name: '吃饺子', ms: 2000 }
+    };
+
+    var xyt_startBtn = document.getElementById('xyt_start');
+    var xyt_resetBtn = document.getElementById('xyt_reset');
+    var xyt_totalEl = document.getElementById('xyt_total');
+    var xyt_log = document.getElementById('xyt_log');
+
+    var xyt_running = false;
+    var xyt_beginAt = 0;
+
+    function xyt_elapsed() {
+      return ((window.performance.now() - xyt_beginAt) / 1000).toFixed(1);
+    }
+
+    function xyt_say(xyt_html, xyt_cls) {
+      var xyt_p = document.createElement('p');
+      xyt_p.innerHTML = '<span class="xyt_t">+' + xyt_elapsed() + 's</span>' +
+        '<span class="' + (xyt_cls || '') + '">' + xyt_html + '</span>';
+      xyt_log.appendChild(xyt_p);
+      xyt_log.scrollTop = xyt_log.scrollHeight;
+    }
+
+    function xyt_setStep(xyt_key, xyt_state, xyt_text) {
+      var xyt_card = document.querySelector('[data-xyt-step="' + xyt_key + '"]');
+      xyt_card.classList.remove('xyt_running', 'xyt_done');
+      if (xyt_state) { xyt_card.classList.add(xyt_state); }
+      xyt_card.querySelector('.xyt_step_state').textContent = xyt_text;
+      if (xyt_state !== 'xyt_running') {
+        xyt_card.querySelector('.xyt_bar_i').style.width = xyt_state === 'xyt_done' ? '100%' : '0';
+      }
+    }
+
+    // 单步：setTimeout 模拟耗时，setInterval 刷新进度条，到点 resolve
+    function xyt_step(xyt_key) {
+      var xyt_cfg = xyt_steps[xyt_key];
+      var xyt_bar = document.querySelector('[data-xyt-step="' + xyt_key + '"] .xyt_bar_i');
+      xyt_setStep(xyt_key, 'xyt_running', '进行中 0%');
+      xyt_say('开始「' + xyt_cfg.name + '」，预计 ' + (xyt_cfg.ms / 1000) + ' 秒', 'xyt_run');
+
+      return new Promise(function (xyt_resolve) {
+        var xyt_start = window.performance.now();
+        var xyt_card = document.querySelector('[data-xyt-step="' + xyt_key + '"]');
+        var xyt_tick = setInterval(function () {
+          var xyt_pct = Math.min(100, Math.round((window.performance.now() - xyt_start) / xyt_cfg.ms * 100));
+          xyt_bar.style.width = xyt_pct + '%';
+          xyt_card.querySelector('.xyt_step_state').textContent = '进行中 ' + xyt_pct + '%';
+        }, 100);
+
+        setTimeout(function () {
+          clearInterval(xyt_tick);
+          xyt_setStep(xyt_key, 'xyt_done', '完成');
+          xyt_say('「' + xyt_cfg.name + '」完成', 'xyt_hit');
+          xyt_resolve(xyt_cfg.name);
+        }, xyt_cfg.ms);
+      });
+    }
+
+    async function xyt_makeDumplings() {
+      await xyt_step('buy');                 // 先买原料 6s
+      await xyt_step('pick');                // 再取原料 3s
+      xyt_say('原料齐了，「和面」与「和馅」同时进行（Promise.all）', 'xyt_all');
+      await Promise.all([                    // 并行：都完成才继续
+        xyt_step('dough'),
+        xyt_step('filling')
+      ]);
+      xyt_say('面和馅都好了，开始「包饺子」', 'xyt_all');
+      await xyt_step('wrap');                // 包饺子 5s
+      await xyt_step('eat');                 // 吃饺子 2s
+      xyt_say('全部流程结束，饺子真香！', 'xyt_hit');
+    }
+
+    xyt_startBtn.addEventListener('click', function () {
+      if (xyt_running) { return; }
+      xyt_running = true;
+      xyt_beginAt = window.performance.now();
+      xyt_startBtn.disabled = true;
+      xyt_resetBtn.disabled = true;
+      xyt_say('=== 异步流程启动 ===', 'xyt_all');
+
+      var xyt_clock = setInterval(function () {
+        xyt_totalEl.textContent = xyt_elapsed();
+      }, 100);
+
+      xyt_makeDumplings().then(function () {
+        clearInterval(xyt_clock);
+        xyt_totalEl.textContent = xyt_elapsed();
+        xyt_running = false;
+        xyt_resetBtn.disabled = false;
+      });
+    });
+
+    xyt_resetBtn.addEventListener('click', function () {
+      Object.keys(xyt_steps).forEach(function (xyt_key) {
+        xyt_setStep(xyt_key, '', '等待');
+      });
+      xyt_totalEl.textContent = '0.0';
+      xyt_log.innerHTML = '<p><span class="xyt_t">+0.0s</span>已重置，点击「开始包饺子」再来一遍</p>';
+      xyt_startBtn.disabled = false;
+      xyt_resetBtn.disabled = true;
+    });
+  })();
+</script>
+</body>
+</html>

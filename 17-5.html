@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | JavaScript 两种定时器</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --gold:#b8891b;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:32px 28px 10px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,52px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:720px; margin:18px 0 0; color:var(--muted); font-size:15px; }
+  .xyt_hero_intro code {
+    padding:1px 6px; border-radius:5px; background:rgba(23,107,135,.08);
+    color:var(--blue); font:13px Consolas,monospace;
+  }
+
+  .xyt_wrap { max-width:1160px; margin:26px auto 0; padding:0 28px 70px; }
+  .xyt_grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+  }
+  .xyt_panel_head {
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 20px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+  }
+  .xyt_panel_head b { font-size:15px; }
+  .xyt_kind {
+    padding:3px 11px; border-radius:20px; font:700 11.5px Consolas,monospace;
+    border:1px solid var(--line); background:#fff; color:var(--muted);
+  }
+  .xyt_kind.xyt_k_blue { border-color:rgba(23,107,135,.4); color:var(--blue); background:rgba(23,107,135,.07); }
+  .xyt_kind.xyt_k_coral { border-color:rgba(228,107,75,.4); color:var(--coral); background:rgba(228,107,75,.07); }
+
+  .xyt_stage { padding:22px 20px 8px; text-align:center; }
+  .xyt_big {
+    font:700 54px/1 Georgia,serif; color:var(--ink); letter-spacing:.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  .xyt_state { margin:8px 0 0; color:var(--muted); font-size:13px; min-height:22px; }
+  .xyt_state b { color:var(--blue); font-weight:600; }
+  .xyt_state.xyt_done b { color:var(--green); }
+  .xyt_state.xyt_stop b { color:var(--coral); }
+
+  .xyt_ring {
+    width:120px; height:120px; margin:0 auto; border-radius:50%;
+    display:grid; place-items:center;
+    background:conic-gradient(var(--blue) 0deg, #e8e4d8 0deg);
+  }
+  .xyt_ring_inner {
+    width:96px; height:96px; border-radius:50%; background:var(--card);
+    display:grid; place-items:center;
+    font:700 30px Georgia,serif; font-variant-numeric:tabular-nums;
+  }
+
+  .xyt_controls {
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    padding:14px 20px 18px;
+  }
+  .xyt_controls input {
+    width:90px; padding:8px 11px; border:1px solid var(--line); border-radius:9px;
+    background:#fff; font:13px Consolas,monospace; color:var(--ink); outline:none; text-align:center;
+    transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_controls input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_btn {
+    display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:9px;
+    border:1px solid var(--line); background:#fff; color:var(--blue); cursor:pointer;
+    font:13.5px "Microsoft YaHei",sans-serif;
+    transition:border-color .16s ease,background .16s ease;
+  }
+  .xyt_btn:hover:not(:disabled) { border-color:var(--blue); background:rgba(23,107,135,.06); }
+  .xyt_btn:disabled { opacity:.45; cursor:not-allowed; }
+  .xyt_btn.xyt_btn_main { border-color:var(--blue); background:var(--blue); color:#fff; }
+  .xyt_btn.xyt_btn_main:hover:not(:disabled) { background:#135a72; }
+  .xyt_btn.xyt_btn_danger { color:var(--coral); }
+  .xyt_btn.xyt_btn_danger:hover:not(:disabled) { border-color:var(--coral); background:rgba(228,107,75,.07); }
+
+  .xyt_code {
+    margin:auto 20px 0; padding:13px 15px; border-radius:10px; background:#1f2a33; color:#e9eef2;
+    font:12.5px/1.75 Consolas,monospace; overflow-x:auto; white-space:pre;
+  }
+  .xyt_code_f { color:#ffcf8a; }
+  .xyt_code_s { color:#9dd8a8; }
+  .xyt_code_c { color:#8fa0ac; }
+  .xyt_code_n { color:#e0a3ff; }
+
+  .xyt_log {
+    margin:14px 20px 18px; padding:10px 14px; min-height:88px; max-height:150px; overflow-y:auto;
+    border:1px dashed var(--line); border-radius:10px; background:#fdfcf7;
+    font:12px/1.9 Consolas,monospace; color:var(--muted);
+  }
+  .xyt_log p { margin:0; }
+  .xyt_log .xyt_t { color:#96a2ac; margin-right:8px; }
+  .xyt_log .xyt_hit { color:var(--green); font-weight:600; }
+  .xyt_log .xyt_cut { color:var(--coral); font-weight:600; }
+  .xyt_log .xyt_run { color:var(--blue); }
+
+  /* ---------- 对比表 ---------- */
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:46px 0 16px; }
+  h2 { margin:0; font:500 27px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_table {
+    width:100%; border-collapse:collapse; border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; background:var(--card); box-shadow:var(--shadow); font-size:13.5px;
+  }
+  .xyt_table th, .xyt_table td { padding:12px 16px; text-align:left; border-bottom:1px solid var(--line); }
+  .xyt_table th { background:rgba(23,107,135,.05); color:var(--blue); font-weight:700; }
+  .xyt_table tr:last-child td { border-bottom:0; }
+  .xyt_table td:first-child { color:var(--muted); white-space:nowrap; }
+  .xyt_table code { font:12.5px Consolas,monospace; color:var(--coral); }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+  }
+  @media (max-width:860px) { .xyt_grid { grid-template-columns:1fr; } }
+  @media (max-width:640px) {
+    .xyt_topbar, .xyt_hero, .xyt_wrap, .xyt_footer { padding-left:20px; padding-right:20px; }
+    .xyt_big { font-size:44px; }
+    .xyt_table { font-size:12.5px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：演示 setTimeout 与 setInterval 两种定时器的用法与取消 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页 →</a>
+  </header>
+
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · TIMERS</p>
+      <h1>两种定时器</h1>
+      <p class="xyt_hero_intro"><code>setTimeout</code> 只延迟执行一次，用 <code>clearTimeout</code> 取消；<code>setInterval</code> 按固定间隔反复执行，用 <code>clearInterval</code> 停止。下面两个实验台可以亲手启动、取消，并观察日志里的触发时刻。</p>
+    </section>
+
+    <section class="xyt_wrap">
+      <div class="xyt_grid">
+        <!-- setTimeout 实验台 -->
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <b>实验一 · 倒计时炸弹</b>
+            <span class="xyt_kind xyt_k_blue">setTimeout · 只执行一次</span>
+          </div>
+          <div class="xyt_stage">
+            <div class="xyt_ring" id="xyt_toRing">
+              <div class="xyt_ring_inner" id="xyt_toNum">--</div>
+            </div>
+            <p class="xyt_state" id="xyt_toState"><b>待命</b> · 设置秒数后点击「启动」</p>
+          </div>
+          <div class="xyt_controls">
+            <input id="xyt_toSec" type="number" min="1" max="60" value="3" aria-label="延迟秒数">
+            <button class="xyt_btn xyt_btn_main" id="xyt_toStart">启动</button>
+            <button class="xyt_btn xyt_btn_danger" id="xyt_toCancel" disabled>取消 clearTimeout</button>
+          </div>
+          <pre class="xyt_code"><span class="xyt_code_c">// 3 秒后执行一次</span>
+<span class="xyt_code_f">var</span> xyt_timer = <span class="xyt_code_n">setTimeout</span>(<span class="xyt_code_f">function</span> () {
+  console.log(<span class="xyt_code_s">"时间到！"</span>);
+}, <span class="xyt_code_n">3000</span>);
+
+<span class="xyt_code_c">// 还没触发时可以取消</span>
+<span class="xyt_code_n">clearTimeout</span>(xyt_timer);</pre>
+          <div class="xyt_log" id="xyt_toLog"><p><span class="xyt_t">--:--:--</span>日志会记录启动、触发与取消的时刻</p></div>
+        </div>
+
+        <!-- setInterval 实验台 -->
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <b>实验二 · 秒表</b>
+            <span class="xyt_kind xyt_k_coral">setInterval · 反复执行</span>
+          </div>
+          <div class="xyt_stage">
+            <div class="xyt_big" id="xyt_ivNum">0</div>
+            <p class="xyt_state" id="xyt_ivState"><b>已停止</b> · 点击「开始」每秒 +1</p>
+          </div>
+          <div class="xyt_controls">
+            <button class="xyt_btn xyt_btn_main" id="xyt_ivStart">开始</button>
+            <button class="xyt_btn xyt_btn_danger" id="xyt_ivStop" disabled>暂停 clearInterval</button>
+            <button class="xyt_btn" id="xyt_ivReset" disabled>归零</button>
+          </div>
+          <pre class="xyt_code"><span class="xyt_code_c">// 每 1000ms 执行一次</span>
+<span class="xyt_code_f">var</span> xyt_timer = <span class="xyt_code_n">setInterval</span>(<span class="xyt_code_f">function</span> () {
+  xyt_sec += 1;  <span class="xyt_code_c">// 反复累加</span>
+}, <span class="xyt_code_n">1000</span>);
+
+<span class="xyt_code_c">// 停下来</span>
+<span class="xyt_code_n">clearInterval</span>(xyt_timer);</pre>
+          <div class="xyt_log" id="xyt_ivLog"><p><span class="xyt_t">--:--:--</span>日志会记录开始、暂停与每次 +1 的节拍</p></div>
+        </div>
+      </div>
+
+      <div class="xyt_section_head">
+        <h2>两者的区别</h2>
+        <span>返回值都是一个数字 ID，用于取消</span>
+      </div>
+      <table class="xyt_table">
+        <thead>
+          <tr><th>对比项</th><th>setTimeout</th><th>setInterval</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>执行次数</td><td>延迟到点后只执行 <b>一次</b></td><td>每隔一段时间 <b>反复</b>执行</td></tr>
+          <tr><td>取消方法</td><td><code>clearTimeout(id)</code></td><td><code>clearInterval(id)</code></td></tr>
+          <tr><td>典型场景</td><td>延时提示、防抖、一次性动画</td><td>秒表、轮播图、轮询数据</td></tr>
+          <tr><td>注意点</td><td>回调里再次调用自身也能实现循环</td><td>页面隐藏时浏览器会降频，不能当精确时钟用</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>定时器 · 原生 HTML / CSS / JavaScript</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：setTimeout 倒计时与 setInterval 秒表互动演示
+  (function () {
+    function xyt_now() {
+      return new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    }
+    function xyt_log(xyt_box, xyt_html) {
+      var xyt_p = document.createElement('p');
+      xyt_p.innerHTML = '<span class="xyt_t">' + xyt_now() + '</span>' + xyt_html;
+      xyt_box.appendChild(xyt_p);
+      xyt_box.scrollTop = xyt_box.scrollHeight;
+    }
+
+    /* ---------- 实验一：setTimeout ---------- */
+    var xyt_toTimer = null;    // setTimeout 的 ID
+    var xyt_toTick = null;     // 倒计时显示用的 setInterval 的 ID
+    var xyt_toLeft = 0;
+    var xyt_toTotal = 0;
+    var xyt_toRing = document.getElementById('xyt_toRing');
+    var xyt_toNum = document.getElementById('xyt_toNum');
+    var xyt_toState = document.getElementById('xyt_toState');
+    var xyt_toLog = document.getElementById('xyt_toLog');
+    var xyt_toStart = document.getElementById('xyt_toStart');
+    var xyt_toCancel = document.getElementById('xyt_toCancel');
+    var xyt_toSec = document.getElementById('xyt_toSec');
+
+    function xyt_toPaint() {
+      xyt_toNum.textContent = xyt_toTimer === null ? '--' : xyt_toLeft;
+      var xyt_deg = xyt_toTotal ? Math.round((xyt_toTotal - xyt_toLeft) / xyt_toTotal * 360) : 0;
+      xyt_toRing.style.background =
+        'conic-gradient(var(--blue) ' + xyt_deg + 'deg, #e8e4d8 ' + xyt_deg + 'deg)';
+    }
+
+    function xyt_toFinish(xyt_fired) {
+      clearInterval(xyt_toTick);
+      xyt_toTick = null;
+      xyt_toTimer = null;
+      xyt_toStart.disabled = false;
+      xyt_toCancel.disabled = true;
+      xyt_toSec.disabled = false;
+      if (xyt_fired) {
+        xyt_toLeft = 0;
+        xyt_toState.className = 'xyt_state xyt_done';
+        xyt_toState.innerHTML = '<b>时间到！</b>回调函数已执行一次';
+        xyt_log(xyt_toLog, '<span class="xyt_hit">时间到！setTimeout 回调执行（只执行一次）</span>');
+      }
+      xyt_toPaint();
+    }
+
+    xyt_toStart.addEventListener('click', function () {
+      var xyt_sec = parseInt(xyt_toSec.value, 10);
+      if (!(xyt_sec >= 1 && xyt_sec <= 60)) {
+        xyt_toState.className = 'xyt_state xyt_stop';
+        xyt_toState.innerHTML = '<b>秒数无效</b>请输入 1 ~ 60 的整数';
+        return;
+      }
+      xyt_toTotal = xyt_sec;
+      xyt_toLeft = xyt_sec;
+      xyt_toStart.disabled = true;
+      xyt_toCancel.disabled = false;
+      xyt_toSec.disabled = true;
+      xyt_toState.className = 'xyt_state';
+      xyt_toState.innerHTML = '<b>倒计时中</b> · setTimeout 已登记，' + xyt_sec + ' 秒后触发';
+      xyt_log(xyt_toLog, '<span class="xyt_run">启动 setTimeout，延迟 ' + xyt_sec + ' 秒</span>');
+
+      // 主定时器：到点执行一次
+      xyt_toTimer = setTimeout(function () {
+        xyt_toFinish(true);
+      }, xyt_sec * 1000);
+
+      // 辅助定时器：只负责刷新画面上的剩余秒数
+      xyt_toTick = setInterval(function () {
+        xyt_toLeft -= 1;
+        if (xyt_toLeft < 0) { xyt_toLeft = 0; }
+        xyt_toPaint();
+      }, 1000);
+      xyt_toPaint();
+    });
+
+    xyt_toCancel.addEventListener('click', function () {
+      if (xyt_toTimer === null) { return; }
+      clearTimeout(xyt_toTimer);   // 取消，回调不会再执行
+      xyt_toState.className = 'xyt_state xyt_stop';
+      xyt_toState.innerHTML = '<b>已取消</b>clearTimeout 生效，回调不会执行了';
+      xyt_log(xyt_toLog, '<span class="xyt_cut">clearTimeout：剩余 ' + xyt_toLeft + ' 秒时取消</span>');
+      xyt_toFinish(false);
+    });
+
+    /* ---------- 实验二：setInterval ---------- */
+    var xyt_ivTimer = null;
+    var xyt_ivSec = 0;
+    var xyt_ivNum = document.getElementById('xyt_ivNum');
+    var xyt_ivState = document.getElementById('xyt_ivState');
+    var xyt_ivLog = document.getElementById('xyt_ivLog');
+    var xyt_ivStart = document.getElementById('xyt_ivStart');
+    var xyt_ivStop = document.getElementById('xyt_ivStop');
+    var xyt_ivReset = document.getElementById('xyt_ivReset');
+
+    xyt_ivStart.addEventListener('click', function () {
+      if (xyt_ivTimer !== null) { return; }   // 防止重复登记多个定时器
+      xyt_ivTimer = setInterval(function () {
+        xyt_ivSec += 1;
+        xyt_ivNum.textContent = xyt_ivSec;
+        xyt_log(xyt_ivLog, '<span class="xyt_hit">滴答：xyt_sec = ' + xyt_ivSec + '</span>');
+      }, 1000);
+      xyt_ivStart.disabled = true;
+      xyt_ivStop.disabled = false;
+      xyt_ivReset.disabled = true;
+      xyt_ivState.className = 'xyt_state';
+      xyt_ivState.innerHTML = '<b>运行中</b> · setInterval 每 1000ms 执行一次回调';
+      xyt_log(xyt_ivLog, '<span class="xyt_run">启动 setInterval，间隔 1000ms</span>');
+    });
+
+    xyt_ivStop.addEventListener('click', function () {
+      clearInterval(xyt_ivTimer);
+      xyt_ivTimer = null;
+      xyt_ivStart.disabled = false;
+      xyt_ivStop.disabled = true;
+      xyt_ivReset.disabled = xyt_ivSec === 0;
+      xyt_ivState.className = 'xyt_state xyt_stop';
+      xyt_ivState.innerHTML = '<b>已暂停</b>clearInterval 生效，停在 ' + xyt_ivSec + ' 秒';
+      xyt_log(xyt_ivLog, '<span class="xyt_cut">clearInterval：停在 ' + xyt_ivSec + ' 秒</span>');
+    });
+
+    xyt_ivReset.addEventListener('click', function () {
+      xyt_ivSec = 0;
+      xyt_ivNum.textContent = '0';
+      xyt_ivReset.disabled = true;
+      xyt_ivState.className = 'xyt_state';
+      xyt_ivState.innerHTML = '<b>已归零</b>点击「开始」重新计时';
+      xyt_log(xyt_ivLog, '归零，xyt_sec = 0');
+    });
+  })();
+</script>
+</body>
+</html>

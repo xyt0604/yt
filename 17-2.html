@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | fetch 获取接口数据</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 26px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(32px,5vw,54px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:720px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+  .xyt_heading { display:flex; justify-content:space-between; align-items:baseline; margin:0 0 18px; }
+  h2 { margin:0; font:500 28px Georgia,"Songti SC",serif; }
+  .xyt_heading span { color:var(--muted); font-size:13px; }
+
+  /* ---------- 取数工作台 ---------- */
+  .xyt_bench { display:grid; grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr); gap:18px; align-items:start; margin-bottom:14px; }
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 18px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+  }
+  .xyt_panel_head strong { font-size:14px; letter-spacing:.04em; }
+  .xyt_state {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:3px 11px; border-radius:20px; border:1px solid var(--line); background:#fff;
+    font:11.5px Consolas,monospace; color:var(--muted);
+  }
+  .xyt_state.xyt_ok { border-color:rgba(63,125,92,.4); color:var(--green); background:rgba(63,125,92,.08); }
+  .xyt_state.xyt_bad { border-color:rgba(228,107,75,.4); color:var(--coral); background:rgba(228,107,75,.08); }
+  .xyt_state.xyt_loading { border-color:rgba(23,107,135,.4); color:var(--blue); background:rgba(23,107,135,.08); }
+  .xyt_dot {
+    width:6px; height:6px; border-radius:50%; background:currentColor;
+  }
+  .xyt_state.xyt_loading .xyt_dot { animation:xytBlink .9s ease-in-out infinite; }
+  @keyframes xytBlink { 0%,100% { opacity:.25; } 50% { opacity:1; } }
+
+  .xyt_stage {
+    position:relative; display:grid; place-items:center;
+    min-height:330px; background:#f2f0e8; overflow:hidden;
+  }
+  .xyt_photo {
+    display:block; width:100%; height:330px; object-fit:cover;
+    opacity:0; transition:opacity .35s ease;
+  }
+  .xyt_photo.xyt_show { opacity:1; }
+  .xyt_placeholder { display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--muted); font-size:13.5px; }
+  .xyt_spinner {
+    width:26px; height:26px; border-radius:50%;
+    border:2px solid rgba(23,107,135,.2); border-top-color:var(--blue);
+    animation:xytSpin .8s linear infinite;
+  }
+  @keyframes xytSpin { to { transform:rotate(360deg); } }
+  .xyt_error { display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px 26px; text-align:center; color:var(--muted); font-size:13.5px; }
+  .xyt_error strong { color:var(--coral); font-size:14.5px; }
+
+  .xyt_actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 18px; border-top:1px solid var(--line); }
+  .xyt_btn {
+    display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px;
+    border:1px solid var(--line); background:#fff; color:var(--blue); cursor:pointer;
+    font-family:inherit; font-size:13.5px; transition:border-color .16s ease,background .16s ease;
+  }
+  .xyt_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.06); }
+  .xyt_btn.xyt_btn_main { border-color:var(--blue); background:var(--blue); color:#fff; }
+  .xyt_btn.xyt_btn_main:hover { background:#135a72; }
+  .xyt_btn:disabled { opacity:.55; cursor:not-allowed; }
+  .xyt_btn .iconfont { font-size:14px; }
+  .xyt_count { margin-left:auto; color:var(--muted); font-size:12.5px; }
+
+  .xyt_meta { padding:14px 18px 18px; }
+  .xyt_meta_row {
+    display:flex; justify-content:space-between; gap:14px; padding:9px 0;
+    border-bottom:1px dashed var(--line); font-size:13px;
+  }
+  .xyt_meta_row:last-child { border-bottom:0; }
+  .xyt_meta_row span:first-child { flex:none; color:var(--muted); }
+  .xyt_meta_row span:last-child { word-break:break-all; text-align:right; font-family:Consolas,monospace; font-size:12.5px; }
+
+  /* 解析后的字段列表 */
+  .xyt_fields { padding:6px 18px 16px; }
+  .xyt_field {
+    display:grid; grid-template-columns:92px 62px minmax(0,1fr); gap:10px; align-items:center;
+    padding:10px 0; border-bottom:1px dashed var(--line); font-size:13px;
+  }
+  .xyt_field:last-child { border-bottom:0; }
+  .xyt_fk { color:var(--blue); font:12.5px Consolas,monospace; }
+  .xyt_ft {
+    justify-self:start; padding:1px 8px; border-radius:20px;
+    background:rgba(23,107,135,.08); color:var(--blue); font:11px Consolas,monospace;
+  }
+  .xyt_fv { min-width:0; color:var(--ink); font:12.5px Consolas,monospace; word-break:break-all; }
+  .xyt_fv.xyt_dim { color:var(--muted); }
+  .xyt_empty { margin:0; padding:14px 18px 18px; color:var(--muted); font-size:13px; }
+  .xyt_link { color:var(--blue); }
+  .xyt_link:hover { text-decoration:underline; }
+
+  .xyt_raw {
+    margin:0; padding:16px 18px; max-height:260px; overflow:auto;
+    background:#f0ede4; font:12.5px/1.8 Consolas,"Courier New",monospace; color:var(--ink);
+    white-space:pre-wrap; word-break:break-all;
+  }
+  .xyt_raw .xyt_k { color:var(--blue); }
+  .xyt_raw .xyt_s { color:var(--coral); }
+
+  /* ---------- 接口说明 ---------- */
+  .xyt_api { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:34px 0 14px; }
+  .xyt_api_card { padding:20px 22px; border:1px solid var(--line); border-radius:12px; background:var(--card); }
+  .xyt_api_card h3 { margin:0 0 10px; color:var(--blue); font:700 15px Consolas,monospace; }
+  .xyt_api_card p { margin:0 0 10px; color:var(--muted); font-size:13.5px; }
+  .xyt_code {
+    margin:0; padding:12px 14px; border-radius:8px; background:#f0ede4;
+    font:12.5px/1.75 Consolas,monospace; white-space:pre; overflow-x:auto; color:var(--ink);
+  }
+  .xyt_code .xyt_c { color:var(--muted); }
+  .xyt_code .xyt_p { color:var(--blue); }
+  .xyt_code .xyt_v { color:var(--coral); }
+  .xyt_table { width:100%; border-collapse:collapse; border:1px solid var(--line); background:var(--card); border-radius:12px; overflow:hidden; margin-top:14px; }
+  .xyt_table th, .xyt_table td { padding:12px 16px; border-bottom:1px solid var(--line); text-align:left; font-size:13.5px; }
+  .xyt_table th { background:rgba(23,107,135,.05); color:var(--blue); font-weight:700; }
+  .xyt_table tr:last-child td { border-bottom:0; }
+  .xyt_table td { color:var(--muted); }
+  .xyt_table td:first-child { color:var(--ink); font-family:Consolas,monospace; font-size:13px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+  }
+  @media (max-width:900px) {
+    .xyt_bench { grid-template-columns:1fr; }
+    .xyt_api { grid-template-columns:1fr; }
+  }
+  @media (max-width:760px) {
+    .xyt_hero { padding:28px 20px 22px; }
+    .xyt_topbar, .xyt_wrap, .xyt_footer { padding-left:20px; padding-right:20px; }
+    .xyt_stage, .xyt_photo { min-height:240px; height:240px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：使用 fetch 请求 dog.ceo 随机狗狗图片接口并展示数据 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页 →</a>
+  </header>
+
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">JAVASCRIPT · FETCH REMOTE API</p>
+      <h1>fetch<br>获取接口数据</h1>
+      <p class="xyt_hero_intro">用原生 <code>fetch</code> 向远程接口发起一次 GET 请求，把返回的 JSON 数据解析出来，渲染成图片、字段列表与原始报文。该接口返回 <code>Access-Control-Allow-Origin</code>，浏览器可以直接跨域访问，无需代理。整个过程包含加载中、成功、失败三种状态。</p>
+    </section>
+
+    <section class="xyt_wrap">
+      <div class="xyt_heading"><h2>接口演示</h2><span>dog.ceo · GET /api/breeds/image/random</span></div>
+      <div class="xyt_bench">
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <strong>返回的图片</strong>
+            <span class="xyt_state xyt_loading" id="xyt_state"><i class="xyt_dot"></i>正在请求…</span>
+          </div>
+          <div class="xyt_stage" id="xyt_stage">
+            <div class="xyt_placeholder" id="xyt_placeholder">
+              <div class="xyt_spinner"></div>
+              <span>正在从接口获取数据…</span>
+            </div>
+            <img class="xyt_photo" id="xyt_photo" alt="随机狗狗照片">
+          </div>
+          <div class="xyt_actions">
+            <button class="xyt_btn xyt_btn_main" id="xyt_loadBtn"><i class="iconfont icon-shouye"></i>再换一张</button>
+            <button class="xyt_btn" id="xyt_codeBtn"><i class="iconfont icon-bianji"></i>查看原始响应</button>
+            <span class="xyt_count" id="xyt_count">本次已获取 0 张</span>
+          </div>
+          <div class="xyt_meta" id="xyt_meta">
+            <div class="xyt_meta_row"><span>请求地址</span><span id="xyt_url">—</span></div>
+            <div class="xyt_meta_row"><span>HTTP 状态</span><span id="xyt_code">—</span></div>
+            <div class="xyt_meta_row"><span>请求耗时</span><span id="xyt_time">—</span></div>
+            <div class="xyt_meta_row"><span>图片链接</span><span id="xyt_imgUrl">—</span></div>
+          </div>
+        </div>
+
+        <div class="xyt_panel">
+          <div class="xyt_panel_head">
+            <strong>解析后的数据</strong>
+            <span class="xyt_state" id="xyt_info">—</span>
+          </div>
+          <div class="xyt_fields" id="xyt_fields">
+            <p class="xyt_empty">等待请求返回后展示字段…</p>
+          </div>
+          <div class="xyt_panel_head" style="border-top:1px solid var(--line)">
+            <strong>原始 JSON 响应</strong>
+            <span class="xyt_state" id="xyt_rawState">—</span>
+          </div>
+          <pre class="xyt_raw" id="xyt_raw">等待请求…</pre>
+        </div>
+      </div>
+
+      <div class="xyt_heading" style="margin-top:34px"><h2>接口说明</h2><span>无需鉴权，直接请求即可</span></div>
+      <div class="xyt_api">
+        <div class="xyt_api_card">
+          <h3>请求示例</h3>
+          <pre class="xyt_code"><span class="xyt_c">// 1. 发起请求</span>
+<span class="xyt_p">var</span> xyt_res = <span class="xyt_p">await</span> fetch(<span class="xyt_v">"https://dog.ceo/api/breeds/image/random"</span>);
+<span class="xyt_c">// 2. 解析 JSON</span>
+<span class="xyt_p">var</span> xyt_data = <span class="xyt_p">await</span> xyt_res.json();
+<span class="xyt_c">// 3. 使用数据</span>
+xyt_photo.src = xyt_data.message;</pre>
+          <p><code>fetch</code> 返回的是 Promise，用 <code>await</code> 得到响应对象后，再调用 <code>.json()</code> 把响应体解析成 JavaScript 对象。</p>
+        </div>
+        <div class="xyt_api_card">
+          <h3>返回字段</h3>
+          <pre class="xyt_code">{
+  <span class="xyt_p">"message"</span>: <span class="xyt_v">"https://images.dog.ceo/..."</span>,
+  <span class="xyt_p">"status"</span>: <span class="xyt_v">"success"</span>
+}</pre>
+          <p><code>message</code> 是随机狗狗图片的地址，<code>status</code> 为 <code>success</code> 表示请求处理成功。注意 <code>status</code> 是业务状态，与 HTTP 状态码不是一回事。</p>
+        </div>
+      </div>
+
+      <table class="xyt_table">
+        <thead>
+          <tr><th>项目</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>请求方法</td><td>GET，接口不需要携带参数</td></tr>
+          <tr><td>跨域</td><td>接口返回 Access-Control-Allow-Origin，浏览器可直接请求</td></tr>
+          <tr><td>需要鉴权</td><td>否，公开接口</td></tr>
+          <tr><td>异常处理</td><td>网络断开、状态码非 2xx、JSON 解析失败都会进入 catch</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>fetch 获取接口数据 · 原生 HTML / CSS / JavaScript</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-02 | 使用大模型：DeepSeek-V4.1-Flash | 功能：fetch 请求随机狗狗接口并渲染数据
+  (function () {
+    var xyt_apiUrl = 'https://dog.ceo/api/breeds/image/random';
+
+    var xyt_state = document.getElementById('xyt_state');
+    var xyt_stage = document.getElementById('xyt_stage');
+    var xyt_placeholder = document.getElementById('xyt_placeholder');
+    var xyt_photo = document.getElementById('xyt_photo');
+    var xyt_loadBtn = document.getElementById('xyt_loadBtn');
+    var xyt_codeBtn = document.getElementById('xyt_codeBtn');
+    var xyt_countEl = document.getElementById('xyt_count');
+    var xyt_url = document.getElementById('xyt_url');
+    var xyt_code = document.getElementById('xyt_code');
+    var xyt_time = document.getElementById('xyt_time');
+    var xyt_imgUrl = document.getElementById('xyt_imgUrl');
+    var xyt_raw = document.getElementById('xyt_raw');
+    var xyt_info = document.getElementById('xyt_info');
+    var xyt_fields = document.getElementById('xyt_fields');
+    var xyt_rawState = document.getElementById('xyt_rawState');
+
+    var xyt_count = 0;
+
+    // 切换状态徽章的样式与文字
+    function xyt_setState(xyt_type, xyt_text) {
+      xyt_state.className = 'xyt_state xyt_' + xyt_type;
+      xyt_state.innerHTML = '<i class="xyt_dot"></i>' + xyt_text;
+    }
+
+    function xyt_showPlaceholder(xyt_text) {
+      xyt_photo.classList.remove('xyt_show');
+      xyt_placeholder.hidden = false;
+      xyt_placeholder.innerHTML = '<div class="xyt_spinner"></div><span>' + xyt_text + '</span>';
+    }
+
+    function xyt_showError(xyt_message) {
+      xyt_photo.classList.remove('xyt_show');
+      xyt_placeholder.hidden = false;
+      xyt_placeholder.innerHTML = '<div class="xyt_error"><strong>请求失败</strong><span>' + xyt_message + '</span><span>请检查网络后点击「再换一张」重试</span></div>';
+    }
+
+    // 把 JSON 文本做简单着色后显示，避免直接插入 HTML
+    function xyt_prettyJson(xyt_obj) {
+      var xyt_text = JSON.stringify(xyt_obj, null, 2);
+      return xyt_text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function xyt_escape(xyt_text) {
+      return String(xyt_text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // 遍历返回对象的每个字段，渲染成「字段名 / 类型 / 值」三列
+    function xyt_renderFields(xyt_obj) {
+      var xyt_keys = Object.keys(xyt_obj);
+      if (!xyt_keys.length) {
+        xyt_fields.innerHTML = '<p class="xyt_empty">返回对象中没有任何字段。</p>';
+        return;
+      }
+      var xyt_html = '';
+      xyt_keys.forEach(function (xyt_key) {
+        var xyt_val = xyt_obj[xyt_key];
+        var xyt_type = Array.isArray(xyt_val) ? 'array' : xyt_val === null ? 'null' : typeof xyt_val;
+        var xyt_show = xyt_type === 'object' ? JSON.stringify(xyt_val) : String(xyt_val);
+        xyt_html += '<div class="xyt_field">' +
+          '<span class="xyt_fk">' + xyt_escape(xyt_key) + '</span>' +
+          '<span class="xyt_ft">' + xyt_type + '</span>' +
+          '<span class="xyt_fv">' + xyt_escape(xyt_show) + '</span>' +
+          '</div>';
+      });
+      xyt_fields.innerHTML = xyt_html;
+    }
+
+    // 核心流程：fetch → 校验状态 → 解析 JSON → 渲染
+    async function xyt_loadDog() {
+      xyt_loadBtn.disabled = true;
+      xyt_setState('loading', '正在请求…');
+      xyt_showPlaceholder('正在从接口获取数据…');
+      xyt_url.textContent = xyt_apiUrl;
+      xyt_code.textContent = '—';
+      xyt_time.textContent = '—';
+      xyt_imgUrl.textContent = '—';
+      xyt_info.textContent = '请求中';
+      xyt_rawState.textContent = '—';
+      xyt_raw.textContent = '等待响应…';
+      xyt_fields.innerHTML = '<p class="xyt_empty">请求中…</p>';
+
+      var xyt_start = window.performance.now();
+
+      try {
+        var xyt_response = await fetch(xyt_apiUrl, { cache: 'no-store' });
+        var xyt_cost = Math.round(window.performance.now() - xyt_start);
+
+        xyt_code.textContent = xyt_response.status + ' ' + xyt_response.statusText;
+        xyt_time.textContent = xyt_cost + ' ms';
+
+        // fetch 只有网络层面失败才会 reject，404/500 需要自己判断
+        if (!xyt_response.ok) {
+          throw new Error('HTTP 状态码 ' + xyt_response.status);
+        }
+
+        var xyt_data = await xyt_response.json();
+        xyt_raw.innerHTML = xyt_prettyJson(xyt_data);
+        xyt_rawState.textContent = 'HTTP ' + xyt_response.status;
+        xyt_rawState.className = 'xyt_state xyt_ok';
+        xyt_info.textContent = 'status = ' + xyt_data.status;
+        xyt_renderFields(xyt_data);
+
+        if (!xyt_data.message) {
+          throw new Error('返回数据缺少 message 字段');
+        }
+
+        xyt_imgUrl.innerHTML = '<a class="xyt_link" href="' + xyt_data.message + '" target="_blank" rel="noopener">点击查看原图</a>';
+
+        xyt_photo.onload = function () {
+          xyt_placeholder.hidden = true;
+          xyt_photo.classList.add('xyt_show');
+        };
+        xyt_photo.onerror = function () {
+          xyt_showError('图片地址加载失败');
+          xyt_setState('bad', '图片加载失败');
+        };
+        xyt_photo.src = xyt_data.message;
+
+        xyt_count += 1;
+        xyt_countEl.textContent = '本次已获取 ' + xyt_count + ' 张';
+        xyt_setState('ok', '请求成功');
+      } catch (xyt_error) {
+        xyt_code.textContent = xyt_code.textContent === '—' ? '—' : xyt_code.textContent;
+        xyt_info.textContent = '请求失败';
+        xyt_raw.textContent = '// 错误信息\n// ' + xyt_error.message;
+        xyt_rawState.textContent = '失败';
+        xyt_rawState.className = 'xyt_state xyt_bad';
+        xyt_fields.innerHTML = '<p class="xyt_empty">未能获取数据：' + xyt_escape(xyt_error.message) + '</p>';
+        xyt_showError(xyt_error.message);
+        xyt_setState('bad', '请求失败');
+      } finally {
+        xyt_loadBtn.disabled = false;
+      }
+    }
+
+    xyt_loadBtn.addEventListener('click', xyt_loadDog);
+    xyt_codeBtn.addEventListener('click', function () {
+      xyt_raw.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    // 页面打开即请求一次
+    xyt_loadDog();
+  })();
+</script>
+</body>
+</html>
