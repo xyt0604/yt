@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | Canvas 粒子文字动画</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1120px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1120px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.8vw,54px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:660px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_hero_intro code { color:var(--blue); font-family:Consolas,monospace; font-size:14px; }
+  .xyt_wrap { max-width:1120px; margin:auto; padding:0 28px 70px; }
+
+  .xyt_box {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_box canvas { display:block; width:100%; background:#fffdf8; }
+  .xyt_tools {
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+    padding:12px 16px; border-top:1px solid var(--line); background:rgba(23,107,135,.03);
+  }
+  .xyt_tools span { color:var(--muted); font-size:12.5px; }
+  .xyt_tools label { display:inline-flex; align-items:center; gap:8px; color:var(--muted); font-size:12.5px; }
+  .xyt_tools input {
+    width:132px; padding:6px 10px; border:1px solid var(--line); border-radius:8px;
+    background:#fff; color:var(--ink); font:13px Consolas,"Microsoft YaHei",monospace;
+    outline:none; transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_tools input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,107,135,.12); }
+  .xyt_spacer { margin-left:auto; }
+  .xyt_btn {
+    padding:7px 15px; border:1px solid var(--blue); border-radius:20px;
+    background:transparent; color:var(--blue); font:13px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_btn:hover { background:var(--blue); color:#fff; }
+  .xyt_btn .iconfont { font-size:13px; margin-right:4px; }
+  .xyt_btn.xyt_btn_ghost { border-color:var(--line); color:var(--muted); }
+  .xyt_btn.xyt_btn_ghost:hover { border-color:var(--coral); background:transparent; color:var(--coral); }
+
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:46px 0 16px; }
+  h2 { margin:0; font:500 25px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+  .xyt_card {
+    padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card h3 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .xyt_card h3 .iconfont { color:var(--coral); font-size:15px; }
+  .xyt_card p { margin:0; color:var(--muted); font-size:13.5px; }
+  .xyt_card code { color:var(--blue); font-family:Consolas,monospace; font-size:12.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1120px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_spacer { margin-left:0; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：Canvas 粒子文字动画，文字为徐玥桐 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">HTML5 CANVAS · PARTICLE TEXT</p>
+      <h1>像素点拼出的<br>名字</h1>
+      <p class="xyt_hero_intro">先把「徐玥桐」三个字画到离屏画布上，再用 <code>getImageData</code> 读出字形像素，把上千个粒子送到这些位置上——它们彼此靠近、又互相弹开，鼠标划过还能把字吹散。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section class="xyt_box" aria-label="粒子文字动画">
+        <canvas id="xyt_canvas_text"></canvas>
+        <div class="xyt_tools">
+          <label>文字：<input id="xyt_text" type="text" value="徐玥桐" maxlength="8" autocomplete="off"></label>
+          <span id="xyt_count">— 个粒子</span>
+          <div class="xyt_spacer">
+            <button class="xyt_btn" id="xyt_scatter" type="button"><i class="iconfont icon-faxian"></i>打散重聚</button>
+            <button class="xyt_btn xyt_btn_ghost" id="xyt_palette" type="button"><i class="iconfont icon-shezhi"></i>换个配色</button>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="xyt_notes_title">
+        <div class="xyt_section_head"><h2 id="xyt_notes_title">四步做出粒子字</h2><span>纯原生 Canvas</span></div>
+        <div class="xyt_cards">
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-bianji"></i>先写字</h3>
+            <p>用 <code>fillText</code> 把文字画到一张不显示的离屏画布上，字号按容器宽度自适应，超出宽度就自动缩小。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-sousuo"></i>再取样</h3>
+            <p><code>getImageData</code> 拿到像素 RGBA，按固定步长扫描，α 通道大于 128 的点才算字形内部，收集成目标坐标数组。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-faxian"></i>做缓动</h3>
+            <p>每个粒子对目标点施加「弹簧力」：<code>v += (目标 - 位置) × 0.055</code>，再乘 0.87 阻尼，于是有了先冲过头、再稳稳停住的手感。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-wode"></i>加交互</h3>
+            <p>监听 <code>mousemove</code> 计算鼠标与粒子的距离，80px 内按远近施加反向推力；鼠标离开后力消失，粒子自己飞回原位。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>Canvas 粒子文字 / 18-1</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：离屏取样 + 粒子缓动 + 鼠标斥力的粒子文字动画
+  (function () {
+    "use strict";
+
+    var xyt_canvas = document.getElementById("xyt_canvas_text");
+    var xyt_ctx = xyt_canvas.getContext("2d");
+    var xyt_input = document.getElementById("xyt_text");
+    var xyt_particles = [];
+    var xyt_size = { w: 0, h: 0 };
+    var xyt_pointer = { x: -9999, y: -9999 };
+
+    var xyt_palettes = [
+      { name: "蓝橙", from: [23, 107, 135], to: [228, 107, 75] },
+      { name: "青绿", from: [63, 125, 92], to: [126, 178, 154] },
+      { name: "紫金", from: [122, 92, 158], to: [201, 162, 39] }
+    ];
+    var xyt_paletteIndex = 0;
+
+    function xyt_color(xyt_ratio) {
+      var xyt_p = xyt_palettes[xyt_paletteIndex];
+      var xyt_r = Math.round(xyt_p.from[0] + (xyt_p.to[0] - xyt_p.from[0]) * xyt_ratio);
+      var xyt_g = Math.round(xyt_p.from[1] + (xyt_p.to[1] - xyt_p.from[1]) * xyt_ratio);
+      var xyt_b = Math.round(xyt_p.from[2] + (xyt_p.to[2] - xyt_p.from[2]) * xyt_ratio);
+      return "rgb(" + xyt_r + "," + xyt_g + "," + xyt_b + ")";
+    }
+
+    function xyt_fitFont(xyt_octx, xyt_text, xyt_cssW, xyt_cssH) {
+      var xyt_fontSize = Math.min(xyt_cssW * 0.2, xyt_cssH * 0.62, 120);
+      xyt_octx.font = "700 " + xyt_fontSize + 'px "Microsoft YaHei","PingFang SC",sans-serif';
+      var xyt_width = xyt_octx.measureText(xyt_text).width;
+      var xyt_limit = xyt_cssW * 0.86;
+      if (xyt_width > xyt_limit) {
+        xyt_fontSize = xyt_fontSize * xyt_limit / xyt_width;
+        xyt_octx.font = "700 " + xyt_fontSize + 'px "Microsoft YaHei","PingFang SC",sans-serif';
+      }
+      return xyt_fontSize;
+    }
+
+    function xyt_build() {
+      var xyt_dpr = window.devicePixelRatio || 1;
+      var xyt_cssW = xyt_canvas.parentNode.clientWidth;
+      var xyt_cssH = Math.max(240, Math.min(360, xyt_cssW * 0.38));
+      xyt_canvas.style.height = xyt_cssH + "px";
+      xyt_canvas.width = Math.round(xyt_cssW * xyt_dpr);
+      xyt_canvas.height = Math.round(xyt_cssH * xyt_dpr);
+      xyt_ctx.setTransform(xyt_dpr, 0, 0, xyt_dpr, 0, 0);
+      xyt_size = { w: xyt_cssW, h: xyt_cssH };
+
+      var xyt_text = (xyt_input.value || "徐玥桐").trim().slice(0, 8) || "徐玥桐";
+      var xyt_off = document.createElement("canvas");
+      xyt_off.width = xyt_cssW;
+      xyt_off.height = xyt_cssH;
+      var xyt_octx = xyt_off.getContext("2d");
+      var xyt_fontSize = xyt_fitFont(xyt_octx, xyt_text, xyt_cssW, xyt_cssH);
+      xyt_octx.fillStyle = "#000";
+      xyt_octx.textAlign = "center";
+      xyt_octx.textBaseline = "middle";
+      xyt_octx.fillText(xyt_text, xyt_cssW / 2, xyt_cssH / 2);
+
+      var xyt_img = xyt_octx.getImageData(0, 0, xyt_cssW, xyt_cssH).data;
+      var xyt_step = Math.max(3, Math.round(xyt_fontSize / 30));
+      var xyt_targets = [];
+      for (var xyt_y = 0; xyt_y < xyt_cssH; xyt_y += xyt_step) {
+        for (var xyt_x = 0; xyt_x < xyt_cssW; xyt_x += xyt_step) {
+          if (xyt_img[(xyt_y * xyt_cssW + xyt_x) * 4 + 3] > 128) {
+            xyt_targets.push({ x: xyt_x, y: xyt_y });
+          }
+        }
+      }
+
+      xyt_particles = xyt_targets.map(function (xyt_t) {
+        return {
+          x: Math.random() * xyt_cssW,
+          y: Math.random() * xyt_cssH,
+          tx: xyt_t.x,
+          ty: xyt_t.y,
+          vx: 0,
+          vy: 0,
+          r: xyt_step > 4.5 ? 1.7 : 1.25,
+          ratio: xyt_t.x / xyt_cssW,
+          delay: Math.random() * 18
+        };
+      });
+
+      document.getElementById("xyt_count").textContent = xyt_particles.length + " 个粒子";
+    }
+
+    function xyt_draw() {
+      xyt_ctx.clearRect(0, 0, xyt_size.w, xyt_size.h);
+
+      for (var xyt_i = 0; xyt_i < xyt_particles.length; xyt_i++) {
+        var xyt_p = xyt_particles[xyt_i];
+
+        if (xyt_p.delay > 0) {
+          xyt_p.delay -= 1;
+        } else {
+          var xyt_dx = xyt_p.x - xyt_pointer.x;
+          var xyt_dy = xyt_p.y - xyt_pointer.y;
+          var xyt_d2 = xyt_dx * xyt_dx + xyt_dy * xyt_dy;
+
+          if (xyt_d2 < 6400 && xyt_d2 > 0.01) {
+            var xyt_d = Math.sqrt(xyt_d2);
+            var xyt_force = ((80 - xyt_d) / 80) * 2.6;
+            xyt_p.vx += (xyt_dx / xyt_d) * xyt_force;
+            xyt_p.vy += (xyt_dy / xyt_d) * xyt_force;
+          }
+
+          xyt_p.vx += (xyt_p.tx - xyt_p.x) * 0.055;
+          xyt_p.vy += (xyt_p.ty - xyt_p.y) * 0.055;
+          xyt_p.vx *= 0.87;
+          xyt_p.vy *= 0.87;
+          xyt_p.x += xyt_p.vx;
+          xyt_p.y += xyt_p.vy;
+        }
+
+        xyt_ctx.beginPath();
+        xyt_ctx.arc(xyt_p.x, xyt_p.y, xyt_p.r, 0, Math.PI * 2);
+        xyt_ctx.fillStyle = xyt_color(xyt_p.ratio);
+        xyt_ctx.fill();
+      }
+
+      window.requestAnimationFrame(xyt_draw);
+    }
+
+    xyt_canvas.addEventListener("mousemove", function (xyt_e) {
+      var xyt_rect = xyt_canvas.getBoundingClientRect();
+      xyt_pointer.x = xyt_e.clientX - xyt_rect.left;
+      xyt_pointer.y = xyt_e.clientY - xyt_rect.top;
+    });
+
+    xyt_canvas.addEventListener("mouseleave", function () {
+      xyt_pointer.x = -9999;
+      xyt_pointer.y = -9999;
+    });
+
+    document.getElementById("xyt_scatter").addEventListener("click", function () {
+      xyt_particles.forEach(function (xyt_p) {
+        xyt_p.x = Math.random() * xyt_size.w;
+        xyt_p.y = Math.random() * xyt_size.h;
+        xyt_p.vx = 0;
+        xyt_p.vy = 0;
+        xyt_p.delay = Math.random() * 16;
+      });
+    });
+
+    document.getElementById("xyt_palette").addEventListener("click", function () {
+      xyt_paletteIndex = (xyt_paletteIndex + 1) % xyt_palettes.length;
+    });
+
+    var xyt_typing = null;
+    xyt_input.addEventListener("input", function () {
+      window.clearTimeout(xyt_typing);
+      xyt_typing = window.setTimeout(xyt_build, 260);
+    });
+
+    var xyt_resizeTimer = null;
+    window.addEventListener("resize", function () {
+      window.clearTimeout(xyt_resizeTimer);
+      xyt_resizeTimer = window.setTimeout(xyt_build, 180);
+    });
+
+    xyt_build();
+    window.requestAnimationFrame(xyt_draw);
+  })();
+</script>
+</body>
+</html>

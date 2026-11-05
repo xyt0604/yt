@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | Canvas 电商系统架构与下单链路</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --violet:#7a5c9e;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1120px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1120px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.8vw,52px)/1.12 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:700px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_hero_intro code { color:var(--blue); font-family:Consolas,monospace; font-size:14px; }
+  .xyt_wrap { max-width:1120px; margin:auto; padding:0 28px 70px; }
+
+  .xyt_box {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_box canvas { display:block; width:100%; background:#fffdf8; }
+  .xyt_tools {
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+    padding:12px 16px; border-top:1px solid var(--line); background:rgba(23,107,135,.03);
+  }
+  .xyt_tools span { color:var(--muted); font-size:12.5px; }
+  .xyt_spacer { margin-left:auto; display:flex; gap:8px; }
+  .xyt_btn {
+    padding:7px 16px; border:1px solid var(--blue); border-radius:20px;
+    background:transparent; color:var(--blue); font:13px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_btn:hover { background:var(--blue); color:#fff; }
+  .xyt_btn:disabled { opacity:.45; cursor:not-allowed; }
+  .xyt_btn .iconfont { font-size:13px; margin-right:4px; }
+  .xyt_btn.xyt_btn_ghost { border-color:var(--line); color:var(--muted); }
+  .xyt_btn.xyt_btn_ghost:hover { border-color:var(--coral); background:transparent; color:var(--coral); }
+
+  .xyt_legend { display:flex; flex-wrap:wrap; gap:18px; margin-top:12px; color:var(--muted); font-size:13px; }
+  .xyt_legend i { display:inline-block; margin-right:6px; vertical-align:middle; }
+  .xyt_dot { width:9px; height:9px; border-radius:50%; background:var(--coral); }
+  .xyt_ring { width:11px; height:11px; border-radius:4px; border:2px solid var(--coral); }
+  .xyt_ring_ok { width:11px; height:11px; border-radius:4px; border:2px solid var(--green); }
+
+  .xyt_log_box {
+    margin-top:18px; border:1px solid var(--line); border-radius:14px;
+    background:var(--card); overflow:hidden;
+  }
+  .xyt_log_head {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--line); background:rgba(23,107,135,.04);
+    font-size:13px; color:var(--muted);
+  }
+  .xyt_log_head b { color:var(--ink); font-size:14px; }
+  .xyt_log { margin:0; padding:4px 0; list-style:none; min-height:56px; }
+  .xyt_log li {
+    padding:6px 18px; font-size:13px; color:#4b5a64;
+    animation:xyt_slide .26s ease both;
+  }
+  .xyt_log li span { color:var(--coral); font:12px Consolas,monospace; margin-right:10px; }
+  .xyt_log_empty { color:var(--muted); }
+  @keyframes xyt_slide { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
+
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:46px 0 16px; }
+  h2 { margin:0; font:500 25px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+  .xyt_card {
+    padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card h3 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .xyt_card h3 .iconfont { color:var(--coral); font-size:15px; }
+  .xyt_card p { margin:0; color:var(--muted); font-size:13.5px; }
+  .xyt_card code { color:var(--blue); font-family:Consolas,monospace; font-size:12.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1120px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_spacer { margin-left:0; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：Canvas 绘制电商系统全站架构图，并模拟一次下单链路 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">HTML5 CANVAS · E-COMMERCE SYSTEM</p>
+      <h1>一个电商系统的<br>全站结构</h1>
+      <p class="xyt_hero_intro">整张图由 Canvas 逐帧绘制：用户层、接入层、业务层、数据层自下而上分层，连线上的小圆点是持续流动的请求。点「模拟一次下单」，能看到请求从用户端一路穿过网关、订单、库存、支付，最后落在 MySQL 上。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section class="xyt_box" aria-label="电商系统架构图">
+        <canvas id="xyt_canvas_sys"></canvas>
+        <div class="xyt_tools">
+          <span>鼠标悬停节点可查看该层职责</span>
+          <div class="xyt_spacer">
+            <button class="xyt_btn" id="xyt_order" type="button"><i class="iconfont icon-denglu"></i>模拟一次下单</button>
+            <button class="xyt_btn xyt_btn_ghost" id="xyt_clear" type="button"><i class="iconfont icon-shanchu"></i>清空</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="xyt_legend">
+        <span><i class="xyt_dot"></i>流动小圆点 = 常态请求</span>
+        <span><i class="xyt_ring"></i>橙色呼吸框 = 核心链路节点</span>
+        <span><i class="xyt_ring_ok"></i>绿框 = 本次下单已走到的节点</span>
+      </div>
+
+      <section class="xyt_log_box" aria-label="下单过程记录">
+        <div class="xyt_log_head"><b>下单链路</b><span id="xyt_step">等待开始</span></div>
+        <ol class="xyt_log" id="xyt_log">
+          <li class="xyt_log_empty">还没有开始，点击上方「模拟一次下单」看看请求是怎么走的。</li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="xyt_notes_title">
+        <div class="xyt_section_head"><h2 id="xyt_notes_title">这张图在讲什么</h2><span>分层架构 + 链路动画</span></div>
+        <div class="xyt_cards">
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-shouye"></i>四层结构</h3>
+            <p>用户层负责触达，接入层负责鉴权限流，业务层拆成商品 / 订单 / 支付 / 库存 / 会员 / 营销六个服务，数据层兜住持久化与缓存。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-ditu"></i>总线解耦</h3>
+            <p>业务服务不直接连数据库，而是先汇入内部通信总线，再由总线分发给存储与中间件，新增服务时只需要挂到总线上。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-gengduo"></i>链路可观测</h3>
+            <p>下单链路把一次请求拆成六个可观测节点，每一步都记录状态，正是分布式系统排查问题时的「调用链」雏形。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-shezhi"></i>Canvas 绘制套路</h3>
+            <p>逻辑坐标固定 900×560，按容器宽度整体缩放；节点写成数组、连线参数化，动画只改时间参数，重绘时统一重算。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>Canvas 电商系统架构 / 18-2</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：Canvas 分层架构绘制、请求流动画、下单链路模拟与悬停提示
+  (function () {
+    "use strict";
+
+    var xyt_canvas = document.getElementById("xyt_canvas_sys");
+    var xyt_ctx = xyt_canvas.getContext("2d");
+    var xyt_LW = 900;
+    var xyt_LH = 560;
+
+    var xyt_nodes = [];
+    var xyt_lines = [];
+    var xyt_time = 0;
+    var xyt_hover = -1;
+    var xyt_mouse = { x: -999, y: -999 };
+
+    var xyt_flow = { active: false, step: 0, t: 0, done: [], path: [0, 4, 6, 8, 7, 11] };
+    var xyt_flowLog = [
+      "① 用户在小程序商城提交订单",
+      "② API 网关完成鉴权、限流与路由",
+      "③ 订单服务生成订单并预占库存",
+      "④ 库存服务锁定库存、返回结果",
+      "⑤ 支付服务发起支付并等待回调",
+      "⑥ 订单状态写入 MySQL 主库"
+    ];
+
+    function xyt_rgba(xyt_hex, xyt_alpha) {
+      var xyt_h = xyt_hex.replace("#", "");
+      return "rgba(" + parseInt(xyt_h.substring(0, 2), 16) + "," +
+        parseInt(xyt_h.substring(2, 4), 16) + "," +
+        parseInt(xyt_h.substring(4, 6), 16) + "," + xyt_alpha + ")";
+    }
+
+    function xyt_roundRect(xyt_c, xyt_x, xyt_y, xyt_w, xyt_h, xyt_r) {
+      var xyt_rad = Math.min(xyt_r, xyt_h / 2, xyt_w / 2);
+      xyt_c.beginPath();
+      xyt_c.moveTo(xyt_x + xyt_rad, xyt_y);
+      xyt_c.arcTo(xyt_x + xyt_w, xyt_y, xyt_x + xyt_w, xyt_y + xyt_h, xyt_rad);
+      xyt_c.arcTo(xyt_x + xyt_w, xyt_y + xyt_h, xyt_x, xyt_y + xyt_h, xyt_rad);
+      xyt_c.arcTo(xyt_x, xyt_y + xyt_h, xyt_x, xyt_y, xyt_rad);
+      xyt_c.arcTo(xyt_x, xyt_y, xyt_x + xyt_w, xyt_y, xyt_rad);
+      xyt_c.closePath();
+    }
+
+    function xyt_addNode(xyt_n) {
+      xyt_n.cx = xyt_n.x + xyt_n.w / 2;
+      xyt_n.cy = xyt_n.y + xyt_n.h / 2;
+      xyt_nodes.push(xyt_n);
+    }
+
+    function xyt_build() {
+      xyt_nodes = [];
+      xyt_lines = [];
+
+      var xyt_left = 96;
+      var xyt_right = 872;
+      var xyt_span = xyt_right - xyt_left;
+
+      var xyt_u1 = ["小程序商城", "H5 / PC 商城", "移动 App", "运营后台"];
+      var xyt_d1 = ["微信生态内的主要入口", "浏览器访问，兼容旧版", "iOS / Android 客户端", "内部运营与商品配置"];
+      var xyt_s1 = ["微信生态", "浏览器访问", "iOS / Android", "内部运营"];
+      var xyt_w1 = (xyt_span - 3 * 14) / 4;
+      for (var xyt_i = 0; xyt_i < 4; xyt_i++) {
+        xyt_addNode({
+          x: xyt_left + xyt_i * (xyt_w1 + 14), y: 56, w: xyt_w1, h: 54,
+          title: xyt_u1[xyt_i], sub: xyt_s1[xyt_i], color: "#176b87", desc: xyt_d1[xyt_i]
+        });
+      }
+
+      xyt_addNode({
+        x: xyt_left, y: 160, w: xyt_span, h: 54,
+        title: "API 网关 · 负载均衡 · 统一鉴权", sub: "", color: "#7a5c9e",
+        desc: "所有请求的统一入口：鉴权、限流、灰度路由都在这一层完成"
+      });
+
+      var xyt_u3 = ["商品服务", "订单服务", "支付服务", "库存服务", "会员服务", "营销服务"];
+      var xyt_d3 = [
+        "维护 SKU、价格与上下架状态",
+        "生成订单、管理状态机与超时关闭",
+        "对接支付渠道、处理回调与对账",
+        "扣减与锁定库存，防止超卖",
+        "账号、等级、积分与权益体系",
+        "优惠券、满减、秒杀活动等营销能力"
+      ];
+      var xyt_w3 = (xyt_span - 5 * 11) / 6;
+      for (var xyt_j = 0; xyt_j < 6; xyt_j++) {
+        xyt_addNode({
+          x: xyt_left + xyt_j * (xyt_w3 + 11), y: 272, w: xyt_w3, h: 56,
+          title: xyt_u3[xyt_j], sub: "", color: "#e46b4b", desc: xyt_d3[xyt_j],
+          hot: xyt_j === 1 || xyt_j === 2
+        });
+      }
+
+      var xyt_u4 = ["MySQL 集群", "Redis 缓存", "消息队列 MQ"];
+      var xyt_s4 = ["主从读写分离", "热点数据 / 会话", "异步削峰解耦"];
+      var xyt_d4 = [
+        "订单、商品等核心数据的持久化存储",
+        "缓存热点商品与登录会话，降低库压力",
+        "下单成功后的异步通知、库存回滚等消息"
+      ];
+      var xyt_w4 = (xyt_span - 2 * 14) / 3;
+      for (var xyt_k = 0; xyt_k < 3; xyt_k++) {
+        xyt_addNode({
+          x: xyt_left + xyt_k * (xyt_w4 + 14), y: 412, w: xyt_w4, h: 56,
+          title: xyt_u4[xyt_k], sub: xyt_s4[xyt_k], color: "#3f7d5c", desc: xyt_d4[xyt_k]
+        });
+      }
+
+      for (var xyt_a = 0; xyt_a < 4; xyt_a++) {
+        xyt_lines.push({
+          x1: xyt_nodes[xyt_a].cx, y1: 110, x2: xyt_LW / 2, y2: 160,
+          phase: Math.random(), speed: 0.22
+        });
+      }
+      for (var xyt_b = 5; xyt_b < 11; xyt_b++) {
+        xyt_lines.push({
+          x1: xyt_LW / 2, y1: 214, x2: xyt_nodes[xyt_b].cx, y2: 272,
+          phase: Math.random(), speed: 0.26
+        });
+      }
+      for (var xyt_c = 5; xyt_c < 11; xyt_c++) {
+        xyt_lines.push({
+          x1: xyt_nodes[xyt_c].cx, y1: 328, x2: xyt_nodes[xyt_c].cx, y2: 374,
+          phase: Math.random(), speed: 0.3
+        });
+      }
+      for (var xyt_d = 11; xyt_d < 14; xyt_d++) {
+        xyt_lines.push({
+          x1: xyt_nodes[xyt_d].cx, y1: 374, x2: xyt_nodes[xyt_d].cx, y2: 412,
+          phase: Math.random(), speed: 0.3
+        });
+      }
+    }
+
+    function xyt_fit() {
+      var xyt_dpr = window.devicePixelRatio || 1;
+      var xyt_cssW = xyt_canvas.parentNode.clientWidth;
+      var xyt_cssH = xyt_cssW * xyt_LH / xyt_LW;
+      xyt_canvas.style.height = xyt_cssH + "px";
+      xyt_canvas.width = Math.round(xyt_cssW * xyt_dpr);
+      xyt_canvas.height = Math.round(xyt_cssH * xyt_dpr);
+      var xyt_scale = xyt_cssW * xyt_dpr / xyt_LW;
+      xyt_ctx.setTransform(xyt_scale, 0, 0, xyt_scale, 0, 0);
+      xyt_canvas.style.cursor = "default";
+    }
+
+    function xyt_nodeAt(xyt_x, xyt_y) {
+      for (var xyt_i = 0; xyt_i < xyt_nodes.length; xyt_i++) {
+        var xyt_n = xyt_nodes[xyt_i];
+        if (xyt_x >= xyt_n.x && xyt_x <= xyt_n.x + xyt_n.w &&
+            xyt_y >= xyt_n.y && xyt_y <= xyt_n.y + xyt_n.h) {
+          return xyt_i;
+        }
+      }
+      return -1;
+    }
+
+    function xyt_wrapText(xyt_text, xyt_maxWidth) {
+      var xyt_lines2 = [];
+      var xyt_line = "";
+      for (var xyt_i = 0; xyt_i < xyt_text.length; xyt_i++) {
+        var xyt_test = xyt_line + xyt_text.charAt(xyt_i);
+        if (xyt_ctx.measureText(xyt_test).width > xyt_maxWidth && xyt_line) {
+          xyt_lines2.push(xyt_line);
+          xyt_line = xyt_text.charAt(xyt_i);
+        } else {
+          xyt_line = xyt_test;
+        }
+      }
+      if (xyt_line) { xyt_lines2.push(xyt_line); }
+      return xyt_lines2;
+    }
+
+    function xyt_tooltip(xyt_index) {
+      var xyt_n = xyt_nodes[xyt_index];
+      var xyt_pad = 12;
+      var xyt_maxW = 230;
+      xyt_ctx.font = '12.5px "Microsoft YaHei",sans-serif';
+      var xyt_linesText = xyt_wrapText(xyt_n.desc, xyt_maxW - xyt_pad * 2);
+      var xyt_w = xyt_maxW;
+      var xyt_h = 34 + xyt_linesText.length * 19;
+
+      var xyt_x = xyt_n.cx - xyt_w / 2;
+      var xyt_y = xyt_n.y - xyt_h - 12;
+      if (xyt_y < 6) { xyt_y = xyt_n.y + xyt_n.h + 12; }
+      xyt_x = Math.max(8, Math.min(xyt_LW - xyt_w - 8, xyt_x));
+
+      xyt_ctx.save();
+      xyt_ctx.shadowColor = "rgba(31,50,55,.18)";
+      xyt_ctx.shadowBlur = 12;
+      xyt_ctx.shadowOffsetY = 4;
+      xyt_roundRect(xyt_ctx, xyt_x, xyt_y, xyt_w, xyt_h, 9);
+      xyt_ctx.fillStyle = "#202a35";
+      xyt_ctx.fill();
+      xyt_ctx.restore();
+
+      xyt_ctx.textAlign = "left";
+      xyt_ctx.textBaseline = "top";
+      xyt_ctx.fillStyle = "#ffffff";
+      xyt_ctx.font = '600 13px "Microsoft YaHei",sans-serif';
+      xyt_ctx.fillText(xyt_n.title, xyt_x + xyt_pad, xyt_y + 9);
+      xyt_ctx.fillStyle = "rgba(255,255,255,.78)";
+      xyt_ctx.font = '12.5px "Microsoft YaHei",sans-serif';
+      xyt_linesText.forEach(function (xyt_t, xyt_i) {
+        xyt_ctx.fillText(xyt_t, xyt_x + xyt_pad, xyt_y + 30 + xyt_i * 19);
+      });
+    }
+
+    function xyt_draw() {
+      var xyt_c = xyt_ctx;
+
+      xyt_c.fillStyle = "#fffdf8";
+      xyt_c.fillRect(0, 0, xyt_LW, xyt_LH);
+
+      xyt_c.fillStyle = "rgba(23,107,135,.10)";
+      for (var xyt_gx = 20; xyt_gx < xyt_LW; xyt_gx += 28) {
+        for (var xyt_gy = 20; xyt_gy < xyt_LH; xyt_gy += 28) {
+          xyt_c.fillRect(xyt_gx, xyt_gy, 1.4, 1.4);
+        }
+      }
+
+      var xyt_layers = [
+        { name: "用户层", y: 83 },
+        { name: "接入层", y: 187 },
+        { name: "业务层", y: 300 },
+        { name: "数据层", y: 440 }
+      ];
+      xyt_c.font = '600 13px "Microsoft YaHei",sans-serif';
+      xyt_c.textAlign = "right";
+      xyt_c.textBaseline = "middle";
+      xyt_layers.forEach(function (xyt_l) {
+        xyt_c.fillStyle = "#687581";
+        xyt_c.fillText(xyt_l.name, 78, xyt_l.y);
+        xyt_c.fillStyle = "rgba(217,223,217,1)";
+        xyt_c.fillRect(86, xyt_l.y - 12, 1, 24);
+      });
+
+      // 常态连线和流动数据包
+      xyt_c.lineWidth = 1.2;
+      xyt_lines.forEach(function (xyt_l) {
+        xyt_c.beginPath();
+        xyt_c.moveTo(xyt_l.x1, xyt_l.y1);
+        xyt_c.lineTo(xyt_l.x2, xyt_l.y2);
+        xyt_c.strokeStyle = "rgba(120,140,150,.32)";
+        xyt_c.stroke();
+
+        for (var xyt_n = 0; xyt_n < 2; xyt_n++) {
+          var xyt_t = ((xyt_time * xyt_l.speed + xyt_l.phase + xyt_n * 0.5) % 1 + 1) % 1;
+          var xyt_px = xyt_l.x1 + (xyt_l.x2 - xyt_l.x1) * xyt_t;
+          var xyt_py = xyt_l.y1 + (xyt_l.y2 - xyt_l.y1) * xyt_t;
+          xyt_c.beginPath();
+          xyt_c.arc(xyt_px, xyt_py, 6, 0, Math.PI * 2);
+          xyt_c.fillStyle = "rgba(228,107,75,.10)";
+          xyt_c.fill();
+          xyt_c.beginPath();
+          xyt_c.arc(xyt_px, xyt_py, 2.8, 0, Math.PI * 2);
+          xyt_c.fillStyle = "rgba(228,107,75,.8)";
+          xyt_c.fill();
+        }
+      });
+
+      // 内部总线
+      xyt_c.save();
+      xyt_c.setLineDash([5, 5]);
+      xyt_c.beginPath();
+      xyt_c.moveTo(96, 374);
+      xyt_c.lineTo(872, 374);
+      xyt_c.strokeStyle = "rgba(23,107,135,.45)";
+      xyt_c.lineWidth = 1.4;
+      xyt_c.stroke();
+      xyt_c.restore();
+      xyt_c.font = '11px Consolas,monospace';
+      xyt_c.textAlign = "left";
+      xyt_c.textBaseline = "middle";
+      xyt_c.fillStyle = "rgba(23,107,135,.7)";
+      xyt_c.fillText("内部通信总线", 100, 366);
+
+      // 订单链路：已走过的路径
+      if (xyt_flow.step > 0 || xyt_flow.active) {
+        xyt_c.save();
+        xyt_c.lineWidth = 3;
+        xyt_c.lineCap = "round";
+        xyt_c.strokeStyle = "rgba(228,107,75,.75)";
+        for (var xyt_s = 0; xyt_s < xyt_flow.step; xyt_s++) {
+          var xyt_from = xyt_nodes[xyt_flow.path[xyt_s]];
+          var xyt_to = xyt_nodes[xyt_flow.path[xyt_s + 1]];
+          xyt_c.beginPath();
+          xyt_c.moveTo(xyt_from.cx, xyt_from.cy);
+          xyt_c.lineTo(xyt_to.cx, xyt_to.cy);
+          xyt_c.stroke();
+        }
+        xyt_c.restore();
+      }
+
+      // 节点
+      xyt_nodes.forEach(function (xyt_n, xyt_index) {
+        xyt_c.save();
+        xyt_c.shadowColor = "rgba(31,50,55,.10)";
+        xyt_c.shadowBlur = 10;
+        xyt_c.shadowOffsetY = 4;
+        xyt_roundRect(xyt_c, xyt_n.x, xyt_n.y, xyt_n.w, xyt_n.h, 10);
+        xyt_c.fillStyle = "#ffffff";
+        xyt_c.fill();
+        xyt_c.restore();
+
+        xyt_roundRect(xyt_c, xyt_n.x, xyt_n.y, xyt_n.w, xyt_n.h, 10);
+        xyt_c.fillStyle = xyt_rgba(xyt_n.color, 0.06);
+        xyt_c.fill();
+        xyt_c.strokeStyle = xyt_rgba(xyt_n.color, xyt_index === xyt_hover ? 0.95 : 0.35);
+        xyt_c.lineWidth = xyt_index === xyt_hover ? 2 : 1.2;
+        xyt_c.stroke();
+
+        xyt_c.save();
+        xyt_roundRect(xyt_c, xyt_n.x, xyt_n.y, xyt_n.w, xyt_n.h, 10);
+        xyt_c.clip();
+        xyt_c.fillStyle = xyt_n.color;
+        xyt_c.fillRect(xyt_n.x, xyt_n.y, 3.5, xyt_n.h);
+        xyt_c.restore();
+
+        xyt_c.textAlign = "center";
+        xyt_c.textBaseline = "middle";
+        xyt_c.fillStyle = "#202a35";
+        xyt_c.font = '600 14px "Microsoft YaHei",sans-serif';
+        xyt_c.fillText(xyt_n.title, xyt_n.cx, xyt_n.sub ? xyt_n.cy - 8 : xyt_n.cy);
+        if (xyt_n.sub) {
+          xyt_c.fillStyle = "#8b979f";
+          xyt_c.font = '11.5px "Microsoft YaHei",sans-serif';
+          xyt_c.fillText(xyt_n.sub, xyt_n.cx, xyt_n.cy + 10);
+        }
+
+        // 核心链路呼吸框
+        if (xyt_n.hot) {
+          var xyt_pulse = 0.5 + 0.5 * Math.sin(xyt_time * 2.4 + xyt_n.x * 0.01);
+          xyt_roundRect(xyt_c, xyt_n.x - 5, xyt_n.y - 5, xyt_n.w + 10, xyt_n.h + 10, 13);
+          xyt_c.strokeStyle = "rgba(228,107,75," + (0.14 + xyt_pulse * 0.45) + ")";
+          xyt_c.lineWidth = 2;
+          xyt_c.stroke();
+        }
+
+        // 已完成的节点
+        if (xyt_flow.done.indexOf(xyt_index) >= 0) {
+          xyt_roundRect(xyt_c, xyt_n.x - 4, xyt_n.y - 4, xyt_n.w + 8, xyt_n.h + 8, 12);
+          xyt_c.strokeStyle = "rgba(63,125,92,.75)";
+          xyt_c.lineWidth = 2.5;
+          xyt_c.stroke();
+        }
+      });
+
+      // 订单链路上的移动圆点
+      if (xyt_flow.active) {
+        var xyt_a = xyt_nodes[xyt_flow.path[xyt_flow.step]];
+        var xyt_b = xyt_nodes[xyt_flow.path[xyt_flow.step + 1]];
+        var xyt_p = Math.min(1, xyt_flow.t / 0.7);
+        var xyt_ease = xyt_p < 0.5 ? 2 * xyt_p * xyt_p : -1 + (4 - 2 * xyt_p) * xyt_p;
+        var xyt_dx = xyt_a.cx + (xyt_b.cx - xyt_a.cx) * xyt_ease;
+        var xyt_dy = xyt_a.cy + (xyt_b.cy - xyt_a.cy) * xyt_ease;
+
+        xyt_c.beginPath();
+        xyt_c.arc(xyt_dx, xyt_dy, 13, 0, Math.PI * 2);
+        xyt_c.fillStyle = "rgba(228,107,75,.18)";
+        xyt_c.fill();
+        xyt_c.beginPath();
+        xyt_c.arc(xyt_dx, xyt_dy, 6, 0, Math.PI * 2);
+        xyt_c.fillStyle = "#e46b4b";
+        xyt_c.fill();
+        xyt_c.beginPath();
+        xyt_c.arc(xyt_dx, xyt_dy, 2.6, 0, Math.PI * 2);
+        xyt_c.fillStyle = "#fffdf8";
+        xyt_c.fill();
+      }
+
+      if (xyt_hover >= 0) { xyt_tooltip(xyt_hover); }
+    }
+
+    var xyt_last = 0;
+    function xyt_loop(xyt_ts) {
+      if (!xyt_last) { xyt_last = xyt_ts; }
+      var xyt_dt = Math.min(0.05, (xyt_ts - xyt_last) / 1000);
+      xyt_last = xyt_ts;
+      xyt_time += xyt_dt;
+
+      if (xyt_flow.active) {
+        xyt_flow.t += xyt_dt;
+        if (xyt_flow.t >= 0.7) {
+          xyt_flow.t = 0;
+          xyt_flow.done.push(xyt_flow.path[xyt_flow.step + 1]);
+          xyt_flow.step += 1;
+          if (xyt_flow.step >= xyt_flow.path.length - 1) {
+            xyt_flow.active = false;
+            xyt_flow.step = xyt_flow.path.length - 1;
+            document.getElementById("xyt_order").disabled = false;
+            document.getElementById("xyt_step").textContent = "全部完成 · 6 个节点";
+          }
+        }
+      }
+
+      xyt_draw();
+      window.requestAnimationFrame(xyt_loop);
+    }
+
+    function xyt_addLog(xyt_text) {
+      var xyt_list = document.getElementById("xyt_log");
+      var xyt_empty = xyt_list.querySelector(".xyt_log_empty");
+      if (xyt_empty) { xyt_list.innerHTML = ""; }
+      var xyt_li = document.createElement("li");
+      var xyt_no = xyt_list.children.length + 1;
+      xyt_li.innerHTML = "<span>" + String(xyt_no).padStart(2, "0") + "</span>" + xyt_text;
+      xyt_list.appendChild(xyt_li);
+    }
+
+    // 每走完一段补一条日志
+    var xyt_lastLogged = -1;
+    function xyt_watchFlow() {
+      if (xyt_flow.done.length !== xyt_lastLogged) {
+        var xyt_target = xyt_flow.done[xyt_flow.done.length - 1];
+        var xyt_pos = xyt_flow.path.indexOf(xyt_target);
+        if (xyt_pos > 0 && xyt_pos < xyt_flowLog.length) {
+          xyt_addLog(xyt_flowLog[xyt_pos]);
+          document.getElementById("xyt_step").textContent = "第 " + xyt_pos + " / 5 步";
+        }
+        xyt_lastLogged = xyt_flow.done.length;
+      }
+      window.setTimeout(xyt_watchFlow, 120);
+    }
+
+    document.getElementById("xyt_order").addEventListener("click", function () {
+      xyt_flow = { active: true, step: 0, t: 0, done: [], path: [0, 4, 6, 8, 7, 11] };
+      xyt_lastLogged = -1;
+      document.getElementById("xyt_log").innerHTML = "";
+      document.getElementById("xyt_step").textContent = "第 0 / 5 步";
+      document.getElementById("xyt_order").disabled = true;
+      xyt_addLog(xyt_flowLog[0]);
+      xyt_lastLogged = 0;
+    });
+
+    document.getElementById("xyt_clear").addEventListener("click", function () {
+      xyt_flow = { active: false, step: 0, t: 0, done: [], path: [0, 4, 6, 8, 7, 11] };
+      xyt_lastLogged = -1;
+      document.getElementById("xyt_log").innerHTML =
+        '<li class="xyt_log_empty">已清空，点击「模拟一次下单」重新演示。</li>';
+      document.getElementById("xyt_step").textContent = "等待开始";
+    });
+
+    xyt_canvas.addEventListener("mousemove", function (xyt_e) {
+      var xyt_rect = xyt_canvas.getBoundingClientRect();
+      var xyt_x = (xyt_e.clientX - xyt_rect.left) * xyt_LW / xyt_rect.width;
+      var xyt_y = (xyt_e.clientY - xyt_rect.top) * xyt_LW / xyt_rect.width;
+      xyt_mouse.x = xyt_x;
+      xyt_mouse.y = xyt_y;
+      xyt_hover = xyt_nodeAt(xyt_x, xyt_y);
+      xyt_canvas.style.cursor = xyt_hover >= 0 ? "pointer" : "default";
+    });
+
+    xyt_canvas.addEventListener("mouseleave", function () {
+      xyt_hover = -1;
+      xyt_mouse.x = -999;
+      xyt_mouse.y = -999;
+    });
+
+    var xyt_resizeTimer = null;
+    window.addEventListener("resize", function () {
+      window.clearTimeout(xyt_resizeTimer);
+      xyt_resizeTimer = window.setTimeout(function () {
+        xyt_build();
+        xyt_fit();
+      }, 180);
+    });
+
+    xyt_build();
+    xyt_fit();
+    xyt_watchFlow();
+    window.requestAnimationFrame(xyt_loop);
+  })();
+</script>
+</body>
+</html>

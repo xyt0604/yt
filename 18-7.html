@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | Three.js 3D 图表</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.6vw,50px)/1.14 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:720px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_hero_intro code { color:var(--blue); font-family:Consolas,monospace; font-size:14px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+
+  .xyt_grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px;
+    padding:14px 18px; border-bottom:1px solid var(--line);
+  }
+  .xyt_panel_head h2 { margin:0; font:500 20px Georgia,"Songti SC",serif; }
+  .xyt_panel_head span { color:var(--muted); font-size:12.5px; }
+  .xyt_view {
+    position:relative; height:380px; background:#fffdf8; touch-action:none; cursor:grab;
+  }
+  .xyt_view:active { cursor:grabbing; }
+  .xyt_view canvas { display:block; }
+  .xyt_foot {
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+    padding:10px 18px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:12.5px;
+  }
+  .xyt_foot .xyt_spacer { margin-left:auto; }
+  .xyt_btn {
+    padding:5px 13px; border:1px solid var(--line); border-radius:20px;
+    background:#fff; color:var(--blue); font:12.5px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.07); }
+  .xyt_btn .iconfont { font-size:12px; margin-right:4px; }
+  .xyt_badge {
+    display:inline-flex; align-items:center; gap:6px; padding:2px 10px;
+    border-radius:20px; background:rgba(23,107,135,.08); color:var(--blue); font-size:12px;
+  }
+  .xyt_badge i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .xyt_fail { padding:60px 20px; text-align:center; color:var(--muted); font-size:14px; }
+
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:46px 0 16px; }
+  h2 { margin:0; font:500 25px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .xyt_card {
+    padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card h3 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .xyt_card h3 .iconfont { color:var(--coral); font-size:15px; }
+  .xyt_card p { margin:0; color:var(--muted); font-size:13.5px; }
+  .xyt_card code { color:var(--blue); font-family:Consolas,monospace; font-size:12.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:900px) {
+    .xyt_grid { grid-template-columns:1fr; }
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_view { height:320px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：Three.js 绘制 3D 柱状图与 3D 散点图 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">THREE.JS · 3D CHARTS</p>
+      <h1>会转动的<br>两张三维图表</h1>
+      <p class="xyt_hero_intro">两张图都用 <code>three.js</code> 在 WebGL 里搭出来：左边是 12 根立起来的柱子，柱高和颜色跟着数值变化；右边是三类样本在空间里散开的点云。两张图都支持按住拖动旋转、滚轮缩放。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section class="xyt_grid" aria-label="3D 图表">
+        <article class="xyt_panel">
+          <div class="xyt_panel_head">
+            <h2>3D 柱状图</h2>
+            <span>月度活跃用户（单位：万）</span>
+          </div>
+          <div class="xyt_view" id="xyt_bar_view" aria-label="三维柱状图"></div>
+          <div class="xyt_foot">
+            <span>柱高 = 数值，颜色由蓝到橙随数值渐变</span>
+            <div class="xyt_spacer"><button class="xyt_btn" id="xyt_bar_replay" type="button"><i class="iconfont icon-fanhui"></i>重播生长</button></div>
+          </div>
+        </article>
+
+        <article class="xyt_panel">
+          <div class="xyt_panel_head">
+            <h2>3D 散点图</h2>
+            <span>三类样本的空间分布</span>
+          </div>
+          <div class="xyt_view" id="xyt_scatter_view" aria-label="三维散点图"></div>
+          <div class="xyt_foot">
+            <span class="xyt_badge"><i style="background:#176b87"></i>类别 A</span>
+            <span class="xyt_badge"><i style="background:#e46b4b"></i>类别 B</span>
+            <span class="xyt_badge"><i style="background:#3f7d5c"></i>类别 C</span>
+            <div class="xyt_spacer"><button class="xyt_btn" id="xyt_resample" type="button"><i class="iconfont icon-faxian"></i>重新采样</button></div>
+          </div>
+        </article>
+      </section>
+
+      <section aria-labelledby="xyt_notes_title">
+        <div class="xyt_section_head"><h2 id="xyt_notes_title">Three.js 画图的三件事</h2><span>场景 / 相机 / 渲染器</span></div>
+        <div class="xyt_cards">
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-ditu"></i>场景与相机</h3>
+            <p><code>Scene</code> 装对象，<code>PerspectiveCamera</code> 决定视角；相机位置用球坐标算出来，拖动时改两个角度，滚轮改半径，就得到了最简的轨道控制。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-shezhi"></i>几何体与材质</h3>
+            <p>柱状图的每根柱子是一份 <code>BoxGeometry</code>，先把几何体沿 Y 轴平移半个高度，柱子才不会以中心为支点往上冒。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-faxian"></i>顶点颜色</h3>
+            <p>散点图用 <code>Points</code> + <code>Float32BufferAttribute</code> 一次画完 300 个点，每点颜色写进 <code>color</code> 属性，性能比 300 个 Mesh 好得多。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-wode"></i>逐帧循环</h3>
+            <p><code>requestAnimationFrame</code> 里更新旋转、重算相机位置、调用 <code>renderer.render()</code>；窗口尺寸变化时同步 <code>setSize</code> 与相机宽高比。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>Three.js 3D 图表 / 18-7</span>
+  </footer>
+
+  <script src="cdn/three/three.min.js"></script>
+  <script>
+    // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：Three.js 3D 柱状图与 3D 散点图，含拖拽旋转与滚轮缩放
+    (function () {
+      "use strict";
+
+      var xyt_barView = document.getElementById("xyt_bar_view");
+      var xyt_scatterView = document.getElementById("xyt_scatter_view");
+
+      if (!window.THREE) {
+        var xyt_msg = '<p class="xyt_fail">没有找到 cdn/three/three.min.js，请确认该文件存在。</p>';
+        xyt_barView.innerHTML = xyt_msg;
+        xyt_scatterView.innerHTML = xyt_msg;
+        return;
+      }
+
+      var xyt_barState = { rotY: -0.5, rotX: 0.42, dist: 15, target: new THREE.Vector3(0, 2.1, 0), auto: true, dragging: false };
+      var xyt_scatterState = { rotY: 0.4, rotX: 0.34, dist: 12, target: new THREE.Vector3(0, 1.1, 0), auto: true, dragging: false };
+
+      function xyt_makeRenderer(xyt_el) {
+        var xyt_w = xyt_el.clientWidth || 480;
+        var xyt_h = xyt_el.clientHeight || 380;
+        var xyt_renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        xyt_renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        xyt_renderer.setSize(xyt_w, xyt_h);
+        xyt_el.appendChild(xyt_renderer.domElement);
+        return xyt_renderer;
+      }
+
+      function xyt_camera(xyt_el) {
+        var xyt_w = xyt_el.clientWidth || 480;
+        var xyt_h = xyt_el.clientHeight || 380;
+        var xyt_cam = new THREE.PerspectiveCamera(42, xyt_w / xyt_h, 0.1, 400);
+        return xyt_cam;
+      }
+
+      function xyt_bindOrbit(xyt_el, xyt_state) {
+        var xyt_lastX = 0;
+        var xyt_lastY = 0;
+
+        xyt_el.addEventListener("pointerdown", function (xyt_e) {
+          xyt_state.dragging = true;
+          xyt_state.auto = false;
+          xyt_lastX = xyt_e.clientX;
+          xyt_lastY = xyt_e.clientY;
+          if (xyt_el.setPointerCapture) { xyt_el.setPointerCapture(xyt_e.pointerId); }
+        });
+
+        xyt_el.addEventListener("pointermove", function (xyt_e) {
+          if (!xyt_state.dragging) { return; }
+          var xyt_dx = xyt_e.clientX - xyt_lastX;
+          var xyt_dy = xyt_e.clientY - xyt_lastY;
+          xyt_lastX = xyt_e.clientX;
+          xyt_lastY = xyt_e.clientY;
+          xyt_state.rotY -= xyt_dx * 0.008;
+          xyt_state.rotX = Math.max(-0.12, Math.min(1.15, xyt_state.rotX + xyt_dy * 0.005));
+        });
+
+        function xyt_release() {
+          if (!xyt_state.dragging) { return; }
+          xyt_state.dragging = false;
+          window.setTimeout(function () { xyt_state.auto = true; }, 1200);
+        }
+
+        xyt_el.addEventListener("pointerup", xyt_release);
+        xyt_el.addEventListener("pointercancel", xyt_release);
+        xyt_el.addEventListener("pointerleave", xyt_release);
+
+        xyt_el.addEventListener("wheel", function (xyt_e) {
+          xyt_e.preventDefault();
+          xyt_state.dist = Math.max(6, Math.min(30, xyt_state.dist * (1 + xyt_e.deltaY * 0.0012)));
+        }, { passive: false });
+      }
+
+      function xyt_placeCamera(xyt_camera3, xyt_state) {
+        var xyt_r = xyt_state.dist;
+        xyt_camera3.position.set(
+          Math.sin(xyt_state.rotY) * Math.cos(xyt_state.rotX) * xyt_r,
+          Math.sin(xyt_state.rotX) * xyt_r + xyt_state.target.y,
+          Math.cos(xyt_state.rotY) * Math.cos(xyt_state.rotX) * xyt_r
+        );
+        xyt_camera3.lookAt(xyt_state.target);
+      }
+
+      function xyt_fail(xyt_el) {
+        xyt_el.innerHTML = '<p class="xyt_fail">当前浏览器不支持 WebGL，无法渲染三维图表。</p>';
+      }
+
+      /* ---------- 图一：3D 柱状图 ---------- */
+      var xyt_barScene, xyt_barCamera, xyt_barRenderer, xyt_barGroup, xyt_barsGroup, xyt_bars = [];
+      var xyt_barData = [42, 58, 65, 49, 72, 88, 95, 91, 78, 66, 54, 47];
+      var xyt_barClock = 0;
+
+      function xyt_buildBars() {
+        xyt_bars = [];
+        while (xyt_barsGroup.children.length) { xyt_barsGroup.remove(xyt_barsGroup.children[0]); }
+
+        var xyt_max = 100;
+        var xyt_gap = 1.0;
+        var xyt_count = xyt_barData.length;
+
+        for (var xyt_i = 0; xyt_i < xyt_count; xyt_i++) {
+          var xyt_val = xyt_barData[xyt_i];
+          var xyt_h = (xyt_val / xyt_max) * 5 + 0.12;
+          var xyt_geo = new THREE.BoxGeometry(0.58, xyt_h, 0.58);
+          xyt_geo.translate(0, xyt_h / 2, 0);
+
+          var xyt_color = new THREE.Color();
+          xyt_color.setHSL(0.55 - (xyt_val / xyt_max) * 0.48, 0.62, 0.52);
+
+          var xyt_mat = new THREE.MeshLambertMaterial({ color: xyt_color });
+          var xyt_mesh = new THREE.Mesh(xyt_geo, xyt_mat);
+          xyt_mesh.position.set((xyt_i - (xyt_count - 1) / 2) * xyt_gap, 0, 0);
+          xyt_mesh.scale.y = 0.001;
+          xyt_barsGroup.add(xyt_mesh);
+
+          xyt_bars.push({ mesh: xyt_mesh, delay: xyt_i * 0.045, done: false });
+        }
+      }
+
+      function xyt_initBar() {
+        var xyt_w = xyt_barView.clientWidth || 480;
+        var xyt_h = xyt_barView.clientHeight || 380;
+
+        xyt_barScene = new THREE.Scene();
+        xyt_barCamera = xyt_camera(xyt_barView);
+        xyt_barRenderer = xyt_makeRenderer(xyt_barView);
+
+        xyt_barScene.add(new THREE.AmbientLight(0xffffff, 0.78));
+        var xyt_dir1 = new THREE.DirectionalLight(0xffffff, 0.62);
+        xyt_dir1.position.set(6, 12, 8);
+        xyt_barScene.add(xyt_dir1);
+        var xyt_dir2 = new THREE.DirectionalLight(0xffffff, 0.22);
+        xyt_dir2.position.set(-8, 5, -9);
+        xyt_barScene.add(xyt_dir2);
+
+        xyt_barGroup = new THREE.Group();
+        xyt_barScene.add(xyt_barGroup);
+
+        var xyt_grid = new THREE.GridHelper(13, 13, 0xc9d2d4, 0xe7ebe6);
+        xyt_grid.position.y = 0;
+        xyt_barGroup.add(xyt_grid);
+
+        xyt_barsGroup = new THREE.Group();
+        xyt_barGroup.add(xyt_barsGroup);
+
+        xyt_buildBars();
+        xyt_bindOrbit(xyt_barView, xyt_barState);
+      }
+
+      /* ---------- 图二：3D 散点图 ---------- */
+      var xyt_scScene, xyt_scCamera, xyt_scRenderer, xyt_scGroup, xyt_points = null;
+
+      function xyt_buildScatter() {
+        if (xyt_points) {
+          xyt_scGroup.remove(xyt_points);
+          xyt_points.geometry.dispose();
+          xyt_points.material.dispose();
+        }
+
+        var xyt_clusters = [
+          { c: [2.3, 0.9, 0.2], n: 110, spread: 0.95, color: new THREE.Color(0x176b87) },
+          { c: [-2.0, 1.5, 1.4], n: 100, spread: 0.85, color: new THREE.Color(0xe46b4b) },
+          { c: [0.3, 2.4, -2.0], n: 90, spread: 0.75, color: new THREE.Color(0x3f7d5c) }
+        ];
+
+        var xyt_positions = [];
+        var xyt_colors = [];
+
+        xyt_clusters.forEach(function (xyt_cl) {
+          for (var xyt_i = 0; xyt_i < xyt_cl.n; xyt_i++) {
+            var xyt_gx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            var xyt_gy = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            var xyt_gz = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+            xyt_positions.push(
+              xyt_cl.c[0] + xyt_gx * xyt_cl.spread,
+              xyt_cl.c[1] + xyt_gy * xyt_cl.spread,
+              xyt_cl.c[2] + xyt_gz * xyt_cl.spread
+            );
+            xyt_colors.push(xyt_cl.color.r, xyt_cl.color.g, xyt_cl.color.b);
+          }
+        });
+
+        var xyt_geo = new THREE.BufferGeometry();
+        xyt_geo.setAttribute("position", new THREE.Float32BufferAttribute(xyt_positions, 3));
+        xyt_geo.setAttribute("color", new THREE.Float32BufferAttribute(xyt_colors, 3));
+
+        var xyt_mat = new THREE.PointsMaterial({
+          size: 0.12,
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.92,
+          sizeAttenuation: true
+        });
+
+        xyt_points = new THREE.Points(xyt_geo, xyt_mat);
+        xyt_scGroup.add(xyt_points);
+      }
+
+      function xyt_initScatter() {
+        xyt_scScene = new THREE.Scene();
+        xyt_scCamera = xyt_camera(xyt_scatterView);
+        xyt_scRenderer = xyt_makeRenderer(xyt_scatterView);
+
+        xyt_scGroup = new THREE.Group();
+        xyt_scScene.add(xyt_scGroup);
+
+        var xyt_grid = new THREE.GridHelper(10, 10, 0xc9d2d4, 0xe7ebe6);
+        xyt_scGroup.add(xyt_grid);
+
+        xyt_buildScatter();
+        xyt_bindOrbit(xyt_scatterView, xyt_scatterState);
+      }
+
+      /* ---------- 动画主循环 ---------- */
+      var xyt_start = 0;
+
+      function xyt_animate(xyt_ts) {
+        if (!xyt_start) { xyt_start = xyt_ts; }
+        var xyt_elapsed = (xyt_ts - xyt_start) / 1000;
+        xyt_barClock = xyt_elapsed;
+
+        if (xyt_barRenderer && xyt_barScene) {
+          if (xyt_barState.auto && !xyt_barState.dragging) { xyt_barState.rotY += 0.0035; }
+
+          for (var xyt_i = 0; xyt_i < xyt_bars.length; xyt_i++) {
+            var xyt_b = xyt_bars[xyt_i];
+            if (xyt_b.done) { continue; }
+            var xyt_p = (xyt_elapsed - xyt_b.delay) / 0.9;
+            if (xyt_p < 0) { continue; }
+            if (xyt_p > 1) { xyt_p = 1; xyt_b.done = true; }
+            // easeOutCubic
+            var xyt_e = 1 - Math.pow(1 - xyt_p, 3);
+            xyt_b.mesh.scale.y = Math.max(0.001, xyt_e);
+          }
+
+          xyt_placeCamera(xyt_barCamera, xyt_barState);
+          xyt_barRenderer.render(xyt_barScene, xyt_barCamera);
+        }
+
+        if (xyt_scRenderer && xyt_scScene) {
+          if (xyt_scatterState.auto && !xyt_scatterState.dragging) { xyt_scatterState.rotY += 0.0042; }
+          xyt_scGroup.position.y = Math.sin(xyt_elapsed * 0.8) * 0.12;
+          xyt_placeCamera(xyt_scCamera, xyt_scatterState);
+          xyt_scRenderer.render(xyt_scScene, xyt_scCamera);
+        }
+
+        window.requestAnimationFrame(xyt_animate);
+      }
+
+      function xyt_resize() {
+        var xyt_pairs = [
+          { el: xyt_barView, cam: xyt_barCamera, ren: xyt_barRenderer },
+          { el: xyt_scatterView, cam: xyt_scCamera, ren: xyt_scRenderer }
+        ];
+        xyt_pairs.forEach(function (xyt_p) {
+          if (!xyt_p.el || !xyt_p.ren) { return; }
+          var xyt_w = xyt_p.el.clientWidth;
+          var xyt_h = xyt_p.el.clientHeight;
+          if (!xyt_w || !xyt_h) { return; }
+          xyt_p.cam.aspect = xyt_w / xyt_h;
+          xyt_p.cam.updateProjectionMatrix();
+          xyt_p.ren.setSize(xyt_w, xyt_h);
+        });
+      }
+
+      document.getElementById("xyt_bar_replay").addEventListener("click", function () {
+        xyt_start = 0;
+        xyt_bars.forEach(function (xyt_b) { xyt_b.done = false; xyt_b.mesh.scale.y = 0.001; });
+      });
+
+      document.getElementById("xyt_resample").addEventListener("click", function () {
+        xyt_buildScatter();
+      });
+
+      try {
+        xyt_initBar();
+        xyt_initScatter();
+      } catch (xyt_err) {
+        xyt_fail(xyt_barView);
+        xyt_fail(xyt_scatterView);
+        return;
+      }
+
+      window.addEventListener("resize", xyt_resize);
+      window.requestAnimationFrame(xyt_animate);
+    })();
+  </script>
+</body>
+</html>

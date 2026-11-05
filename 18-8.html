@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 电商运营数据大屏</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --bg:#040a12; --panel:rgba(10,26,42,.82); --line:rgba(70,150,220,.24);
+    --cyan:#35d0e0; --blue:#4a8cff; --orange:#ff8a5b; --violet:#a180ff; --green:#41d6a3;
+    --text:#d8e8f4; --muted:#7ea3bf;
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body {
+    margin:0; color:var(--text); background:var(--bg);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.6;
+    background-image:
+      radial-gradient(circle at 18% 0%, rgba(23,107,135,.30), transparent 42%),
+      radial-gradient(circle at 82% 8%, rgba(74,140,255,.18), transparent 40%),
+      linear-gradient(180deg,#040a12 0%, #071120 55%, #040a12 100%);
+    background-attachment:fixed;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+    background-image:linear-gradient(rgba(53,208,224,.045) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(53,208,224,.045) 1px,transparent 1px);
+    background-size:46px 46px;
+  }
+  a { color:inherit; }
+  .xyt_head {
+    position:relative; z-index:1;
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;
+    padding:16px 26px 14px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(12,32,50,.92), rgba(4,10,18,.35));
+  }
+  .xyt_brand { display:flex; align-items:center; gap:14px; }
+  .xyt_logo {
+    display:grid; width:42px; height:42px; place-items:center;
+    color:#04202c; font:700 20px Georgia,serif;
+    background:linear-gradient(135deg,#7ef0ff,#35d0e0);
+    border-radius:10px; box-shadow:0 0 18px rgba(53,208,224,.45);
+  }
+  .xyt_brand h1 { margin:0; font-size:23px; font-weight:700; letter-spacing:.12em; }
+  .xyt_brand p { margin:2px 0 0; color:rgba(126,163,191,.85); font:11px Consolas,monospace; letter-spacing:.28em; }
+  .xyt_head_right { display:flex; align-items:center; gap:18px; }
+  .xyt_clock { font:600 22px Consolas,monospace; color:#8ef2ff; letter-spacing:.08em; text-shadow:0 0 12px rgba(53,208,224,.6); }
+  .xyt_day { color:var(--muted); font-size:12.5px; }
+  .xyt_live {
+    display:inline-flex; align-items:center; gap:7px; padding:4px 12px; border-radius:20px;
+    border:1px solid rgba(65,214,163,.45); color:var(--green); font-size:12px;
+  }
+  .xyt_live i { width:7px; height:7px; border-radius:50%; background:var(--green); animation:xyt_blink 1.4s ease-in-out infinite; }
+  @keyframes xyt_blink { 0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(65,214,163,.5); } 50% { opacity:.35; box-shadow:0 0 0 6px rgba(65,214,163,0); } }
+
+  .xyt_main { position:relative; z-index:1; padding:16px 26px 26px; }
+  .xyt_kpis {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:0 0 14px; padding:0; list-style:none;
+  }
+  .xyt_kpis li {
+    padding:12px 18px; border:1px solid var(--line); border-radius:10px;
+    background:linear-gradient(180deg, rgba(14,38,58,.85), rgba(8,20,32,.85));
+    position:relative; overflow:hidden;
+  }
+  .xyt_kpis li::after {
+    content:""; position:absolute; left:0; top:0; width:3px; height:100%;
+    background:linear-gradient(180deg,var(--cyan),transparent);
+  }
+  .xyt_kpis span { display:block; color:var(--muted); font-size:12.5px; letter-spacing:.06em; }
+  .xyt_kpis b {
+    display:block; margin:2px 0 0; font:600 28px/1.2 Consolas,monospace;
+    color:#eaf9ff; text-shadow:0 0 16px rgba(53,208,224,.5);
+  }
+  .xyt_kpis i { font-style:normal; font-size:12px; color:var(--green); }
+  .xyt_kpis i.xyt_down { color:var(--orange); }
+
+  .xyt_grid { display:grid; grid-template-columns:1fr 1.32fr 1fr; gap:14px; height:640px; }
+  .xyt_col { display:flex; flex-direction:column; gap:14px; min-height:0; }
+  .xyt_panel {
+    position:relative; flex:1; display:flex; flex-direction:column; min-height:0;
+    border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    background:linear-gradient(180deg, rgba(12,32,52,.86), rgba(6,16,26,.9));
+  }
+  .xyt_panel::before {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(circle at 50% 0%, rgba(53,208,224,.10), transparent 58%);
+  }
+  .xyt_panel h2 {
+    display:flex; align-items:center; gap:8px; margin:0; padding:10px 14px 4px;
+    font-size:13px; font-weight:600; color:#a7dcec; letter-spacing:.08em;
+  }
+  .xyt_panel h2::before {
+    content:""; width:3px; height:12px; background:var(--cyan);
+    box-shadow:0 0 10px rgba(53,208,224,.9);
+  }
+  .xyt_panel h2 em { margin-left:auto; color:rgba(126,163,191,.7); font:11px Consolas,monospace; font-style:normal; }
+  .xyt_chart { flex:1; min-height:0; }
+  .xyt_col_mid .xyt_panel_map { flex:1.62; }
+
+  .xyt_fail { padding:22px; color:var(--muted); font-size:13px; }
+
+  .xyt_footer {
+    position:relative; z-index:1;
+    display:flex; justify-content:space-between; padding:0 26px 20px;
+    color:rgba(126,163,191,.7); font-size:12.5px;
+  }
+  @media (max-width:1080px) {
+    .xyt_grid { grid-template-columns:1fr 1fr; height:auto; }
+    .xyt_col_mid { grid-column:1 / -1; order:-1; }
+    .xyt_col_mid .xyt_panel { min-height:420px; }
+    .xyt_col .xyt_panel { min-height:260px; }
+    .xyt_kpis { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:760px) {
+    .xyt_head,.xyt_main,.xyt_footer { padding-left:14px; padding-right:14px; }
+    .xyt_grid { grid-template-columns:1fr; }
+    .xyt_kpis { grid-template-columns:1fr 1fr; }
+    .xyt_brand h1 { font-size:18px; }
+    .xyt_clock { font-size:18px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：ECharts 电商运营数据大屏（三栏布局，中间上方为全国订单地理分布） -->
+  <header class="xyt_head">
+    <div class="xyt_brand">
+      <span class="xyt_logo">徐</span>
+      <div>
+        <h1>电商运营数据大屏</h1>
+        <p>E-COMMERCE OPERATION BOARD</p>
+      </div>
+    </div>
+    <div class="xyt_head_right">
+      <span class="xyt_live"><i></i>实时数据</span>
+      <span class="xyt_clock" id="xyt_clock">00:00:00</span>
+      <span class="xyt_day" id="xyt_day">2026-11-05 星期四</span>
+    </div>
+  </header>
+
+  <main class="xyt_main">
+    <ul class="xyt_kpis">
+      <li><span>今日成交额（元）</span><b id="xyt_kpi1">0</b><i>较昨日 +12.4%</i></li>
+      <li><span>今日订单量（单）</span><b id="xyt_kpi2">0</b><i>较昨日 +8.6%</i></li>
+      <li><span>活跃用户（人）</span><b id="xyt_kpi3">0</b><i>较昨日 +5.1%</i></li>
+      <li><span>下单转化率</span><b id="xyt_kpi4">0</b><i class="xyt_down">较昨日 -0.3%</i></li>
+    </ul>
+
+    <section class="xyt_grid" aria-label="数据图表">
+      <div class="xyt_col">
+        <article class="xyt_panel">
+          <h2>区域销售额 TOP6<em>单位：万元</em></h2>
+          <div class="xyt_chart" id="xyt_c1"></div>
+        </article>
+        <article class="xyt_panel">
+          <h2>品类销售占比<em>近 7 日</em></h2>
+          <div class="xyt_chart" id="xyt_c2"></div>
+        </article>
+      </div>
+
+      <div class="xyt_col xyt_col_mid">
+        <article class="xyt_panel xyt_panel_map">
+          <h2>全国订单热力分布<em>可缩放拖动</em></h2>
+          <div class="xyt_chart" id="xyt_map"></div>
+        </article>
+        <article class="xyt_panel">
+          <h2>近 12 小时订单趋势<em id="xyt_trend_time">--:--</em></h2>
+          <div class="xyt_chart" id="xyt_c3"></div>
+        </article>
+      </div>
+
+      <div class="xyt_col">
+        <article class="xyt_panel">
+          <h2>24 小时进店流量<em>每 2 小时</em></h2>
+          <div class="xyt_chart" id="xyt_c4"></div>
+        </article>
+        <article class="xyt_panel">
+          <h2>下单转化漏斗<em>今日累计</em></h2>
+          <div class="xyt_chart" id="xyt_c5"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>ECharts 数据大屏 / 18-8</span>
+  </footer>
+
+  <script src="cdn/echarts/echarts.min.js"></script>
+  <script src="cdn/echarts/map/china.js"></script>
+  <script>
+    // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：六张 ECharts 图组成三栏数据大屏，中间上方为中国地图
+    (function () {
+      "use strict";
+
+      var xyt_charts = [];
+      var xyt_tooltip = {
+        backgroundColor: "rgba(6,18,30,.94)",
+        borderColor: "rgba(53,208,224,.45)",
+        borderWidth: 1,
+        textStyle: { color: "#d8e8f4", fontSize: 12 },
+        extraCssText: "box-shadow:0 6px 24px rgba(0,0,0,.45);"
+      };
+
+      function xyt_axis(xyt_extra) {
+        var xyt_base = {
+          axisLine: { lineStyle: { color: "rgba(120,170,210,.35)" } },
+          axisTick: { show: false },
+          axisLabel: { color: "#8fb4cf", fontSize: 11 },
+          splitLine: { lineStyle: { color: "rgba(90,140,190,.14)" } }
+        };
+        return Object.assign(xyt_base, xyt_extra || {});
+      }
+
+      function xyt_gradient(xyt_from, xyt_to, xyt_vertical) {
+        return new echarts.graphic.LinearGradient(
+          xyt_vertical ? 0 : 0, xyt_vertical ? 0 : 0,
+          xyt_vertical ? 0 : 1, xyt_vertical ? 1 : 0,
+          [{ offset: 0, color: xyt_from }, { offset: 1, color: xyt_to }]
+        );
+      }
+
+      function xyt_mount(xyt_id, xyt_option) {
+        var xyt_el = document.getElementById(xyt_id);
+        if (!xyt_el) { return null; }
+        var xyt_c = echarts.init(xyt_el, null, { renderer: "canvas" });
+        xyt_c.setOption(xyt_option);
+        xyt_charts.push(xyt_c);
+        return xyt_c;
+      }
+
+      /* ---------- 时钟 ---------- */
+      var xyt_week = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+      function xyt_tick() {
+        var xyt_now = new Date();
+        var xyt_pad = function (xyt_n) { return xyt_n < 10 ? "0" + xyt_n : String(xyt_n); };
+        document.getElementById("xyt_clock").textContent =
+          xyt_pad(xyt_now.getHours()) + ":" + xyt_pad(xyt_now.getMinutes()) + ":" + xyt_pad(xyt_now.getSeconds());
+        document.getElementById("xyt_day").textContent =
+          xyt_now.getFullYear() + "-" + xyt_pad(xyt_now.getMonth() + 1) + "-" + xyt_pad(xyt_now.getDate()) +
+          " " + xyt_week[xyt_now.getDay()];
+      }
+      xyt_tick();
+      window.setInterval(xyt_tick, 1000);
+
+      /* ---------- KPI 数字滚动 ---------- */
+      function xyt_count(xyt_el, xyt_target, xyt_suffix) {
+        var xyt_startTs = 0;
+        function xyt_step(xyt_ts) {
+          if (!xyt_startTs) { xyt_startTs = xyt_ts; }
+          var xyt_p = Math.min(1, (xyt_ts - xyt_startTs) / 1200);
+          var xyt_e = 1 - Math.pow(1 - xyt_p, 3);
+          var xyt_val = xyt_target * xyt_e;
+          xyt_el.textContent = (xyt_suffix === "%"
+            ? xyt_val.toFixed(2) + "%"
+            : Math.round(xyt_val).toLocaleString("zh-CN"));
+          if (xyt_p < 1) { window.requestAnimationFrame(xyt_step); }
+        }
+        window.requestAnimationFrame(xyt_step);
+      }
+      xyt_count(document.getElementById("xyt_kpi1"), 8642318, "");
+      xyt_count(document.getElementById("xyt_kpi2"), 126548, "");
+      xyt_count(document.getElementById("xyt_kpi3"), 328914, "");
+      xyt_count(document.getElementById("xyt_kpi4"), 4.86, "%");
+
+      if (!window.echarts) {
+        document.querySelectorAll(".xyt_chart").forEach(function (xyt_el) {
+          xyt_el.innerHTML = '<p class="xyt_fail">没有找到 cdn/echarts/echarts.min.js，请确认该文件存在。</p>';
+        });
+        return;
+      }
+
+      /* ---------- 左一：区域销售额 TOP6 ---------- */
+      xyt_mount("xyt_c1", {
+        tooltip: Object.assign({ trigger: "axis", axisPointer: { type: "shadow" } }, xyt_tooltip),
+        grid: { left: 62, right: 46, top: 16, bottom: 12 },
+        xAxis: xyt_axis({ type: "value", splitLine: { lineStyle: { color: "rgba(90,140,190,.12)" } } }),
+        yAxis: xyt_axis({
+          type: "category",
+          inverse: true,
+          data: ["华东", "华南", "华北", "华中", "西南", "东北"],
+          axisLine: { show: false },
+          splitLine: { show: false }
+        }),
+        series: [{
+          type: "bar",
+          barWidth: 11,
+          itemStyle: {
+            borderRadius: [0, 6, 6, 0],
+            color: xyt_gradient("#4a8cff", "#7ef0ff", false)
+          },
+          label: { show: true, position: "right", color: "#a7dcec", fontSize: 11, formatter: "{c}" },
+          data: [2860, 2410, 1980, 1560, 1320, 860]
+        }]
+      });
+
+      /* ---------- 左二：品类占比 ---------- */
+      xyt_mount("xyt_c2", {
+        color: ["#35d0e0", "#4a8cff", "#ff8a5b", "#a180ff", "#41d6a3"],
+        tooltip: Object.assign({ trigger: "item", formatter: "{b}：{c}（{d}%）" }, xyt_tooltip),
+        legend: {
+          bottom: 4, itemWidth: 9, itemHeight: 9, icon: "circle",
+          textStyle: { color: "#8fb4cf", fontSize: 11 }
+        },
+        series: [{
+          type: "pie",
+          radius: ["42%", "66%"],
+          center: ["50%", "44%"],
+          avoidLabelOverlap: true,
+          itemStyle: { borderColor: "rgba(4,10,18,.9)", borderWidth: 2 },
+          label: { color: "#a7dcec", fontSize: 11, formatter: "{d}%" },
+          labelLine: { lineStyle: { color: "rgba(120,170,210,.45)" }, length: 8, length2: 10 },
+          data: [
+            { value: 32, name: "数码家电" },
+            { value: 24, name: "服饰鞋包" },
+            { value: 18, name: "食品生鲜" },
+            { value: 14, name: "美妆个护" },
+            { value: 12, name: "其他" }
+          ]
+        }]
+      });
+
+      /* ---------- 中间上：全国订单地理分布 ---------- */
+      var xyt_cityData = [
+        { name: "北京", value: [116.405, 39.905, 980] },
+        { name: "上海", value: [121.473, 31.230, 1120] },
+        { name: "广州", value: [113.264, 23.129, 860] },
+        { name: "深圳", value: [114.058, 22.543, 910] },
+        { name: "杭州", value: [120.155, 30.274, 720] },
+        { name: "成都", value: [104.066, 30.572, 640] },
+        { name: "武汉", value: [114.305, 30.593, 580] },
+        { name: "西安", value: [108.940, 34.341, 470] },
+        { name: "重庆", value: [106.551, 29.563, 520] },
+        { name: "南京", value: [118.796, 32.060, 430] },
+        { name: "沈阳", value: [123.429, 41.796, 310] },
+        { name: "乌鲁木齐", value: [87.617, 43.793, 190] }
+      ];
+
+      var xyt_flyLines = xyt_cityData.slice(1).map(function (xyt_city) {
+        return { coords: [[116.405, 39.905], [xyt_city.value[0], xyt_city.value[1]]] };
+      });
+
+      var xyt_mapChart = null;
+      if (window.xyt_chinaMap) {
+        echarts.registerMap("xyt_china", window.xyt_chinaMap);
+        xyt_mapChart = xyt_mount("xyt_map", {
+          tooltip: Object.assign({
+            trigger: "item",
+            formatter: function (xyt_p) {
+              if (xyt_p.seriesType === "effectScatter") {
+                return xyt_p.name + "：<b>" + xyt_p.value[2] + "</b> 单";
+              }
+              return xyt_p.name || "";
+            }
+          }, xyt_tooltip),
+          geo: {
+            map: "xyt_china",
+            roam: true,
+            zoom: 1.16,
+            layoutCenter: ["50%", "50%"],
+            layoutSize: "112%",
+            itemStyle: {
+              areaColor: "rgba(16,58,92,.62)",
+              borderColor: "rgba(90,200,230,.42)",
+              borderWidth: 1,
+              shadowColor: "rgba(53,208,224,.35)",
+              shadowBlur: 18
+            },
+            emphasis: {
+              itemStyle: { areaColor: "rgba(53,208,224,.34)", borderColor: "rgba(126,240,255,.9)" },
+              label: { show: true, color: "#eaf9ff", fontSize: 11 }
+            },
+            label: { show: false }
+          },
+          series: [
+            {
+              type: "lines",
+              coordinateSystem: "geo",
+              zlevel: 2,
+              silent: true,
+              effect: {
+                show: true,
+                period: 4.5,
+                trailLength: 0.28,
+                symbol: "arrow",
+                symbolSize: 5,
+                color: "#7ef0ff"
+              },
+              lineStyle: { color: "rgba(53,208,224,.30)", width: 1, curveness: 0.24 },
+              data: xyt_flyLines
+            },
+            {
+              type: "effectScatter",
+              coordinateSystem: "geo",
+              zlevel: 3,
+              rippleEffect: { brushType: "stroke", scale: 3.2, period: 3.4 },
+              symbolSize: function (xyt_val) { return Math.max(6, Math.sqrt(xyt_val[2]) * 0.72); },
+              itemStyle: {
+                color: "#ff8a5b",
+                shadowBlur: 12,
+                shadowColor: "rgba(255,138,91,.85)"
+              },
+              label: {
+                show: true,
+                position: "right",
+                distance: 6,
+                color: "#9fd7e8",
+                fontSize: 11,
+                formatter: function (xyt_p) { return xyt_p.value[2] >= 700 ? xyt_p.name : ""; }
+              },
+              data: xyt_cityData
+            }
+          ]
+        });
+      } else {
+        document.getElementById("xyt_map").innerHTML =
+          '<p class="xyt_fail">没有找到 cdn/echarts/map/china.js，请确认该文件存在。</p>';
+      }
+
+      /* ---------- 中间下：近 12 小时订单趋势 ---------- */
+      var xyt_hours = [];
+      var xyt_trend = [420, 380, 460, 610, 780, 860, 940, 1020, 880, 760, 690, 720];
+      (function () {
+        var xyt_now = new Date();
+        for (var xyt_i = 11; xyt_i >= 0; xyt_i--) {
+          var xyt_h = new Date(xyt_now.getTime() - xyt_i * 3600 * 1000);
+          xyt_hours.push((xyt_h.getHours() < 10 ? "0" : "") + xyt_h.getHours() + ":00");
+        }
+        document.getElementById("xyt_trend_time").textContent = "更新于 " + xyt_hours[xyt_hours.length - 1];
+      })();
+
+      var xyt_trendChart = xyt_mount("xyt_c3", {
+        tooltip: Object.assign({ trigger: "axis", formatter: "{b}<br/>订单 <b>{c}</b> 单" }, xyt_tooltip),
+        grid: { left: 52, right: 22, top: 18, bottom: 24 },
+        xAxis: xyt_axis({
+          type: "category",
+          boundaryGap: false,
+          data: xyt_hours,
+          splitLine: { show: false }
+        }),
+        yAxis: xyt_axis({ type: "value", name: "单", nameTextStyle: { color: "#8fb4cf", fontSize: 11 } }),
+        series: [{
+          type: "line",
+          smooth: true,
+          symbol: "circle",
+          symbolSize: 6,
+          showSymbol: false,
+          lineStyle: { width: 2, color: "#7ef0ff", shadowColor: "rgba(53,208,224,.6)", shadowBlur: 10 },
+          itemStyle: { color: "#7ef0ff", borderColor: "#04202c", borderWidth: 1.5 },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "rgba(53,208,224,.42)" },
+              { offset: 1, color: "rgba(53,208,224,0)" }
+            ])
+          },
+          data: xyt_trend
+        }]
+      });
+
+      /* ---------- 右一：24 小时进店流量 ---------- */
+      xyt_mount("xyt_c4", {
+        tooltip: Object.assign({ trigger: "axis", axisPointer: { type: "shadow" } }, xyt_tooltip),
+        grid: { left: 48, right: 18, top: 18, bottom: 24 },
+        xAxis: xyt_axis({
+          type: "category",
+          data: ["0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22"],
+          axisLabel: { color: "#8fb4cf", fontSize: 10.5 },
+          splitLine: { show: false }
+        }),
+        yAxis: xyt_axis({ type: "value" }),
+        series: [{
+          type: "bar",
+          barWidth: "52%",
+          itemStyle: {
+            borderRadius: [4, 4, 0, 0],
+            color: xyt_gradient("#4a8cff", "rgba(74,140,255,.18)", true)
+          },
+          emphasis: { itemStyle: { color: xyt_gradient("#7ef0ff", "rgba(126,240,255,.3)", true) } },
+          data: [820, 640, 520, 780, 1460, 2380, 2620, 2410, 2180, 2560, 2140, 1520]
+        }]
+      });
+
+      /* ---------- 右二：转化漏斗 ---------- */
+      xyt_mount("xyt_c5", {
+        tooltip: Object.assign({ trigger: "item", formatter: "{b}<br/>{c} 人（占进店 {d}%）" }, xyt_tooltip),
+        series: [{
+          type: "funnel",
+          left: "12%",
+          right: "12%",
+          top: 14,
+          bottom: 10,
+          minSize: "34%",
+          gap: 4,
+          sort: "descending",
+          label: { show: true, position: "inside", color: "#04202c", fontSize: 11.5, formatter: "{b} {c}" },
+          itemStyle: { borderWidth: 0 },
+          data: [
+            { value: 100000, name: "进店", itemStyle: { color: "#35d0e0" } },
+            { value: 68000, name: "详情页", itemStyle: { color: "#4a8cff" } },
+            { value: 32000, name: "加购", itemStyle: { color: "#a180ff" } },
+            { value: 18000, name: "下单", itemStyle: { color: "#ff8a5b" } },
+            { value: 15400, name: "支付", itemStyle: { color: "#41d6a3" } }
+          ]
+        }]
+      });
+
+      /* ---------- 模拟实时刷新 ---------- */
+      window.setInterval(function () {
+        if (!xyt_trendChart) { return; }
+        var xyt_last = xyt_trend[xyt_trend.length - 1];
+        var xyt_next = Math.max(220, Math.round(xyt_last + (Math.random() - 0.45) * 160));
+        xyt_trend.push(xyt_next);
+        xyt_trend.shift();
+        xyt_trendChart.setOption({ series: [{ data: xyt_trend.slice() }] });
+      }, 4000);
+
+      /* ---------- 自适应 ---------- */
+      var xyt_resizeTimer = null;
+      window.addEventListener("resize", function () {
+        window.clearTimeout(xyt_resizeTimer);
+        xyt_resizeTimer = window.setTimeout(function () {
+          xyt_charts.forEach(function (xyt_c) { xyt_c.resize(); });
+        }, 160);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 主题河流图（ECharts themeRiver）</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.6vw,50px)/1.14 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:700px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_hero_intro code { color:var(--blue); font-family:Consolas,monospace; font-size:14px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;
+    padding:16px 20px; border-bottom:1px solid var(--line);
+  }
+  .xyt_panel_head h2 { margin:0; font:500 22px Georgia,"Songti SC",serif; }
+  .xyt_panel_head .xyt_sub { color:var(--muted); font-size:12.5px; }
+  .xyt_btn {
+    padding:6px 14px; border:1px solid var(--line); border-radius:20px;
+    background:#fff; color:var(--blue); font:12.5px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.07); }
+  .xyt_btn .iconfont { font-size:12px; margin-right:4px; }
+  .xyt_chart { width:100%; height:560px; }
+  .xyt_hint { padding:10px 20px 14px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:44px 0 16px; }
+  h2 { margin:0; font:500 25px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .xyt_card {
+    padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card h3 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .xyt_card h3 .iconfont { color:var(--coral); font-size:15px; }
+  .xyt_card p { margin:0; color:var(--muted); font-size:13.5px; }
+  .xyt_card code { color:var(--blue); font-family:Consolas,monospace; font-size:12.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_chart { height:420px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：ECharts themeRiver 主题河流图展示音乐人收听热度 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">ECHARTS · THEME RIVER · LAST.FM</p>
+      <h1>音乐收听热度的<br>主题河流</h1>
+      <p class="xyt_hero_intro">用 ECharts 的 <code>themeRiver</code> 系列把 20 位音乐人在 20 个时间片上的收听量画成一条河：每一层是一位歌手，河道越宽表示那段时间听的人越多，层与层之间的起伏就是听众兴趣的迁移。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section class="xyt_panel" aria-label="主题河流图">
+        <div class="xyt_panel_head">
+          <div>
+            <h2>Last.fm Listening Streamgraph</h2>
+            <div class="xyt_sub" id="xyt_stat">20 位音乐人 · 20 个时间片</div>
+          </div>
+          <div>
+            <button class="xyt_btn" id="xyt_restore" type="button"><i class="iconfont icon-fanhui"></i>还原缩放</button>
+          </div>
+        </div>
+        <div id="xyt_main" class="xyt_chart"></div>
+        <div class="xyt_hint">横向是时间片，纵向是收听量；鼠标悬停可看该时间点各歌手的数值，拖动底部时间轴或点击图例可筛选个别歌手。</div>
+      </section>
+
+      <section aria-labelledby="xyt_notes_title">
+        <div class="xyt_section_head"><h2 id="xyt_notes_title">数据怎么变成河</h2><span>themeRiver 系列</span></div>
+        <div class="xyt_cards">
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-yinpin"></i>三元组数据</h3>
+            <p>每条数据写成 <code>[时间, 数值, 名称]</code>，例如 <code>[0, 49, &#39;Andrew Bird&#39;]</code>；同一时间点上的同名数据会被堆叠成同一层河道。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-faxian"></i>singleAxis 时间轴</h3>
+            <p>河流图只用一个横轴，<code>singleAxis.max = &#39;dataMax&#39;</code> 让轴端点自动对齐到数据最大值，时间片按顺序排布。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-gengduo"></i>关闭默认标签</h3>
+            <p>河道数量多时标签会互相遮挡，所以 <code>label.show = false</code>，改由图例和 tooltip 来识别每条河道对应的歌手。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>ECharts 主题河流图 / 18-5</span>
+  </footer>
+
+  <script src="cdn/echarts/echarts.min.js"></script>
+  <script>
+    // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：rawData 转三元组后渲染 themeRiver
+    var xyt_rawData = [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 49, 67, 16, 0, 19, 19, 0, 0, 1, 10, 5, 6, 1, 1, 0, 25, 0, 0, 0],
+      [0, 6, 3, 34, 0, 16, 1, 0, 0, 1, 6, 0, 1, 56, 0, 2, 0, 2, 0, 0],
+      [0, 8, 13, 15, 0, 12, 23, 0, 0, 1, 0, 1, 0, 0, 6, 0, 0, 1, 0, 1],
+      [0, 9, 28, 0, 91, 6, 1, 0, 0, 0, 7, 18, 0, 9, 16, 0, 1, 0, 0, 0],
+      [0, 3, 42, 36, 21, 0, 1, 0, 0, 0, 0, 16, 30, 1, 4, 62, 55, 1, 0, 0],
+      [0, 7, 13, 12, 64, 5, 0, 0, 0, 8, 17, 3, 72, 1, 1, 53, 1, 0, 0, 0],
+      [1, 14, 13, 7, 8, 8, 7, 0, 1, 1, 14, 6, 44, 8, 7, 17, 21, 1, 0, 0],
+      [0, 6, 14, 2, 14, 1, 0, 0, 0, 0, 2, 2, 7, 15, 6, 3, 0, 0, 0, 0],
+      [0, 9, 11, 3, 0, 8, 0, 0, 14, 2, 0, 1, 1, 1, 7, 13, 2, 1, 0, 0],
+      [0, 7, 5, 10, 8, 21, 0, 0, 130, 1, 2, 18, 6, 1, 5, 1, 4, 1, 0, 7],
+      [0, 2, 15, 1, 5, 5, 0, 0, 6, 0, 0, 0, 4, 1, 3, 1, 17, 0, 0, 9],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [6, 27, 26, 1, 0, 11, 1, 0, 0, 0, 1, 1, 2, 0, 0, 9, 1, 0, 0, 0],
+      [31, 81, 11, 6, 11, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 3, 14, 0, 0, 12],
+      [19, 53, 6, 20, 0, 4, 37, 0, 30, 86, 43, 7, 5, 7, 17, 19, 2, 0, 0, 5],
+      [0, 22, 14, 6, 10, 24, 18, 0, 13, 21, 5, 2, 13, 35, 7, 1, 8, 0, 0, 1],
+      [0, 56, 5, 0, 0, 0, 0, 0, 7, 24, 0, 17, 7, 0, 0, 3, 0, 0, 0, 8],
+      [18, 29, 3, 6, 11, 0, 15, 0, 12, 42, 37, 0, 3, 3, 13, 8, 0, 0, 0, 1],
+      [32, 39, 37, 3, 33, 21, 6, 0, 4, 17, 0, 11, 8, 2, 3, 0, 23, 0, 0, 17],
+      [72, 15, 28, 0, 0, 0, 0, 0, 1, 3, 0, 35, 0, 9, 17, 1, 9, 1, 0, 8],
+      [11, 15, 4, 2, 0, 18, 10, 0, 20, 3, 0, 0, 2, 0, 0, 2, 2, 30, 0, 0],
+      [14, 29, 19, 3, 2, 17, 13, 0, 7, 12, 2, 0, 6, 0, 0, 1, 1, 34, 0, 1],
+      [1, 1, 7, 6, 1, 1, 15, 1, 1, 2, 1, 3, 1, 1, 9, 1, 1, 25, 1, 72]
+    ];
+
+    var xyt_labels = [
+      "The Sea and Cake", "Andrew Bird", "Laura Veirs", "Brian Eno",
+      "Christopher Willits", "Wilco", "Edgar Meyer", "Béla Fleck",
+      "Fleet Foxes", "Kings of Convenience", "Brett Dennen", "Psapp",
+      "The Bad Plus", "Feist", "Battles", "Avishai Cohen",
+      "Rachael Yamagata", "Norah Jones", "Béla Fleck and the Flecktones", "Joshua Redman"
+    ];
+
+    var xyt_data = [];
+    for (var xyt_i = 0; xyt_i < xyt_rawData.length; xyt_i++) {
+      for (var xyt_j = 0; xyt_j < xyt_rawData[xyt_i].length; xyt_j++) {
+        xyt_data.push([xyt_j, xyt_rawData[xyt_i][xyt_j], xyt_labels[xyt_i]]);
+      }
+    }
+
+    var xyt_chartDom = document.getElementById("xyt_main");
+    var xyt_chart = null;
+    var xyt_option = {
+      title: {
+        text: "Last.fm 收听热度",
+        subtext: "横轴：时间片　纵轴：被收听次数",
+        left: 20,
+        top: 14,
+        textStyle: { fontSize: 15, fontWeight: 600, color: "#202a35" },
+        subtextStyle: { fontSize: 11.5, color: "#8b979f" }
+      },
+      color: ["#176b87", "#e46b4b", "#3f7d5c", "#7a5c9e", "#c9a227", "#4b8ea8",
+              "#d98b6a", "#6f8f7a", "#8d7fb0", "#a8b03f", "#5d7f9c", "#c4736e",
+              "#4f9c8c", "#9a8a4f", "#7f6f9f", "#3f8f5f", "#b3765d", "#6d94a8",
+              "#a05f7f", "#7a8f4f"],
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "line", lineStyle: { color: "rgba(23,107,135,.5)" } }
+      },
+      legend: {
+        type: "scroll",
+        top: 62,
+        left: 20,
+        right: 20,
+        itemWidth: 12,
+        itemHeight: 8,
+        textStyle: { fontSize: 11.5, color: "#687581" },
+        pageTextStyle: { color: "#687581" }
+      },
+      singleAxis: {
+        top: 130,
+        bottom: 60,
+        left: 60,
+        right: 40,
+        max: "dataMax",
+        axisLabel: { color: "#8b979f", fontSize: 11.5 },
+        axisLine: { lineStyle: { color: "#d9dfd9" } },
+        axisPointer: {
+          animation: true,
+          label: { show: true, color: "#fff", backgroundColor: "#176b87" }
+        },
+        splitLine: { show: true, lineStyle: { color: "rgba(217,223,217,.6)" } }
+      },
+      series: [
+        {
+          type: "themeRiver",
+          data: xyt_data,
+          itemStyle: { opacity: 0.85, borderWidth: 0 },
+          label: { show: false },
+          emphasis: {
+            focus: "series",
+            itemStyle: { shadowBlur: 18, shadowColor: "rgba(31,50,55,.25)" }
+          }
+        }
+      ]
+    };
+
+    if (window.echarts) {
+      xyt_chart = echarts.init(xyt_chartDom);
+      xyt_chart.setOption(xyt_option);
+      document.getElementById("xyt_stat").textContent =
+        xyt_labels.length + " 位音乐人 · " + xyt_rawData.length + " 个时间片 · " + xyt_data.length + " 条数据";
+    } else {
+      xyt_chartDom.innerHTML =
+        '<p style="padding:40px;text-align:center;color:#687581;font-size:14px">没有找到 cdn/echarts/echarts.min.js，请确认该文件存在。</p>';
+    }
+
+    document.getElementById("xyt_restore").addEventListener("click", function () {
+      if (xyt_chart) { xyt_chart.dispatchAction({ type: "restore" }); }
+    });
+
+    window.addEventListener("resize", function () {
+      if (xyt_chart) { xyt_chart.resize(); }
+    });
+  </script>
+</body>
+</html>

@@ -262,6 +262,50 @@ D:\wangyesheji\13-3.html下导航改成首页 预约 订单 我的
 
 ---
 
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成18-1.html,第一个显示canvas动画包括文字徐玥桐，第二个显示基于canvas的全站系统的系统（电商系统）
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成18-3.html,其中包括基于图象识别的系统的系统架构图，图的格式为svg，科研方向
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+实现18-4.html和18-5.html，其中包括echarts的两个图：
+第一个是 ECharts 官方示例 npmdepgraph 依赖关系图（graph 系列，含 showLoading、$.getJSON 远程数据、emphasis.focus: 'adjacency'、roam、lineStyle 与 thumbnail 配置）；
+第二个是 ECharts 官方示例 themeRiver 主题河流图（含 rawData 24×20 数据、labels 20 位音乐人、singleAxis.max: 'dataMax'、label.show: false）。
+（以上两段示例代码原文较长，此处记录要点）
+cdn文件下载到cdn目录下
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成18-1.html和18-2.html,第一个显示canvas动画包括文字徐玥桐，第二个显示基于canvas的全站系统的系统（电商系统）
+
+---
+
 ## 2026-10-29（约）
 
 **模型：** Kimi-K3（Trae CN）
@@ -333,3 +377,106 @@ D:\wangyesheji\四级项目html生成个这样的首页（附“校园自习室�
 完成17-5.html，展示javascrip的两种定时器；完成17-6.html使用promise和async完成异步操作的演示包饺子流程。先买原料，取原料、买完原料后同时和面、和馅，两个活动都完成后包饺子，包饺子之后吃饺子。使用settimeout模拟每一个流程，如买原料6s.在页面上显示流程
 
 ---
+
+## 2026-10-29（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+16-1 16-2提交到github,commit和push整个项目到`https://github.com/xyt0604/yt`公钥已经设置
+
+---
+
+## 2026-10-29（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+16-3 16-4提交到github,commit和push整个项目到`https://github.com/xyt0604/yt`公钥已经设置
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+我今天问的这些提示词写进xu_promot
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成18-1.html和18-2.html,第一个显示canvas动画包括文字徐玥桐，第二个显示基于canvas的全站系统的系统（电商系统）写进去
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成18-3.html,其中包括基于图象识别的系统的系统架构图，图的格式为svg，科研方向还有这个，以后我写的提示词都要有记录
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+实现18-4.html和18-5.html，其中包括echarts的两个图：
+第一个是 ECharts 官方示例 npmdepgraph 依赖关系图（graph 系列，含 showLoading、$.getJSON 远程数据、emphasis.focus: 'adjacency'、roam、lineStyle 与 thumbnail 配置）；
+第二个是 ECharts 官方示例 themeRiver 主题河流图（含 rawData 24×20 数据、labels 20 位音乐人、singleAxis.max: 'dataMax'、label.show: false）。
+cdn文件下载到cdn目录下还有
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+完成18-6.html,实现基于mermaid的智能客服系统的流程图和er图，cdn文件下载到cdn目录下
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+实现18-7.html,实现基于three.js的两个图表，cdn文件下载到cdn目录下
+
+---
+
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+实现18-8.html,实现基于three.js或echarts的数据大屏，大屏要求：三例，中间上面是某种地理信息的图，cdn文件下载到cdn目录上
+
+---
+## 2026-11-05（约）
+
+**模型：** DeepSeek-V4.1-Flash（Trae CN）
+
+**提示词：**
+
+18-1至18-8上传到github
+
+---
+

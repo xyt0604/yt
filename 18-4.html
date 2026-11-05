@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | NPM 依赖关系图（ECharts graph）</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.6vw,50px)/1.14 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:720px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_hero_intro code { color:var(--blue); font-family:Consolas,monospace; font-size:14px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_panel_head {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;
+    padding:16px 20px; border-bottom:1px solid var(--line);
+  }
+  .xyt_panel_head h2 { margin:0; font:500 22px Georgia,"Songti SC",serif; }
+  .xyt_panel_head .xyt_sub { color:var(--muted); font-size:12.5px; }
+  .xyt_tools { display:flex; flex-wrap:wrap; gap:8px; }
+  .xyt_btn {
+    padding:6px 14px; border:1px solid var(--line); border-radius:20px;
+    background:#fff; color:var(--blue); font:12.5px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.07); }
+  .xyt_btn .iconfont { font-size:12px; margin-right:4px; }
+  .xyt_chart { width:100%; height:720px; }
+  .xyt_hint { padding:10px 20px 14px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:44px 0 16px; }
+  h2 { margin:0; font:500 25px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .xyt_card {
+    padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card h3 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .xyt_card h3 .iconfont { color:var(--coral); font-size:15px; }
+  .xyt_card p { margin:0; color:var(--muted); font-size:13.5px; }
+  .xyt_card code { color:var(--blue); font-family:Consolas,monospace; font-size:12.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_chart { height:520px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：ECharts graph 基于本地 npmdepgraph 数据绘制 NPM 依赖关系图 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">ECHARTS · GRAPH · NPM DEPENDENCIES</p>
+      <h1>NPM 依赖<br>关系网络</h1>
+      <p class="xyt_hero_intro">把 ECharts 官方示例 <code>npmdepgraph</code> 的数据取到本地，用 <code>graph</code> 系列按节点自带坐标铺开：每个圆点是一个 npm 包，颜色代表所属的依赖簇，连线是「谁依赖谁」。支持滚轮缩放、拖动平移，悬停节点会高亮它的全部相邻依赖。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section class="xyt_panel" aria-label="NPM 依赖关系图">
+        <div class="xyt_panel_head">
+          <div>
+            <h2>NPM Dependencies</h2>
+            <div class="xyt_sub" id="xyt_stat">正在读取本地依赖数据…</div>
+          </div>
+          <div class="xyt_tools">
+            <button class="xyt_btn" id="xyt_labels" type="button"><i class="iconfont icon-bianji"></i>显示全部包名</button>
+            <button class="xyt_btn" id="xyt_reset" type="button"><i class="iconfont icon-fanhui"></i>还原视图</button>
+          </div>
+        </div>
+        <div id="xyt_main" class="xyt_chart"></div>
+        <div class="xyt_hint">滚轮缩放、按住拖动平移（<code>roam: true</code> 与 <code>roamTrigger: 'global'</code>）；悬停时用 <code>emphasis.focus: 'adjacency'</code> 聚焦相邻依赖。数据与库文件都放在本地 <code>cdn/echarts</code> 目录下，断网也能打开。</div>
+      </section>
+
+      <section aria-labelledby="xyt_notes_title">
+        <div class="xyt_section_head"><h2 id="xyt_notes_title">这张图的三个要点</h2><span>ECharts graph 系列</span></div>
+        <div class="xyt_cards">
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-ditu"></i>layout: 'none'</h3>
+            <p>节点坐标直接来自数据里的 <code>x / y</code>，不交给力导向布局计算，所以每次打开位置完全一致，适合固定展示的依赖拓扑。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-faxian"></i>emphasis.focus</h3>
+            <p>设为 <code>'adjacency'</code> 后，悬停某个包只保留与它直接相连的节点和边，其余自动淡出，一眼看清依赖关系。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-wode"></i>数据本地化</h3>
+            <p>示例里的 <code>$.getJSON</code> 依赖 jQuery 和外网地址，在本地打开会跨域失败；这里把 JSON 转成 <code>window.xyt_npmGraph</code> 的 JS 文件，用 <code>&lt;script&gt;</code> 直接引入。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>ECharts 关系图 / 18-4</span>
+  </footer>
+
+  <script src="cdn/echarts/echarts.min.js"></script>
+  <script src="cdn/echarts/data/npmdepgraph.js"></script>
+  <script>
+    // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：读取本地 npmdepgraph 数据渲染 graph 关系图
+    var xyt_chartDom = document.getElementById("xyt_main");
+    var xyt_chart = null;
+    var xyt_showLabel = false;
+    var xyt_option = {};
+
+    if (window.echarts && window.xyt_npmGraph) {
+      var xyt_json = window.xyt_npmGraph;
+
+      xyt_chart = echarts.init(xyt_chartDom);
+      xyt_chart.showLoading({
+        text: "正在渲染依赖网络…",
+        color: "#176b87",
+        maskColor: "rgba(255,253,248,.85)",
+        textColor: "#687581"
+      });
+
+      xyt_option = {
+        title: {
+          text: "NPM Dependencies",
+          subtext: xyt_json.nodes.length + " 个包 · " + xyt_json.edges.length + " 条依赖",
+          left: 20,
+          top: 14,
+          textStyle: { fontSize: 16, fontWeight: 600, color: "#202a35" },
+          subtextStyle: { fontSize: 12, color: "#8b979f" }
+        },
+        tooltip: {
+          trigger: "item",
+          formatter: function (xyt_p) {
+            if (xyt_p.dataType === "edge") {
+              return xyt_p.data.source + " → " + xyt_p.data.target;
+            }
+            return "<b>" + xyt_p.name + "</b>";
+          }
+        },
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: "quinticInOut",
+        series: [
+          {
+            type: "graph",
+            layout: "none",
+            data: xyt_json.nodes.map(function (xyt_node) {
+              return {
+                x: xyt_node.x,
+                y: xyt_node.y,
+                id: xyt_node.id,
+                name: xyt_node.label,
+                symbolSize: xyt_node.size,
+                itemStyle: { color: xyt_node.color }
+              };
+            }),
+            edges: xyt_json.edges.map(function (xyt_edge) {
+              return {
+                source: xyt_edge.sourceID,
+                target: xyt_edge.targetID
+              };
+            }),
+            emphasis: {
+              focus: "adjacency",
+              label: {
+                position: "right",
+                show: true,
+                fontSize: 12
+              }
+            },
+            roam: true,
+            roamTrigger: "global",
+            lineStyle: {
+              width: 0.5,
+              curveness: 0.3,
+              opacity: 0.7,
+              color: "source"
+            },
+            label: { show: false, fontSize: 11, color: "#4b5a64" }
+          }
+        ],
+        thumbnail: {
+          width: "20%",
+          height: "20%",
+          windowStyle: {
+            color: "rgba(140, 212, 250, 0.5)",
+            borderColor: "rgba(30, 64, 175, 0.7)",
+            opacity: 1
+          }
+        }
+      };
+
+      xyt_chart.setOption(xyt_option, true);
+
+      window.setTimeout(function () {
+        xyt_chart.hideLoading();
+        document.getElementById("xyt_stat").textContent =
+          xyt_json.nodes.length + " 个包 · " + xyt_json.edges.length + " 条依赖 · 颜色代表依赖簇";
+      }, 420);
+    } else {
+      xyt_chartDom.innerHTML =
+        '<p style="padding:40px;text-align:center;color:#687581;font-size:14px">' +
+        '没有找到 cdn/echarts/echarts.min.js 或 cdn/echarts/data/npmdepgraph.js，请确认这两个文件存在。</p>';
+    }
+
+    document.getElementById("xyt_labels").addEventListener("click", function () {
+      if (!xyt_chart) { return; }
+      xyt_showLabel = !xyt_showLabel;
+      xyt_chart.setOption({ series: [{ label: { show: xyt_showLabel } }] });
+      this.innerHTML = xyt_showLabel
+        ? '<i class="iconfont icon-bianji"></i>隐藏包名'
+        : '<i class="iconfont icon-bianji"></i>显示全部包名';
+    });
+
+    document.getElementById("xyt_reset").addEventListener("click", function () {
+      if (xyt_chart) { xyt_chart.dispatchAction({ type: "restore" }); }
+    });
+
+    window.addEventListener("resize", function () {
+      if (xyt_chart) { xyt_chart.resize(); }
+    });
+  </script>
+</body>
+</html>

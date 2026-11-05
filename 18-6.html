@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 智能客服系统 · Mermaid 流程图与 ER 图</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --violet:#7a5c9e;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.6vw,50px)/1.14 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:720px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_hero_intro code { color:var(--blue); font-family:Consolas,monospace; font-size:14px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+
+  .xyt_panel {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .xyt_tabs { display:flex; border-bottom:1px solid var(--line); background:#f2f0ea; }
+  .xyt_tab {
+    position:relative; padding:14px 26px; border:0; background:transparent;
+    color:#6b7780; font:14px/1.4 "Microsoft YaHei",sans-serif; cursor:pointer;
+    transition:color .18s ease,background .18s ease;
+  }
+  .xyt_tab:hover { color:var(--blue); }
+  .xyt_tab.xyt_active {
+    background:var(--card); color:var(--blue); font-weight:700;
+    box-shadow:inset 0 -3px 0 var(--blue);
+  }
+  .xyt_tab + .xyt_tab::before {
+    content:""; position:absolute; left:0; top:14px; bottom:14px; width:1px; background:var(--line);
+  }
+  .xyt_tab .iconfont { margin-right:6px; font-size:14px; }
+
+  .xyt_bar {
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    color:var(--muted); font-size:12.5px;
+  }
+  .xyt_bar b { color:var(--ink); font-size:13px; font-weight:600; }
+  .xyt_bar .xyt_spacer { margin-left:auto; display:flex; gap:8px; }
+  .xyt_btn {
+    padding:6px 14px; border:1px solid var(--line); border-radius:20px;
+    background:#fff; color:var(--blue); font:12.5px/1.6 "Microsoft YaHei",sans-serif;
+    cursor:pointer; transition:all .18s ease;
+  }
+  .xyt_btn:hover { border-color:var(--blue); background:rgba(23,107,135,.07); }
+  .xyt_btn .iconfont { font-size:12px; margin-right:4px; }
+
+  .xyt_stage {
+    padding:26px 18px; min-height:520px; overflow:auto; background:#fffdf8;
+    display:flex; align-items:flex-start; justify-content:center;
+  }
+  .xyt_stage svg { max-width:100%; height:auto; }
+  .xyt_loading { color:var(--muted); font-size:14px; padding:60px 0; }
+  .xyt_error {
+    max-width:600px; padding:16px 20px; border-left:3px solid var(--coral);
+    background:rgba(228,107,75,.07); color:#8a5236; font:12.5px/1.7 Consolas,monospace;
+    white-space:pre-wrap; border-radius:0 8px 8px 0;
+  }
+
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:46px 0 16px; }
+  h2 { margin:0; font:500 25px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .xyt_card {
+    padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card h3 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .xyt_card h3 .iconfont { color:var(--coral); font-size:15px; }
+  .xyt_card p { margin:0; color:var(--muted); font-size:13.5px; }
+  .xyt_card code { color:var(--blue); font-family:Consolas,monospace; font-size:12.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_tab { padding:12px 16px; font-size:13px; }
+    .xyt_stage { min-height:420px; padding:16px 10px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：Mermaid 绘制智能客服系统流程图与数据模型 ER 图 -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">MERMAID · 智能客服系统</p>
+      <h1>一张流程图<br>和一张 ER 图</h1>
+      <p class="xyt_hero_intro">用 Mermaid 的 <code>flowchart</code> 与 <code>erDiagram</code> 两种语法，把「用户提问 → 意图识别 → 知识检索 → 转人工 → 工单归档」的客服链路，以及背后的 8 张数据表画出来。图不由手写坐标，而是由文本描述即时渲染。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section class="xyt_panel" aria-label="智能客服系统图">
+        <div class="xyt_tabs" role="tablist">
+          <button class="xyt_tab xyt_active" type="button" data-tab="flow" role="tab"><i class="iconfont icon-faxian"></i>业务流程图</button>
+          <button class="xyt_tab" type="button" data-tab="er" role="tab"><i class="iconfont icon-ditu"></i>数据模型 ER 图</button>
+        </div>
+        <div class="xyt_bar">
+          <b id="xyt_title">智能客服系统 · 业务流程图</b>
+          <span id="xyt_meta">Mermaid flowchart TB</span>
+          <div class="xyt_spacer">
+            <button class="xyt_btn" id="xyt_download" type="button"><i class="iconfont icon-shoucang"></i>下载 SVG</button>
+            <button class="xyt_btn" id="xyt_zoom" type="button"><i class="iconfont icon-faxian"></i>放大查看</button>
+          </div>
+        </div>
+        <div class="xyt_stage" id="xyt_stage">
+          <p class="xyt_loading">正在用 Mermaid 渲染图形…</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="xyt_notes_title">
+        <div class="xyt_section_head"><h2 id="xyt_notes_title">这两张图分别在说什么</h2><span>Mermaid 文本即图形</span></div>
+        <div class="xyt_cards">
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-faxian"></i>流程图：一条客服链路</h3>
+            <p>用户接入后被分配会话，先做意图识别；置信度高走知识库检索（RAG），命中就直接回复，未命中或置信度低再判断是否转人工；人工处理产生工单，最后统一进日志库做质检与模型迭代。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-ditu"></i>ER 图：八张核心表</h3>
+            <p>用户、会话、消息、意图、知识库、工单、坐席、评价，靠主外键串起来。一次问答会沉淀为「消息 → 意图 → 知识命中」，转人工则额外生成工单与评价记录。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-bianji"></i>写法要点</h3>
+            <p>流程图用 <code>flowchart TB</code> + <code>{"判断"}</code> + <code>-- 是 --&gt;</code> 分支标签；ER 图用 <code>erDiagram</code>，关系写成 <code>USER ||--o{ SESSION : "发起"</code>，属性写在花括号里并标注 PK / FK。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-wode"></i>离线渲染</h3>
+            <p>Mermaid 库已下载到 <code>cdn/mermaid/mermaid.min.js</code>，用 <code>startOnLoad: false</code> 手动 <code>render()</code>，切换页签时按需渲染，点按钮可导出当前 SVG。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>Mermaid 流程图与 ER 图 / 18-6</span>
+  </footer>
+
+<script src="cdn/mermaid/mermaid.min.js"></script>
+<script>
+  // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：两个页签分别渲染流程图与 ER 图，支持下载 SVG
+  var xyt_defs = {
+    flow: {
+      title: "智能客服系统 · 业务流程图",
+      meta: "Mermaid flowchart TB · 18 个节点",
+      code: [
+        "flowchart TB",
+        '    A["用户接入<br/>网页 / App / 小程序 / 公众号"] --> B["会话创建<br/>分配 session_id"]',
+        '    B --> C["意图识别 NLU<br/>分类 + 槽位抽取"]',
+        '    C --> D{"置信度 ≥ 0.8 ?"}',
+        '    D -- 是 --> E["知识库检索<br/>FAQ + 向量召回"]',
+        '    D -- 否 --> F{"是否转人工 ?"}',
+        '    E --> G{"是否命中答案 ?"}',
+        '    G -- 是 --> H["生成回复<br/>大模型润色 RAG"]',
+        '    G -- 否 --> F',
+        '    F -- 是 --> I["技能组路由<br/>匹配在线坐席"]',
+        '    F -- 否 --> J["多轮澄清<br/>引导补充信息"]',
+        '    J --> C',
+        '    I --> K["人工会话<br/>自动创建工单"]',
+        '    K --> L["工单归档<br/>分类 / 解决时长"]',
+        '    H --> M["回复用户"]',
+        '    M --> N["满意度评价"]',
+        '    L --> N',
+        '    N --> O[("会话日志库")]',
+        '    O --> P["质检与数据分析"]',
+        '    P --> Q["知识补充 / 模型迭代"]',
+        '    Q -.-> E',
+        "    classDef entry fill:#eef5f2,stroke:#3f7d5c,stroke-width:1.4px,color:#202a35;",
+        "    classDef decide fill:#fff1ea,stroke:#e46b4b,stroke-width:1.4px,color:#8a5236;",
+        "    classDef store fill:#eef2f7,stroke:#176b87,stroke-width:1.4px,color:#202a35;",
+        "    class A,B,M entry;",
+        "    class D,F,G decide;",
+        "    class O store;"
+      ].join("\n")
+    },
+    er: {
+      title: "智能客服系统 · 数据模型 ER 图",
+      meta: "Mermaid erDiagram · 8 张表",
+      code: [
+        "erDiagram",
+        "    USER {",
+        '        bigint user_id PK "用户ID"',
+        '        string nickname "昵称"',
+        '        string phone "手机号"',
+        '        string channel "接入渠道"',
+        '        datetime created_at "注册时间"',
+        "    }",
+        "    SESSION {",
+        '        bigint session_id PK "会话ID"',
+        '        bigint user_id FK "所属用户"',
+        '        string status "进行中 / 已结束"',
+        '        datetime started_at "开始时间"',
+        '        int message_count "消息条数"',
+        "    }",
+        "    MESSAGE {",
+        '        bigint message_id PK "消息ID"',
+        '        bigint session_id FK "所属会话"',
+        '        string role "user / bot / agent"',
+        '        text content "消息内容"',
+        '        datetime sent_at "发送时间"',
+        "    }",
+        "    INTENT {",
+        '        bigint intent_id PK "意图ID"',
+        '        bigint message_id FK "来源消息"',
+        '        string name "意图名称"',
+        '        decimal confidence "置信度"',
+        "    }",
+        "    KNOWLEDGE {",
+        '        bigint kb_id PK "知识ID"',
+        '        string question "标准问题"',
+        '        text answer "标准答案"',
+        '        string category "分类"',
+        '        bigint agent_id FK "维护坐席"',
+        "    }",
+        "    TICKET {",
+        '        bigint ticket_id PK "工单ID"',
+        '        bigint session_id FK "来源会话"',
+        '        bigint agent_id FK "受理坐席"',
+        '        string priority "优先级"',
+        '        string status "待处理 / 已解决"',
+        "    }",
+        "    AGENT {",
+        '        bigint agent_id PK "坐席ID"',
+        '        string name "姓名"',
+        '        string skill_group "技能组"',
+        '        string online "在线状态"',
+        "    }",
+        "    RATING {",
+        '        bigint rating_id PK "评价ID"',
+        '        bigint session_id FK "所属会话"',
+        '        bigint user_id FK "评价用户"',
+        '        int score "1-5 分"',
+        '        text remark "评价内容"',
+        "    }",
+        "    USER ||--o{ SESSION : \"发起\"",
+        "    SESSION ||--o{ MESSAGE : \"包含\"",
+        "    MESSAGE ||--|| INTENT : \"识别出\"",
+        "    INTENT ||--o{ KNOWLEDGE : \"命中\"",
+        "    SESSION ||--o| TICKET : \"转人工生成\"",
+        "    AGENT ||--o{ TICKET : \"受理\"",
+        "    AGENT ||--o{ KNOWLEDGE : \"维护\"",
+        "    SESSION ||--o| RATING : \"获得\"",
+        "    USER ||--o{ RATING : \"提交\""
+      ].join("\n")
+    }
+  };
+
+  var xyt_stage = document.getElementById("xyt_stage");
+  var xyt_current = "flow";
+  var xyt_zoom = false;
+  var xyt_seq = 0;
+
+  if (window.mermaid) {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        fontFamily: '"Microsoft YaHei","PingFang SC",sans-serif',
+        fontSize: "14px",
+        primaryColor: "#eef5f2",
+        primaryTextColor: "#202a35",
+        primaryBorderColor: "#3f7d5c",
+        lineColor: "#8b9aa4",
+        secondaryColor: "#fff1ea",
+        tertiaryColor: "#fffdf8",
+        entityBkg: "#fffdf8",
+        attributeBackgroundColorOdd: "#fffdf8",
+        attributeBackgroundColorEven: "#f4f7f5",
+        attributeBorderColor: "#d9dfd9",
+        relationLabelColor: "#176b87"
+      },
+      flowchart: { curve: "basis", htmlLabels: true, padding: 12, useMaxWidth: true },
+      er: { diagramPadding: 18, layoutDirection: "TB", minEntityWidth: 120, minEntityHeight: 60, entityPadding: 12 }
+    });
+  }
+
+  function xyt_render(xyt_key) {
+    var xyt_def = xyt_defs[xyt_key];
+    if (!window.mermaid) {
+      xyt_stage.innerHTML = '<p class="xyt_error">没有找到 cdn/mermaid/mermaid.min.js，请确认该文件存在。</p>';
+      return;
+    }
+    document.getElementById("xyt_title").textContent = xyt_def.title;
+    document.getElementById("xyt_meta").textContent = xyt_def.meta;
+    xyt_stage.innerHTML = '<p class="xyt_loading">正在渲染…</p>';
+
+    xyt_seq += 1;
+    var xyt_id = "xyt_mermaid_" + xyt_seq;
+    mermaid.render(xyt_id, xyt_def.code).then(function (xyt_res) {
+      xyt_stage.innerHTML = xyt_res.svg;
+      var xyt_svg = xyt_stage.querySelector("svg");
+      if (xyt_svg) {
+        xyt_svg.removeAttribute("height");
+        xyt_svg.style.maxWidth = xyt_zoom ? "none" : "100%";
+        xyt_svg.style.height = "auto";
+      }
+      xyt_current = xyt_key;
+    }).catch(function (xyt_err) {
+      xyt_stage.innerHTML = '<p class="xyt_error">渲染失败：' + (xyt_err && xyt_err.message ? xyt_err.message : xyt_err) + "</p>";
+    });
+  }
+
+  document.querySelectorAll(".xyt_tab").forEach(function (xyt_btn) {
+    xyt_btn.addEventListener("click", function () {
+      var xyt_key = xyt_btn.getAttribute("data-tab");
+      if (xyt_key === xyt_current) { return; }
+      document.querySelectorAll(".xyt_tab").forEach(function (xyt_b) {
+        xyt_b.classList.remove("xyt_active");
+      });
+      xyt_btn.classList.add("xyt_active");
+      xyt_render(xyt_key);
+    });
+  });
+
+  document.getElementById("xyt_zoom").addEventListener("click", function () {
+    var xyt_svg = xyt_stage.querySelector("svg");
+    if (!xyt_svg) { return; }
+    xyt_zoom = !xyt_zoom;
+    xyt_svg.style.maxWidth = xyt_zoom ? "none" : "100%";
+    this.innerHTML = xyt_zoom
+      ? '<i class="iconfont icon-faxian"></i>适应宽度'
+      : '<i class="iconfont icon-faxian"></i>放大查看';
+  });
+
+  document.getElementById("xyt_download").addEventListener("click", function () {
+    var xyt_svg = xyt_stage.querySelector("svg");
+    if (!xyt_svg) { return; }
+    var xyt_clone = xyt_svg.cloneNode(true);
+    xyt_clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var xyt_text = new XMLSerializer().serializeToString(xyt_clone);
+    var xyt_blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + xyt_text], { type: "image/svg+xml;charset=utf-8" });
+    var xyt_url = URL.createObjectURL(xyt_blob);
+    var xyt_a = document.createElement("a");
+    xyt_a.href = xyt_url;
+    xyt_a.download = (xyt_current === "flow" ? "智能客服系统-流程图" : "智能客服系统-ER图") + ".svg";
+    document.body.appendChild(xyt_a);
+    xyt_a.click();
+    document.body.removeChild(xyt_a);
+    URL.revokeObjectURL(xyt_url);
+  });
+
+  xyt_render("flow");
+</script>
+</body>
+</html>

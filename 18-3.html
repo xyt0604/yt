@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徐玥桐 | 图像识别科研系统架构（SVG）</title>
+<link rel="stylesheet" href="font/iconfont.css">
+<style>
+  :root {
+    --ink:#202a35; --muted:#687581; --paper:#f7f5ef; --card:#fffdf8;
+    --blue:#176b87; --coral:#e46b4b; --line:#d9dfd9; --green:#3f7d5c; --violet:#7a5c9e;
+    --shadow:0 18px 45px rgba(31,50,55,.10);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif; line-height:1.7;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; z-index:-1; opacity:.4;
+    background-image:linear-gradient(rgba(23,107,135,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(23,107,135,.04) 1px,transparent 1px);
+    background-size:34px 34px;
+  }
+  a { color:inherit; }
+  .xyt_topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    max-width:1160px; margin:auto; padding:24px 28px;
+  }
+  .xyt_mark { display:flex; align-items:center; gap:12px; color:var(--blue); font-weight:700; letter-spacing:.08em; }
+  .xyt_mark_badge {
+    display:grid; width:38px; height:38px; place-items:center;
+    color:#fff; background:var(--coral); border-radius:50% 50% 50% 8px;
+    font:20px Georgia,serif;
+  }
+  .xyt_topbar a { color:var(--muted); font-size:14px; text-decoration:none; }
+  .xyt_topbar a:hover { color:var(--coral); }
+  .xyt_hero { max-width:1160px; margin:18px auto 0; padding:36px 28px 30px; }
+  .xyt_eyebrow { margin:0 0 16px; color:var(--coral); font-size:13px; font-weight:700; letter-spacing:.18em; }
+  h1 { margin:0; font:500 clamp(30px,4.6vw,52px)/1.14 Georgia,"Songti SC",serif; letter-spacing:-.03em; }
+  .xyt_hero_intro { max-width:700px; margin:20px 0 0; color:var(--muted); font-size:16px; }
+  .xyt_hero_intro code { color:var(--blue); font-family:Consolas,monospace; font-size:14px; }
+  .xyt_wrap { max-width:1160px; margin:auto; padding:0 28px 70px; }
+
+  .xyt_figure {
+    border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow); padding:14px 14px 6px; overflow:hidden;
+  }
+  .xyt_figure svg { display:block; width:100%; height:auto; }
+  .xyt_caption {
+    display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px;
+    padding:10px 6px 12px; color:var(--muted); font-size:12.5px;
+  }
+  .xyt_caption b { color:var(--ink); font-weight:600; }
+
+  .xyt_stage { cursor:pointer; outline:none; }
+  .xyt_stage .xyt_stage_box {
+    transition:transform .18s ease,stroke .18s ease;
+    transform-box:fill-box; transform-origin:center;
+  }
+  .xyt_stage:hover .xyt_stage_box { transform:translateY(-3px); }
+  .xyt_stage:focus-visible .xyt_stage_box { stroke:#7a5c9e; stroke-width:3; }
+  .xyt_stage[data-active="true"] .xyt_stage_box { stroke:#e46b4b; stroke-width:3; }
+  .xyt_dash_flow { stroke-dasharray:6 7; animation:xyt_flow 1.6s linear infinite; }
+  @keyframes xyt_flow { to { stroke-dashoffset:-26; } }
+  .xyt_beat { animation:xyt_beat 2.8s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes xyt_beat {
+    0%, 100% { opacity:.3; transform:scale(1); }
+    50% { opacity:.85; transform:scale(1.03); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .xyt_dash_flow, .xyt_beat { animation:none; }
+  }
+
+  .xyt_detail {
+    display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    margin-top:22px; border:1px solid var(--line); border-radius:16px; overflow:hidden;
+    background:var(--card);
+  }
+  .xyt_detail_left { padding:24px 26px; border-right:1px solid var(--line); background:rgba(23,107,135,.04); }
+  .xyt_detail_no { color:var(--coral); font:13px Consolas,monospace; letter-spacing:.2em; }
+  .xyt_detail_left h2 { margin:6px 0 0; font:500 26px Georgia,"Songti SC",serif; }
+  .xyt_detail_left p { margin:10px 0 0; color:var(--muted); font-size:13px; }
+  .xyt_detail_right { padding:24px 26px; }
+  .xyt_detail_right p { margin:0; color:#4b5a64; font-size:14.5px; }
+  .xyt_tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+  .xyt_tag { padding:4px 12px; border-radius:20px; font-size:12.5px; color:var(--blue); background:rgba(23,107,135,.08); }
+
+  .xyt_section_head { display:flex; justify-content:space-between; align-items:baseline; margin:52px 0 18px; }
+  h2 { margin:0; font:500 27px Georgia,"Songti SC",serif; }
+  .xyt_section_head span { color:var(--muted); font-size:13px; }
+  .xyt_cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .xyt_card {
+    padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--card);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .xyt_card:hover { transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 22px rgba(31,50,55,.09); }
+  .xyt_card h3 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .xyt_card h3 .iconfont { color:var(--coral); font-size:15px; }
+  .xyt_card p { margin:0; color:var(--muted); font-size:13.5px; }
+
+  .xyt_footer {
+    display:flex; justify-content:space-between; max-width:1160px; margin:auto;
+    padding:22px 28px 34px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px;
+  }
+  @media (max-width:860px) {
+    .xyt_detail { grid-template-columns:1fr; }
+    .xyt_detail_left { border-right:0; border-bottom:1px solid var(--line); }
+  }
+  @media (max-width:760px) {
+    .xyt_wrap,.xyt_hero,.xyt_footer { padding-left:18px; padding-right:18px; }
+    .xyt_figure { padding:8px 8px 2px; }
+    .xyt_footer { display:block; }
+    .xyt_footer span { display:block; margin-top:5px; }
+  }
+</style>
+</head>
+<body>
+  <!-- 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：基于图像识别的科研系统架构图（SVG 手绘，点击阶段查看说明） -->
+  <header class="xyt_topbar">
+    <div class="xyt_mark"><span class="xyt_mark_badge">徐</span><span>课堂实践档案</span></div>
+    <a href="index.html">返回首页</a>
+  </header>
+  <main>
+    <section class="xyt_hero">
+      <p class="xyt_eyebrow">SVG · RESEARCH SYSTEM ARCHITECTURE</p>
+      <h1>图像识别科研系统的<br>一张架构图</h1>
+      <p class="xyt_hero_intro">整张图用内联 <code>&lt;svg&gt;</code> 手写绘制：五段研究流程、每段之下的关键环节、底部的算力与实验平台，以及最后一层的成果沉淀。点击任意一段，下方会展开该阶段的科研说明。</p>
+    </section>
+
+    <div class="xyt_wrap">
+      <section aria-labelledby="xyt_fig_title">
+        <div class="xyt_figure">
+          <svg id="xyt_svg" viewBox="0 0 1200 790" role="img" aria-labelledby="xyt_fig_title" xmlns="http://www.w3.org/2000/svg">
+            <title id="xyt_fig_title">基于图像识别的科研系统架构图</title>
+            <defs>
+              <linearGradient id="xyt_g_stage" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#1e7d9c"/>
+                <stop offset="1" stop-color="#12556b"/>
+              </linearGradient>
+              <linearGradient id="xyt_g_goal" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#f2eef7"/>
+                <stop offset="1" stop-color="#eef5f2"/>
+              </linearGradient>
+              <linearGradient id="xyt_g_platform" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#f1f7f3"/>
+                <stop offset="1" stop-color="#eaf3ee"/>
+              </linearGradient>
+              <pattern id="xyt_dots" width="26" height="26" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.2" fill="rgba(23,107,135,.13)"/>
+              </pattern>
+              <marker id="xyt_arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="#8b9aa4"/>
+              </marker>
+              <marker id="xyt_arrow_up" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="#4d8f6d"/>
+              </marker>
+              <marker id="xyt_arrow_hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="#c8613f"/>
+              </marker>
+              <filter id="xyt_shadow" x="-20%" y="-20%" width="140%" height="150%">
+                <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#1f3237" flood-opacity="0.14"/>
+              </filter>
+            </defs>
+
+            <rect x="0" y="0" width="1200" height="790" fill="#fffdf8"/>
+            <rect x="0" y="0" width="1200" height="790" fill="url(#xyt_dots)"/>
+
+            <!-- 研究目标 -->
+            <rect x="60" y="52" width="1080" height="70" rx="14" fill="url(#xyt_g_goal)" stroke="rgba(122,92,158,.35)"/>
+            <text x="84" y="82" font-family="Microsoft YaHei, sans-serif" font-size="16" font-weight="700" fill="#4a3a63">研究目标</text>
+            <text x="84" y="104" font-family="Microsoft YaHei, sans-serif" font-size="12.5" fill="#6b6675">面向真实场景的图像识别算法研究与验证：采集 → 标注 → 训练 → 评估 → 部署 的可复现闭环</text>
+            <g font-family="Microsoft YaHei, sans-serif" font-size="12.5" fill="#5a4b72">
+              <rect x="786" y="72" width="106" height="30" rx="15" fill="#ffffff" stroke="rgba(122,92,158,.35)"/>
+              <text x="839" y="92" text-anchor="middle">图像分类</text>
+              <rect x="900" y="72" width="106" height="30" rx="15" fill="#ffffff" stroke="rgba(122,92,158,.35)"/>
+              <text x="953" y="92" text-anchor="middle">目标检测</text>
+              <rect x="1014" y="72" width="106" height="30" rx="15" fill="#ffffff" stroke="rgba(122,92,158,.35)"/>
+              <text x="1067" y="92" text-anchor="middle">语义分割</text>
+            </g>
+
+            <!-- 数据流主线 -->
+            <line class="xyt_dash_flow" x1="60" y1="142" x2="1140" y2="142" stroke="rgba(23,107,135,.38)" stroke-width="1.4"/>
+            <g fill="#e46b4b">
+              <circle r="3.4"><animateMotion dur="5s" repeatCount="indefinite" path="M60,142 H1140"/></circle>
+              <circle r="3.4"><animateMotion dur="5s" begin="1.6s" repeatCount="indefinite" path="M60,142 H1140"/></circle>
+              <circle r="3.4"><animateMotion dur="5s" begin="3.2s" repeatCount="indefinite" path="M60,142 H1140"/></circle>
+            </g>
+            <text x="60" y="134" font-family="Consolas, monospace" font-size="11" fill="rgba(23,107,135,.75)">数据流</text>
+
+            <!-- 阶段 1 -->
+            <g class="xyt_stage" data-stage="1" tabindex="0" role="button" aria-label="数据采集阶段">
+              <line x1="158" y1="146" x2="158" y2="156" stroke="#8b9aa4" stroke-width="1.4" marker-end="url(#xyt_arrow)"/>
+              <rect class="xyt_stage_box" x="60" y="160" width="196" height="92" rx="14" fill="url(#xyt_g_stage)" stroke="rgba(23,107,135,.5)" filter="url(#xyt_shadow)"/>
+              <circle cx="82" cy="182" r="12" fill="rgba(255,255,255,.18)"/>
+              <text x="82" y="186" text-anchor="middle" font-family="Consolas, monospace" font-size="11" fill="#ffffff">01</text>
+              <text x="158" y="212" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="700" fill="#ffffff">数据采集</text>
+              <text x="158" y="234" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="rgba(255,255,255,.82)">相机 · 无人机 · 公开数据集</text>
+            </g>
+            <line x1="260" y1="206" x2="276" y2="206" stroke="#8b9aa4" stroke-width="1.6" marker-end="url(#xyt_arrow)"/>
+
+            <!-- 阶段 2 -->
+            <g class="xyt_stage" data-stage="2" tabindex="0" role="button" aria-label="数据预处理阶段">
+              <line x1="378" y1="146" x2="378" y2="156" stroke="#8b9aa4" stroke-width="1.4" marker-end="url(#xyt_arrow)"/>
+              <rect class="xyt_stage_box" x="280" y="160" width="196" height="92" rx="14" fill="url(#xyt_g_stage)" stroke="rgba(23,107,135,.5)" filter="url(#xyt_shadow)"/>
+              <circle cx="302" cy="182" r="12" fill="rgba(255,255,255,.18)"/>
+              <text x="302" y="186" text-anchor="middle" font-family="Consolas, monospace" font-size="11" fill="#ffffff">02</text>
+              <text x="378" y="212" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="700" fill="#ffffff">数据预处理</text>
+              <text x="378" y="234" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="rgba(255,255,255,.82)">清洗 · 增强 · 数据划分</text>
+            </g>
+            <line x1="480" y1="206" x2="496" y2="206" stroke="#8b9aa4" stroke-width="1.6" marker-end="url(#xyt_arrow)"/>
+
+            <!-- 阶段 3 -->
+            <g class="xyt_stage" data-stage="3" tabindex="0" role="button" aria-label="模型训练阶段">
+              <line x1="598" y1="146" x2="598" y2="156" stroke="#8b9aa4" stroke-width="1.4" marker-end="url(#xyt_arrow)"/>
+              <rect class="xyt_beat" x="494" y="154" width="208" height="104" rx="18" fill="none" stroke="#e46b4b" stroke-width="2"/>
+              <rect class="xyt_stage_box" x="500" y="160" width="196" height="92" rx="14" fill="url(#xyt_g_stage)" stroke="rgba(23,107,135,.5)" filter="url(#xyt_shadow)"/>
+              <circle cx="522" cy="182" r="12" fill="rgba(255,255,255,.18)"/>
+              <text x="522" y="186" text-anchor="middle" font-family="Consolas, monospace" font-size="11" fill="#ffffff">03</text>
+              <text x="598" y="212" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="700" fill="#ffffff">模型训练</text>
+              <text x="598" y="234" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="rgba(255,255,255,.82)">CNN · ViT · 迁移学习</text>
+            </g>
+            <line x1="700" y1="206" x2="716" y2="206" stroke="#8b9aa4" stroke-width="1.6" marker-end="url(#xyt_arrow)"/>
+
+            <!-- 阶段 4 -->
+            <g class="xyt_stage" data-stage="4" tabindex="0" role="button" aria-label="评估分析阶段">
+              <line x1="818" y1="146" x2="818" y2="156" stroke="#8b9aa4" stroke-width="1.4" marker-end="url(#xyt_arrow)"/>
+              <rect class="xyt_stage_box" x="720" y="160" width="196" height="92" rx="14" fill="url(#xyt_g_stage)" stroke="rgba(23,107,135,.5)" filter="url(#xyt_shadow)"/>
+              <circle cx="742" cy="182" r="12" fill="rgba(255,255,255,.18)"/>
+              <text x="742" y="186" text-anchor="middle" font-family="Consolas, monospace" font-size="11" fill="#ffffff">04</text>
+              <text x="818" y="212" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="700" fill="#ffffff">评估分析</text>
+              <text x="818" y="234" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="rgba(255,255,255,.82)">mAP · 混淆矩阵 · 消融</text>
+            </g>
+            <line x1="920" y1="206" x2="936" y2="206" stroke="#8b9aa4" stroke-width="1.6" marker-end="url(#xyt_arrow)"/>
+
+            <!-- 阶段 5 -->
+            <g class="xyt_stage" data-stage="5" tabindex="0" role="button" aria-label="部署验证阶段">
+              <line x1="1038" y1="146" x2="1038" y2="156" stroke="#8b9aa4" stroke-width="1.4" marker-end="url(#xyt_arrow)"/>
+              <rect class="xyt_stage_box" x="940" y="160" width="196" height="92" rx="14" fill="url(#xyt_g_stage)" stroke="rgba(23,107,135,.5)" filter="url(#xyt_shadow)"/>
+              <circle cx="962" cy="182" r="12" fill="rgba(255,255,255,.18)"/>
+              <text x="962" y="186" text-anchor="middle" font-family="Consolas, monospace" font-size="11" fill="#ffffff">05</text>
+              <text x="1038" y="212" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="700" fill="#ffffff">部署验证</text>
+              <text x="1038" y="234" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="rgba(255,255,255,.82)">ONNX · Web · 边缘设备</text>
+            </g>
+
+            <g stroke="#8b9aa4" stroke-width="1.4">
+              <line x1="158" y1="252" x2="158" y2="282" marker-end="url(#xyt_arrow)"/>
+              <line x1="378" y1="252" x2="378" y2="282" marker-end="url(#xyt_arrow)"/>
+              <line x1="598" y1="252" x2="598" y2="282" marker-end="url(#xyt_arrow)"/>
+              <line x1="818" y1="252" x2="818" y2="282" marker-end="url(#xyt_arrow)"/>
+              <line x1="1038" y1="252" x2="1038" y2="282" marker-end="url(#xyt_arrow)"/>
+            </g>
+
+            <!-- 关键环节 -->
+            <g font-family="Microsoft YaHei, sans-serif">
+              <rect x="60" y="288" width="196" height="190" rx="12" fill="#ffffff" stroke="rgba(23,107,135,.22)"/>
+              <text x="70" y="306" font-size="11" fill="#8b979f" letter-spacing="1">关键环节</text>
+              <g font-size="11.5" fill="#3f4d57">
+                <rect x="70" y="316" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="80" y="341">工业相机 / 无人机采集</text>
+                <rect x="70" y="366" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="80" y="391">公开数据集 + 自建数据集</text>
+                <rect x="70" y="416" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="80" y="441">数据授权与伦理审查</text>
+              </g>
+
+              <rect x="280" y="288" width="196" height="190" rx="12" fill="#ffffff" stroke="rgba(23,107,135,.22)"/>
+              <text x="290" y="306" font-size="11" fill="#8b979f" letter-spacing="1">关键环节</text>
+              <g font-size="11.5" fill="#3f4d57">
+                <rect x="290" y="316" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="300" y="341">去噪 · 尺寸归一化</text>
+                <rect x="290" y="366" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="300" y="391">几何 / 色彩数据增强</text>
+                <rect x="290" y="416" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="300" y="441">训练 8 : 验证 1 : 测试 1</text>
+              </g>
+
+              <rect x="500" y="288" width="196" height="190" rx="12" fill="#ffffff" stroke="rgba(228,107,75,.35)"/>
+              <text x="510" y="306" font-size="11" fill="#c8613f" letter-spacing="1">核心计算</text>
+              <g font-size="11.5" fill="#3f4d57">
+                <rect x="510" y="316" width="176" height="42" rx="8" fill="rgba(228,107,75,.06)"/>
+                <text x="520" y="341">骨干网络 ResNet / ViT</text>
+                <rect x="510" y="366" width="176" height="42" rx="8" fill="rgba(228,107,75,.06)"/>
+                <text x="520" y="391">迁移学习与参数微调</text>
+                <rect x="510" y="416" width="176" height="42" rx="8" fill="rgba(228,107,75,.06)"/>
+                <text x="520" y="441">GPU 集群分布式训练</text>
+              </g>
+
+              <rect x="720" y="288" width="196" height="190" rx="12" fill="#ffffff" stroke="rgba(23,107,135,.22)"/>
+              <text x="730" y="306" font-size="11" fill="#8b979f" letter-spacing="1">关键环节</text>
+              <g font-size="11.5" fill="#3f4d57">
+                <rect x="730" y="316" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="740" y="341">mAP / F1 / IoU 指标</text>
+                <rect x="730" y="366" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="740" y="391">混淆矩阵与错误归因</text>
+                <rect x="730" y="416" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="740" y="441">消融实验与显著性检验</text>
+              </g>
+
+              <rect x="940" y="288" width="196" height="190" rx="12" fill="#ffffff" stroke="rgba(23,107,135,.22)"/>
+              <text x="950" y="306" font-size="11" fill="#8b979f" letter-spacing="1">关键环节</text>
+              <g font-size="11.5" fill="#3f4d57">
+                <rect x="950" y="316" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="960" y="341">导出 ONNX / TensorRT</text>
+                <rect x="950" y="366" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="960" y="391">Web 演示与 API 服务</text>
+                <rect x="950" y="416" width="176" height="42" rx="8" fill="rgba(23,107,135,.05)"/>
+                <text x="960" y="441">边缘端实时推理</text>
+              </g>
+            </g>
+
+            <!-- 平台支撑 -->
+            <text x="60" y="500" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="#4d8f6d">以下能力由科研平台统一提供，向上支撑五个阶段</text>
+            <line class="xyt_dash_flow" x1="60" y1="512" x2="1140" y2="512" stroke="rgba(63,125,92,.55)" stroke-width="1.4"/>
+            <g stroke="#4d8f6d" stroke-width="1.4">
+              <line x1="158" y1="512" x2="158" y2="492" marker-end="url(#xyt_arrow_up)"/>
+              <line x1="378" y1="512" x2="378" y2="492" marker-end="url(#xyt_arrow_up)"/>
+              <line x1="598" y1="512" x2="598" y2="492" marker-end="url(#xyt_arrow_up)"/>
+              <line x1="818" y1="512" x2="818" y2="492" marker-end="url(#xyt_arrow_up)"/>
+              <line x1="1038" y1="512" x2="1038" y2="492" marker-end="url(#xyt_arrow_up)"/>
+            </g>
+
+            <g font-family="Microsoft YaHei, sans-serif">
+              <rect x="60" y="530" width="255" height="96" rx="12" fill="url(#xyt_g_platform)" stroke="rgba(63,125,92,.35)"/>
+              <text x="76" y="556" font-size="14" font-weight="700" fill="#2f6349">计算资源</text>
+              <text x="76" y="578" font-size="11.5" fill="#5c7370">GPU 训练集群 · 分布式并行</text>
+              <text x="76" y="598" font-size="11.5" fill="#5c7370">推理服务器 · 显存监控</text>
+
+              <rect x="335" y="530" width="255" height="96" rx="12" fill="url(#xyt_g_platform)" stroke="rgba(63,125,92,.35)"/>
+              <text x="351" y="556" font-size="14" font-weight="700" fill="#2f6349">数据与存储</text>
+              <text x="351" y="578" font-size="11.5" fill="#5c7370">对象存储 / NAS · PB 级图像</text>
+              <text x="351" y="598" font-size="11.5" fill="#5c7370">数据集版本化与备份</text>
+
+              <rect x="610" y="530" width="255" height="96" rx="12" fill="url(#xyt_g_platform)" stroke="rgba(63,125,92,.35)"/>
+              <text x="626" y="556" font-size="14" font-weight="700" fill="#2f6349">实验管理</text>
+              <text x="626" y="578" font-size="11.5" fill="#5c7370">MLflow 指标 / 超参记录</text>
+              <text x="626" y="598" font-size="11.5" fill="#5c7370">Git 代码版本与权重归档</text>
+
+              <rect x="885" y="530" width="255" height="96" rx="12" fill="url(#xyt_g_platform)" stroke="rgba(63,125,92,.35)"/>
+              <text x="901" y="556" font-size="14" font-weight="700" fill="#2f6349">协作与规范</text>
+              <text x="901" y="578" font-size="11.5" fill="#5c7370">文献阅读 · 组会评审</text>
+              <text x="901" y="598" font-size="11.5" fill="#5c7370">随机种子 / 环境可复现</text>
+            </g>
+
+            <line x1="600" y1="626" x2="600" y2="654" stroke="#c8613f" stroke-width="1.6" marker-end="url(#xyt_arrow_hot)"/>
+            <text x="612" y="646" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="#c8613f">沉淀与发布</text>
+
+            <!-- 成果层 -->
+            <rect x="60" y="660" width="1080" height="82" rx="14" fill="rgba(228,107,75,.05)" stroke="rgba(228,107,75,.5)" stroke-dasharray="7 6"/>
+            <text x="84" y="694" font-family="Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#c8613f">阶段成果</text>
+            <text x="84" y="716" font-family="Microsoft YaHei, sans-serif" font-size="11.5" fill="#96674f">每次实验都留下可复查的证据</text>
+            <g font-family="Microsoft YaHei, sans-serif" font-size="12.5" fill="#8a5236">
+              <rect x="240" y="684" width="132" height="34" rx="17" fill="#ffffff" stroke="rgba(228,107,75,.5)"/>
+              <text x="306" y="706" text-anchor="middle">学术论文 / 报告</text>
+              <rect x="388" y="684" width="132" height="34" rx="17" fill="#ffffff" stroke="rgba(228,107,75,.5)"/>
+              <text x="454" y="706" text-anchor="middle">公开数据集</text>
+              <rect x="536" y="684" width="132" height="34" rx="17" fill="#ffffff" stroke="rgba(228,107,75,.5)"/>
+              <text x="602" y="706" text-anchor="middle">开源模型权重</text>
+              <rect x="684" y="684" width="132" height="34" rx="17" fill="#ffffff" stroke="rgba(228,107,75,.5)"/>
+              <text x="750" y="706" text-anchor="middle">演示系统</text>
+              <text x="838" y="706" font-size="11.5" fill="#96674f">→ 可复现、可比较、可复用</text>
+            </g>
+          </svg>
+          <div class="xyt_caption">
+            <span><b>图 18-3</b>　基于图像识别的科研系统架构图（内联 SVG 手绘，点击阶段查看说明）</span>
+            <span>实线箭头 = 研究流程　虚线 = 平台支撑　流动点 = 数据流</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="xyt_detail" aria-live="polite">
+        <div class="xyt_detail_left">
+          <span class="xyt_detail_no" id="xyt_stage_no">STAGE 01</span>
+          <h2 id="xyt_stage_title">数据采集</h2>
+          <p id="xyt_stage_hint">点击上方架构图中的任意一段，这里会显示该阶段的详细说明。</p>
+        </div>
+        <div class="xyt_detail_right">
+          <p id="xyt_stage_text">数据是图像识别研究的天花板：先想清楚“要识别什么、在什么条件下识别”，再决定用什么设备、采多少张、如何标注。</p>
+          <div class="xyt_tags" id="xyt_stage_tags">
+            <span class="xyt_tag">多源采集</span>
+            <span class="xyt_tag">标注一致性 Kappa</span>
+            <span class="xyt_tag">数据合规</span>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="xyt_notes_title">
+        <div class="xyt_section_head"><h2 id="xyt_notes_title">科研方向上的四个关键点</h2><span>架构图背后的方法学</span></div>
+        <div class="xyt_cards">
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-shoucang"></i>数据先于模型</h3>
+            <p>公开数据集用于预训练与对比基线，自建数据集承担主实验；标注一致性要用 Kappa 系数报告，而不是只写“人工标注”。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-sousuo"></i>指标要可解释</h3>
+            <p>总体指标、分类别指标、混淆矩阵三者一起看，才能说明模型“错在哪里”；只看一个准确率，很容易把类别不平衡当成性能提升。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-shezhi"></i>算力与成本</h3>
+            <p>训练日志、显存占用、单轮耗时都要记录，才能在有限算力下合理安排消融实验，也能说明结果的成本代价。</p>
+          </article>
+          <article class="xyt_card">
+            <h3><i class="iconfont icon-bianji"></i>可复现性</h3>
+            <p>固定随机种子、锁定环境与依赖版本、保存最优权重与超参，让同组同学照着记录能跑出同一组数字。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="xyt_footer">
+    <span>徐玥桐 · 《高级网页设计》课堂实践</span>
+    <span>SVG 科研系统架构图 / 18-3</span>
+  </footer>
+
+<script>
+  // 徐玥桐 | 建立时间：2026-11-05 | 使用大模型：DeepSeek-V4.1-Flash | 功能：点击 SVG 中的研究阶段，切换下方科研说明
+  var xyt_stageInfo = {
+    "1": {
+      title: "数据采集",
+      text: "数据是图像识别研究的天花板：先想清楚「要识别什么、在什么条件下识别」，再决定设备、样本量与标注方案。工业相机或无人机的采集参数（光照、距离、角度）要一并记录，公开数据集用于预训练与对比基线，自建数据集承担主实验；授权文件与脱敏流程必须在采集阶段做完。",
+      tags: ["多源采集", "标注一致性 Kappa", "数据合规"]
+    },
+    "2": {
+      title: "数据预处理",
+      text: "统一尺寸与色彩空间，做去噪、几何与色彩增强；按 8:1:1 划分训练 / 验证 / 测试，测试集只在最终评估时打开。增强策略要写进论文，否则别人无法复现；同时避免增强引入与真实场景不一致的纹理，导致线下指标虚高。",
+      tags: ["归一化", "数据增强", "防数据泄漏"]
+    },
+    "3": {
+      title: "模型训练",
+      text: "以 ResNet、ViT 等骨干网络为基础，用迁移学习在小样本上快速收敛；超参搜索控制搜索空间与预算，GPU 集群用分布式数据并行扩展规模。每一轮都记录损失曲线、学习率与显存占用，固定随机种子，保证「同一份代码能跑出同一组数字」。",
+      tags: ["迁移学习", "超参搜索", "分布式训练"]
+    },
+    "4": {
+      title: "评估分析",
+      text: "除 mAP、F1、IoU 等总体指标外，用混淆矩阵定位易混类别，用分类别指标说明模型短板；通过消融实验逐个验证模块贡献，并做多次重复实验的显著性检验，避免把随机波动当成算法改进。",
+      tags: ["指标评估", "消融实验", "显著性检验"]
+    },
+    "5": {
+      title: "部署验证",
+      text: "训练好的模型导出为 ONNX 或 TensorRT，先在 Web 演示端验证交互与延迟，再下沉到边缘设备做实时推理。部署阶段常暴露训练时看不到的问题：拍摄条件变化、类别分布漂移、精度与速度的取舍，这些反馈又回到数据采集，形成研究闭环。",
+      tags: ["模型导出", "服务封装", "边缘推理"]
+    }
+  };
+
+  var xyt_stages = document.querySelectorAll(".xyt_stage");
+
+  function xyt_activate(xyt_key) {
+    var xyt_info = xyt_stageInfo[xyt_key];
+    if (!xyt_info) { return; }
+    for (var xyt_i = 0; xyt_i < xyt_stages.length; xyt_i++) {
+      xyt_stages[xyt_i].setAttribute("data-active",
+        xyt_stages[xyt_i].getAttribute("data-stage") === xyt_key ? "true" : "false");
+    }
+    document.getElementById("xyt_stage_no").textContent = "STAGE 0" + xyt_key;
+    document.getElementById("xyt_stage_title").textContent = xyt_info.title;
+    document.getElementById("xyt_stage_text").textContent = xyt_info.text;
+
+    var xyt_tagBox = document.getElementById("xyt_stage_tags");
+    xyt_tagBox.innerHTML = "";
+    xyt_info.tags.forEach(function (xyt_tag) {
+      var xyt_span = document.createElement("span");
+      xyt_span.className = "xyt_tag";
+      xyt_span.textContent = xyt_tag;
+      xyt_tagBox.appendChild(xyt_span);
+    });
+  }
+
+  for (var xyt_j = 0; xyt_j < xyt_stages.length; xyt_j++) {
+    (function (xyt_group) {
+      var xyt_key = xyt_group.getAttribute("data-stage");
+      xyt_group.addEventListener("click", function () { xyt_activate(xyt_key); });
+      xyt_group.addEventListener("keydown", function (xyt_e) {
+        if (xyt_e.key === "Enter" || xyt_e.key === " ") {
+          xyt_e.preventDefault();
+          xyt_activate(xyt_key);
+        }
+      });
+    })(xyt_stages[xyt_j]);
+  }
+
+  xyt_activate("1");
+</script>
+</body>
+</html>
